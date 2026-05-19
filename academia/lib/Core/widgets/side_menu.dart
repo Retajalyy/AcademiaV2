@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../utilities/colors.dart';
 import 'package:academia/Features/Dashboard_admin/screens/Dashboard_screen.dart';
 import 'package:academia/Features/Fees_admin/screens/FeesAdminScreen.dart';
+import 'package:academia/Features/course_admin/screens/course_admin_screen.dart';
+import 'package:academia/Features/exam_results_admin/screens/exam_results_screen.dart';
 class SideMenu extends StatefulWidget {
   final String activeItem;
 
@@ -176,16 +178,12 @@ class _SideMenuState extends State<SideMenu> {
                             SubMenuItem(
                               title: "Courses",
                               active: widget.activeItem == "Courses",
-                              onTap: () {
-                                // _navigate(context, const CoursesScreen());
-                              },
+                              onTap: () => _navigate(context, const CourseAdminScreen()),
                             ),
                             SubMenuItem(
                               title: "Exam Results",
                               active: widget.activeItem == "Exam Results",
-                              onTap: () {
-                                // _navigate(context, const ExamResultsScreen());
-                              },
+                             onTap: () => _navigate(context, const ExamResultsAdminScreen()),
                             ),
                           ],
                         ),

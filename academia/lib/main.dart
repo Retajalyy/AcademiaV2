@@ -20,6 +20,9 @@ import 'Features/plan_admin/screens/PlanAdminScreen.dart';
 import 'Features/plan_admin/screens/PlanAdmin2Screen .dart';
 import 'Features/plan_admin/screens/PlanAdmin3Screen .dart';
 import 'Features/Fees_admin/screens/FeesAdminScreen.dart';
+import 'package:academia/Features/course_admin/screens/course_admin_screen.dart';
+import 'Features/exam_results_admin/screens/exam_results_screen.dart';
+import 'Features/exam_results_admin/bindings/exam_results_binding.dart';
 
 import 'Features/Registiration_admin/screens/RegistirationScreen.dart';
 
@@ -72,7 +75,7 @@ class MyApp extends StatelessWidget {
       ),
 
       // 👇 start from splash instead of home
-      initialRoute: '/FeeAdmin',
+      initialRoute: '/examResultsAdmin',
 
       // 👇 routes
       getPages: [
@@ -170,6 +173,15 @@ class MyApp extends StatelessWidget {
           name: '/FeeAdmin',
           page: () => FeesAdminScreen(), 
         ),
+         GetPage(
+          name: '/courseAdmin',
+          page: () => CourseAdminScreen(), 
+        ),
+        GetPage(
+  name: '/examResultsAdmin',
+  page: () => const ExamResultsAdminScreen(),
+  binding: ExamResultsBinding(),
+),
         GetPage(
   name: '/app',
   page: () => const BottomBar(),
