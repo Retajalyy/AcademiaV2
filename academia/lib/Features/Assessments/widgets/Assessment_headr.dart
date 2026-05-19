@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
-
+import 'package:academia/Features/Services/screens/services_main_screen.dart';
 class AssessmentHeader extends StatelessWidget {
   const AssessmentHeader({super.key});
 
@@ -23,8 +23,18 @@ class AssessmentHeader extends StatelessWidget {
               // Top Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                children: [
+                  IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white,size: 28),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ServicesScreen(),
+                    ),
+                  );
+                },
+              ),
                   Icon(Icons.notifications, color: Colors.white, size: 28),
                 ],
               ),

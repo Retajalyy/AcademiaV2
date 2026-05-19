@@ -1,3 +1,5 @@
+// lib/features/assessment/presentation/widgets/search_bar.dart
+
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
 
@@ -17,7 +19,7 @@ class SearchBarWidget extends StatelessWidget {
         onChanged: onChanged,
         decoration: const InputDecoration(
           icon: Icon(Icons.search, color: AppColors.disabledText),
-          hintText: "Search courses...",
+          hintText: 'Search courses...',
           border: InputBorder.none,
         ),
       ),

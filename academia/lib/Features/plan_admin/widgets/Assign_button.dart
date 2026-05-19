@@ -1,7 +1,6 @@
-// lib/Features/Registration/widgets/registration_buttons.dart
-
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
+import 'package:academia/Features/plan_admin2/screens/PlanAdmin2Screen .dart';
 
 class AddNewPlan extends StatelessWidget {
   const AddNewPlan({super.key});
@@ -13,7 +12,7 @@ class AddNewPlan extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(
-            width:  double.infinity,
+            width: double.infinity,
             height: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -23,7 +22,15 @@ class AddNewPlan extends StatelessWidget {
                   borderRadius: BorderRadius.circular(9),
                 ),
               ),
-              onPressed: () {},
+              onPressed: () {
+                // ✅ Button click action
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const Planadminscreen2(),
+                    ),
+                    );
+              },
               child: const Text(
                 "Assign Group",
                 style: TextStyle(
@@ -34,8 +41,6 @@ class AddNewPlan extends StatelessWidget {
               ),
             ),
           ),
-
-         
         ],
       ),
     );

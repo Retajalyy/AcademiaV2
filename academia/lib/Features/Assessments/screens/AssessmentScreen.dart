@@ -80,16 +80,16 @@ class Assessmentscreen extends StatelessWidget {
                               ? AppColors.primaryBlue
                               : AppColors.secondaryYellow;
                           return CourseCard(
-                            title:                 a.courseName,
-                            type:                  a.courseType,
-                            midterm:               a.midtermStr,
-                            midtermStatus:         a.midtermStatus,
-                            participation:         a.participationStr,
-                            participationStatus:   a.participationStatus,
-                            attendance:            a.attendanceStr,
-                            attendanceStatus:      a.attendanceStatus,
-                            progress:              a.progress,
-                            progressColor:         color,
+                            title: a.courseName,
+                            type: a.courseType,
+                            midterm: a.midtermStr,
+                            midtermStatus: a.midtermStatus,
+                            participation: a.participationStr,
+                            participationStatus: a.participationStatus,
+                            attendance: a.attendanceStr,
+                            attendanceStatus: a.attendanceStatus,
+                            progress: a.progress,
+                            progressColor: color,
                           );
                         }),
 

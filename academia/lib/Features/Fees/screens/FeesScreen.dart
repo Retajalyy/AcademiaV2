@@ -8,8 +8,8 @@ import '../widgets/Paid_Fees.dart';
 import '../widgets/pay_button.dart';
 import '../../../Core/utilities/colors.dart';
 
-class Feesscreen extends StatelessWidget {
-  const Feesscreen({super.key});
+class FeesScreen extends StatelessWidget {
+  const FeesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

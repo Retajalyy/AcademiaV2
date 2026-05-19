@@ -3,7 +3,7 @@ import 'package:academia/Features/plan_admin/widgets/planAdminHeader.dart';
 import 'package:academia/Features/plan_admin/widgets/Faculty_selection.dart';
 import 'package:academia/Features/plan_admin/widgets/select_level.dart';
 import 'package:academia/Features/plan_admin/widgets/major_selection.dart';
-import 'package:academia/Features/plan_admin/widgets/Add _course.dart';
+import 'package:academia/Features/plan_admin/widgets/Add%20_course.dart';
 import 'package:academia/Features/plan_admin/widgets/Assign_button.dart';
 import '../../../Core/utilities/colors.dart';
 

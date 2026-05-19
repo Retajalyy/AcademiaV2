@@ -8,6 +8,7 @@ class ScheduleController extends GetxController {
 
   var classes = <ScheduleItem>[].obs;
   var isLoading = true.obs;
+  final RxnString errorMessage = RxnString();
 
   int _studentId = 0;
 
@@ -25,10 +26,12 @@ class ScheduleController extends GetxController {
 
   Future<void> loadSchedule(DateTime date) async {
     isLoading.value = true;
+    errorMessage.value = null;
     try {
       classes.value = await _service.getScheduleForDay(_studentId, _dayName(date));
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load schedule: $e');
+      errorMessage.value = 'Failed to load schedule. Please try again.';
+      classes.clear();
     } finally {
       isLoading.value = false;
     }

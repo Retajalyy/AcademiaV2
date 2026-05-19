@@ -25,7 +25,7 @@ class PayementStatusHeader extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const PayementScreen(),
+                      builder: (_) =>  PayementScreen(),
                     ),
                   );
                 },

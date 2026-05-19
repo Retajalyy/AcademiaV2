@@ -10,7 +10,11 @@ class ArchitectureProgress extends StatelessWidget {
   });
 
   bool _isCompleted(int step) {
-    return currentStep >= step;
+    return currentStep > step; // strictly greater = fully done
+  }
+
+  bool _isCurrent(int step) {
+    return currentStep == step; // currently on this step
   }
 
   @override
@@ -27,7 +31,7 @@ class ArchitectureProgress extends StatelessWidget {
   }
 
   Widget _buildLine(int stepBefore) {
-    final isActive = _isCompleted(stepBefore + 1);
+    final isActive = _isCompleted(stepBefore + 1) || currentStep > stepBefore;
 
     return Expanded(
       child: Container(
@@ -40,26 +44,33 @@ class ArchitectureProgress extends StatelessWidget {
   }
 
   Widget _buildStep(int number) {
-    final isActive = _isCompleted(number);
+    final isCompleted = _isCompleted(number);
+    final isCurrent = _isCurrent(number);
 
     return Container(
       width: 22,
       height: 22,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive
+        color: (isCompleted || isCurrent)
             ? AppColors.secondaryYellow
             : Colors.grey.shade400,
       ),
       child: Center(
-        child: Text(
-          number.toString(),
-          style: TextStyle(
-            color: isActive ? AppColors.primaryBlue : Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: isCompleted
+            ? Icon(
+                Icons.check,
+                color: AppColors.primaryBlue,
+                size: 13,
+              )
+            : Text(
+                number.toString(),
+                style: TextStyle(
+                  color: isCurrent ? AppColors.primaryBlue : Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }

@@ -1,16 +1,15 @@
-
 import 'package:flutter/material.dart';
- 
+
 class ClassModel {
   final String title;
   final String room;
   final String instructor;
   final String startTime;
   final String endTime;
-  final String type; // 'Lecture' or 'Section' or 'Lab'
+  final String type;
   final Color accentColor;
- 
-  const ClassModel({
+
+  ClassModel({
     required this.title,
     required this.room,
     required this.instructor,

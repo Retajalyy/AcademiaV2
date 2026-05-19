@@ -1,6 +1,6 @@
+import 'package:academia/Features/Academic_results/models/course_result_model.dart';
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
-import '../models/course_result_model.dart';
 import 'subject_row.dart';
 
 class SemesterResultsCard extends StatelessWidget {

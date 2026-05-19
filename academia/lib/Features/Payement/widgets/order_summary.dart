@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../Core/utilities/colors.dart';
+import 'package:academia/Core/utilities/colors.dart';
+import 'package:academia/Features/Payement/model/order_summary_model.dart';
 
 class OrderSummary extends StatelessWidget {
-  const OrderSummary({super.key});
+  final OrderSummaryModel model;
 
-  Widget row({
+  const OrderSummary({super.key, required this.model});
+
+  Widget _row({
     required String left,
     required String right,
     TextStyle? leftStyle,
@@ -28,7 +31,7 @@ class OrderSummary extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "ORDER SUMMARY",
+          'ORDER SUMMARY',
           style: TextStyle(
             color: AppColors.textgrey,
             fontSize: 16,
@@ -36,7 +39,6 @@ class OrderSummary extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -45,32 +47,47 @@ class OrderSummary extends StatelessWidget {
           ),
           child: Column(
             children: [
-              row(
-                left: "Fee",
-                right: "Graduation Project Fee",
-                leftStyle: const TextStyle(color: Color(0xFF848282), fontSize: 15, fontWeight: FontWeight.w500,fontFamily: 'Inter'),
-                rightStyle: const TextStyle(color: AppColors.accentProgramming1,fontSize: 15, fontWeight: FontWeight.w500,fontFamily: 'Inter'),
+              _row(
+                left: 'Fee',
+                right: model.fee,
+                leftStyle: const TextStyle(
+                    color: Color(0xFF848282),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Inter'),
+                rightStyle: const TextStyle(
+                    color: AppColors.accentProgramming1,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Inter'),
               ),
-              row(
-                left: "Semester",
-                right: "Semester 8",
-                leftStyle: const TextStyle(color: Color(0xFF848282), fontSize: 15, fontWeight: FontWeight.w500,fontFamily: 'Inter'),
-                rightStyle: const TextStyle(color: AppColors.accentProgramming1,fontSize: 15, fontWeight: FontWeight.w500,fontFamily: 'Inter'),
+              _row(
+                left: 'Semester',
+                right: model.semester,
+                leftStyle: const TextStyle(
+                    color: Color(0xFF848282),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Inter'),
+                rightStyle: const TextStyle(
+                    color: AppColors.accentProgramming1,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Inter'),
               ),
               const Divider(),
-              row(
-                left: "Total",
-                right: "5,000EGP",
+              _row(
+                left: 'Total',
+                right:
+                    '${model.totalAmount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} EGP',
                 leftStyle: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15
-                ),
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15),
                 rightStyle: const TextStyle(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18),
               ),
             ],
           ),

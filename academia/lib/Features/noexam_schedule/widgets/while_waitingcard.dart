@@ -111,7 +111,7 @@ class WhileWaitingCard extends StatelessWidget {
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) =>
-                                          const CourseScreenDetails(),
+                                           CourseScreenDetails(),
                                     ),
                                   );
                                 },

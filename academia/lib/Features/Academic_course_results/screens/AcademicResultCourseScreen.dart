@@ -1,6 +1,6 @@
+import 'package:academia/Features/Academic_results/controllers/course_results_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/course_results_controller.dart';
 import 'package:academia/Core/widgets/custom_header.dart';
 import 'package:academia/Core/widgets/shared_bottom_nav.dart';
 import '../widgets/semster_result.dart';

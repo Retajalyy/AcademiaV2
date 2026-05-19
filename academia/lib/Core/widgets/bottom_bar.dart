@@ -5,6 +5,7 @@ import 'package:academia/Features/Services/screens/services_main_screen.dart';
 import 'package:academia/Features/profile/screens/profile_page.dart';
 import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
@@ -31,7 +32,7 @@ class _BottomBarState extends State<BottomBar> {
 
   final List<Widget> pages = [
     const HomePage(),
-    const ScheduleScreen(),
+    ScheduleScreen(),
     const ServicesScreen(),
     ProfilePage(),
   ];

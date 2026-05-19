@@ -35,10 +35,12 @@ class DueFeeCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        ...fees.map((fee) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _DueFeeItem(fee: fee),
-            )),
+        ...fees.map(
+          (fee) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _DueFeeItem(fee: fee),
+          ),
+        ),
       ],
     );
   }
@@ -78,8 +80,11 @@ class _DueFeeItem extends StatelessWidget {
                     color: const Color(0xFFFAF0F1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.school_outlined,
-                      color: AppColors.fail, size: 30),
+                  child: const Icon(
+                    Icons.school_outlined,
+                    color: AppColors.fail,
+                    size: 30,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -121,7 +126,9 @@ class _DueFeeItem extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFAF0F1),
                         borderRadius: BorderRadius.circular(20),
@@ -142,19 +149,23 @@ class _DueFeeItem extends StatelessWidget {
                         onPressed: () => Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const PayementScreen()),
+                            builder: (_) => const PayementScreen(),
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 14),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           side: BorderSide(
-                              color: Colors.grey.shade400, width: 1),
+                            color: Colors.grey.shade400,
+                            width: 1,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text("Pay now",
-                            style: TextStyle(fontSize: 13)),
+                        child: const Text(
+                          "Pay now",
+                          style: TextStyle(fontSize: 13),
+                        ),
                       ),
                     ),
                   ],
@@ -164,8 +175,7 @@ class _DueFeeItem extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: const BoxDecoration(
               color: Color(0xFFFAF0F1),
               borderRadius: BorderRadius.only(
@@ -175,8 +185,11 @@ class _DueFeeItem extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.access_time_rounded,
-                    size: 17, color: AppColors.fail),
+                const Icon(
+                  Icons.access_time_rounded,
+                  size: 17,
+                  color: AppColors.fail,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(

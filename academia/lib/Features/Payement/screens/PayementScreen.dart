@@ -5,12 +5,16 @@ import '../../../Core/utilities/colors.dart';
 import 'package:academia/Features/Payement/widgets/payment_method.dart';
 import 'package:academia/Features/Payement/widgets/card_details.dart';
 import 'package:academia/Features/Payement/widgets/order_summary.dart';
+import 'package:get/get.dart';
+import 'package:academia/Features/Payement/controller/payement_controller.dart';
 
 class PayementScreen extends StatelessWidget {
   const PayementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+  final PaymentController ctrl = Get.put(PaymentController());
+
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
@@ -26,18 +30,29 @@ class PayementScreen extends StatelessWidget {
                 decoration: const BoxDecoration(
                   color: AppColors.babyblue,
                 ),
-                child: const SingleChildScrollView(
+                child:  SingleChildScrollView(
                   padding: EdgeInsets.all(16),
                   child: Column( // ✅ wrap in Column
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       PaymentMethodCard(),
                       SizedBox(height: 20),
-                      CardDetailsForm(),
-                      SizedBox(height: 20),
-                      OrderSummary(),
-                      SizedBox(height: 20),
-                      PayButton()
+                       CardDetailsForm(
+                        onCardNumberChanged: ctrl.updateCardNumber,
+                        onExpiryChanged:     ctrl.updateExpiry,
+                        onCvvChanged:        ctrl.updateCvv,
+                        onNameChanged:       ctrl.updateName,
+                      ),
+                      const SizedBox(height: 20),
+                      Obx(() => OrderSummary(model: ctrl.orderSummary.value)),
+                      const SizedBox(height: 20),
+                      Obx(
+                        () => PayButton(
+                          isLoading: ctrl.isLoading.value,
+                          totalAmount: ctrl.orderSummary.value.totalAmount,
+                          onPressed: ctrl.pay,
+                        ),
+                      ),
 
                     ],
                   ),
@@ -46,33 +61,6 @@ class PayementScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-
-      /// 🔻 BOTTOM NAV
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.babyblue,
-        selectedItemColor: const Color(0xFF2D4B94),
-        unselectedItemColor: Colors.grey,
-        currentIndex: 2,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
-            label: "Schedule",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view_rounded),
-            label: "Services",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
-        ],
       ),
     );
   }

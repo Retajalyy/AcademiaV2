@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
-import 'package:academia/Features/Registiration_admin/screens/NoRegistirationScreen.dart';
 import 'package:academia/Core/widgets/Architecture_progress.dart';
-class PlanHeader1 extends StatelessWidget {
+import 'package:academia/Features/plan_admin/screens/PlanAdminScreen.dart';
+
+class PlanHeader2 extends StatelessWidget {
   final int currentStep;
 
-  const PlanHeader1({
+  const PlanHeader2({
     super.key,
     required this.currentStep,
   });
@@ -37,7 +38,7 @@ class PlanHeader1 extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const NoRegistrationScreen(),
+                      builder: (_) => const Planadminscreen1(),
                     ),
                   );
                 },

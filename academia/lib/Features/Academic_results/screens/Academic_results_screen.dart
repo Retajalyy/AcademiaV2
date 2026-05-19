@@ -51,6 +51,7 @@ class AcademicResultsScreen extends StatelessWidget {
         ),
       ),
     );
+    
   }
 
   List<Widget> _buildSemesterList(List<SemesterResultModel> semesters) {

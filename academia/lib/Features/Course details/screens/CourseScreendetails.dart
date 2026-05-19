@@ -1,7 +1,11 @@
+// lib/Features/Course/screens/course_screen_details.dart
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../widgets/course_headr.dart';
 import '../widgets/course_stat.dart';
 import '../widgets/material_list.dart';
+import '../controllers/course_detail_controller.dart';
 import '../../../Core/utilities/colors.dart';
 
 class CourseScreenDetails extends StatelessWidget {
@@ -9,72 +13,67 @@ class CourseScreenDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Registers controller if not yet registered; returns existing one if it is.
+    final ctrl = Get.put(CourseDetailsController());
+
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
         child: Column(
           children: [
-            /// 🔵 HEADER
             const CourseHeaderDetails(),
-
-            /// 🔵 BODY
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.babyblue,
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 12,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// 📊 COURSE STATS
-                      const CourseStats(),
+                decoration: const BoxDecoration(color: AppColors.babyblue),
+                child: Obx(() {
+                  if (ctrl.errorMessage.isNotEmpty && !ctrl.isLoading.value) {
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            ctrl.errorMessage.value,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              final courseId =
+                                  (Get.arguments as Map<String, dynamic>?)?[
+                                          'courseId'] as String? ??
+                                      'default-id';
+                              ctrl.fetchDetails(courseId);
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
-                      const SizedBox(height: 20),
+                  if (ctrl.isLoading.value && ctrl.course.value == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                      /// 📁 COURSE MATERIAL
-                      const CourseMaterialList(),
-
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        CourseStats(),
+                        SizedBox(height: 20),
+                        CourseMaterialList(),
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  );
+                }),
               ),
             ),
           ],
         ),
-      ),
-
-      /// 🔻 BOTTOM NAV
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.babyblue,
-        selectedItemColor: const Color(0xFF2D4B94),
-        unselectedItemColor: Colors.grey,
-        currentIndex: 2,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
-            label: "Schedule",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.grid_view_rounded),
-            label: "Services",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
-        ],
       ),
     );
   }
