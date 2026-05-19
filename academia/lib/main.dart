@@ -1,21 +1,30 @@
-import 'package:academia/Features/Academic_course_results/screens/AcademicResultCourseScreen.dart';
+import 'package:academia/Features/Academic_results/screens/AcademicResultCourseScreen.dart';
 import 'package:academia/Core/widgets/bottom_bar.dart';
 import 'package:academia/Features/Academic_results/screens/Academic_results_screen.dart';
 import 'package:academia/Features/Assessments/screens/AssessmentScreen.dart';
-import 'package:academia/Features/Course%20details/screens/CourseScreendetails.dart';
+import 'package:academia/Features/Course/screens/CourseScreendetails.dart';
 import 'package:academia/Features/Course/screens/CourseScreen.dart';
 import 'package:academia/Features/Fees/screens/FeesScreen.dart';
 import 'package:academia/Features/Payement/screens/PayementScreen.dart';
 import 'package:academia/Features/Registiration_admin/screens/NoRegistirationScreen.dart';
-import 'package:academia/Features/Registiration_admin/screens/RegistirationScreen.dart';
+import 'package:academia/Features/Registration/screens/registration_screen.dart';
 import 'package:academia/Features/Splash/screens/splash_screen.dart';
-import 'package:academia/Features/noexam_schedule/screens/exam_Schedule_screen2.dart';
-import 'package:academia/Features/noexam_schedule/screens/exam_Schedule_screen.dart';
+import 'package:academia/Features/Exam_schedule/screens/exam_Schedule_screen.dart';
+import 'package:academia/Features/Exam_schedule/screens/no_exam_screen.dart';
 import 'package:academia/Features/profile/screens/profile_page.dart';
 import 'package:academia/Features/schedule/screens/schedule_screen.dart';
 import 'Features/Dashboard_admin/screens/Dashboard_screen.dart';
 import 'Features/AccountSettings_admin/screens/AccountSettingScreen.dart';
 import 'Features/plan_admin/screens/PlanAdminScreen.dart';
+import 'Features/plan_admin/screens/PlanAdmin2Screen .dart';
+import 'Features/plan_admin/screens/PlanAdmin3Screen .dart';
+import 'Features/Fees_admin/screens/FeesAdminScreen.dart';
+import 'package:academia/Features/course_admin/screens/course_admin_screen.dart';
+import 'Features/exam_results_admin/screens/exam_results_screen.dart';
+import 'Features/exam_results_admin/bindings/exam_results_binding.dart';
+
+import 'Features/Registiration_admin/screens/RegistirationScreen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -81,11 +90,11 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/noexam',
-          page: () => ExamScheduleScreen(),
+          page: () => NoExamScheduleScreen(),
         ),
         GetPage(
           name: '/exam',
-          page: () => ExamScheduleScreen2(),
+          page: () => ExamScheduleScreen(),
         ),
         GetPage(
           name: '/assesments',
@@ -139,17 +148,37 @@ class MyApp extends StatelessWidget {
         ),
          GetPage(
           name: '/NoregistirationAdmin',
-          page: () => NoRegistrationScreen(),
+          page: () => NoRegistrationAdminScreen(),
         ),
           GetPage(
           name: '/registirationAdmin',
-          page: () => RegistrationScreen(), 
+          page: () => RegistrationAdminScreen(), 
         ),
          GetPage(
           name: '/planAdmin1',
           page: () => Planadminscreen1(), 
         ),
-        
+        GetPage(
+          name: '/planAdmin2',
+          page: () => Planadminscreen2(), 
+        ),
+         GetPage(
+          name: '/planAdmin3',
+          page: () => Planadminscreen3(), 
+        ),
+        GetPage(
+          name: '/FeeAdmin',
+          page: () => FeesAdminScreen(), 
+        ),
+         GetPage(
+          name: '/courseAdmin',
+          page: () => CourseAdminScreen(), 
+        ),
+        GetPage(
+  name: '/examResultsAdmin',
+  page: () => const ExamResultsAdminScreen(),
+  binding: ExamResultsBinding(),
+),
         GetPage(
   name: '/app',
   page: () => const BottomBar(),

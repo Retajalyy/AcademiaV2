@@ -1,3 +1,5 @@
+// lib/Features/plan_admin/widgets/major_selection.dart
+
 import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -10,8 +12,7 @@ class MajorSelectorWidget extends StatefulWidget {
   });
 
   @override
-  State<MajorSelectorWidget> createState() =>
-      _MajorSelectorWidgetState();
+  State<MajorSelectorWidget> createState() => _MajorSelectorWidgetState();
 }
 
 class _MajorSelectorWidgetState extends State<MajorSelectorWidget> {
@@ -44,16 +45,12 @@ class _MajorSelectorWidgetState extends State<MajorSelectorWidget> {
             final isSelected = selectedMajor == major;
 
             return InkWell(
-              onTap: major == "Software Engineering"
-                  ? () {
-                      setState(() {
-                        selectedMajor = major;
-                      });
-
-                      widget.onMajorSelected(major);
-                    }
-                  : null, // only Software Engineering clickable
-
+              onTap: () {
+                setState(() {
+                  selectedMajor = major;
+                });
+                widget.onMajorSelected(major);
+              },
               child: Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(16),

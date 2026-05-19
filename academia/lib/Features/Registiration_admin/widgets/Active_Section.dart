@@ -1,15 +1,18 @@
-// lib/Features/registration/widgets/active_plans_section.dart
+// lib/Features/Registiration_admin/widgets/Active_Section.dart
 
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
-import 'package:academia/Features/Registiration_admin/widgets/semster_card.dart';
+import '../controller/registiration_controller.dart';
+import 'semster_card.dart';
 
 class ActivePlansSection extends StatelessWidget {
   const ActivePlansSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<RegistrationController>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -24,9 +27,7 @@ class ActivePlansSection extends StatelessWidget {
                 letterSpacing: 0.5,
               ),
             ),
-
             const Spacer(),
-
             TextButton(
               onPressed: () {},
               style: TextButton.styleFrom(
@@ -47,31 +48,43 @@ class ActivePlansSection extends StatelessWidget {
 
         const SizedBox(height: 10),
 
-        const SemesterCard(
-          title: "Semester 8 · Spring 2026",
-          faculty: "FCI · Year 4 · Software Engineering",
-          progress: 0.70,
-          progressText: "70/90 students",
-          courses: "6",
-          enrolled: "80%",
-          groups: "3",
-          openDate: "April 20, 2026",
-          closeDate: "May 1, 2026",
-        ),
+        /// Reactive list — rebuilds only when activePlans changes
+        Obx(() {
+          final plans = controller.activePlans;
 
-        const SizedBox(height: 14),
+          if (plans.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  "No active plans",
+                  style: TextStyle(color: AppColors.smalltext),
+                ),
+              ),
+            );
+          }
 
-        const SemesterCard(
-          title: "Semester 8 · Spring 2026",
-          faculty: "FCI · Year 4 · Cyber Security",
-          progress: 0.48,
-          progressText: "50/110 students",
-          courses: "6",
-          enrolled: "48%",
-          groups: "2",
-          openDate: "April 20, 2026",
-          closeDate: "May 1, 2026",
-        ),
+          return ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: plans.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 14),
+            itemBuilder: (context, index) {
+              final plan = plans[index];
+              return SemesterCard(
+                title: plan.title,
+                faculty: plan.faculty,
+                progress: plan.progress,
+                progressText: plan.progressText,
+                courses: plan.courses,
+                enrolled: plan.enrolled,
+                groups: plan.groups,
+                openDate: plan.openDate,
+                closeDate: plan.closeDate,
+              );
+            },
+          );
+        }),
       ],
     );
   }

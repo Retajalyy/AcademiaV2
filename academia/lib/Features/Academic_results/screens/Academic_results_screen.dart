@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/results_controller.dart';
 import '../models/semester_result_model.dart';
-import 'package:academia/Core/widgets/custom_header.dart';
-import 'package:academia/Core/widgets/shared_bottom_nav.dart';
 import '../widgets/gpa_card.dart';
 import '../widgets/result_semseter.dart';
 import '../../../Core/utilities/colors.dart';
+import '../../../Core/widgets/shared_bottom_nav.dart';
+import '../../../Core/widgets/custom_header.dart';
 
 class AcademicResultsScreen extends StatelessWidget {
   const AcademicResultsScreen({super.key});
@@ -51,7 +51,6 @@ class AcademicResultsScreen extends StatelessWidget {
         ),
       ),
     );
-    
   }
 
   List<Widget> _buildSemesterList(List<SemesterResultModel> semesters) {
@@ -75,7 +74,11 @@ class AcademicResultsScreen extends StatelessWidget {
         onTap: sem.isPublished
             ? () => Get.toNamed(
                   '/academicresultscourses',
-                  arguments: {'id': sem.id, 'label': '${sem.label} · ${sem.yearLabel}'},
+                  arguments: {
+                    'id':        sem.id,
+                    'label':     sem.label,
+                    'yearLabel': sem.yearLabel,
+                  },
                 )
             : null,
       ));

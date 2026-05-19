@@ -15,6 +15,8 @@ class CourseResultsController extends GetxController {
   var courseResults = <CourseResultModel>[].obs;
   var gpa           = 0.0.obs;
   var isLoading     = true.obs;
+  var hasError      = false.obs;
+  var errorMessage  = ''.obs;
 
   @override
   void onInit() {
@@ -22,8 +24,12 @@ class CourseResultsController extends GetxController {
     _load();
   }
 
+  Future<void> retry() => _load();
+
   Future<void> _load() async {
-    isLoading.value = true;
+    isLoading.value  = true;
+    hasError.value   = false;
+    errorMessage.value = '';
     try {
       courseResults.value = await _service.getCourseResults(semesterResultId);
       if (courseResults.isNotEmpty) {
@@ -31,7 +37,8 @@ class CourseResultsController extends GetxController {
             courseResults.length;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load course results: $e');
+      hasError.value = true;
+      errorMessage.value = 'Failed to load course results: $e';
     } finally {
       isLoading.value = false;
     }

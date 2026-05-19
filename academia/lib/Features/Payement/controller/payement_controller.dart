@@ -3,7 +3,7 @@ import 'package:academia/Features/Payement/model/payement_card_model.dart';
 import 'package:academia/Features/Payement/model/order_summary_model.dart';
 import 'package:academia/Features/Payement/model/payement_status_model.dart';
 import 'package:academia/Features/Payement/service/payement_service.dart';
-import 'package:academia/Features/Payement_status/screens/PayementStatusScreen.dart';
+import 'package:academia/Features/Payement/screens/PayementStatusScreen.dart';
 
 class PaymentController extends GetxController {
   final PaymentService _service = PaymentService();

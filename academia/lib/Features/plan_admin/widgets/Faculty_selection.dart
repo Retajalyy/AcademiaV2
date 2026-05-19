@@ -1,3 +1,5 @@
+// lib/Features/plan_admin/widgets/Faculty_selection.dart
+
 import 'package:flutter/material.dart';
 import 'package:academia/Core/utilities/colors.dart';
 
@@ -14,8 +16,7 @@ class FacultySelectionWidget extends StatefulWidget {
       _FacultySelectionWidgetState();
 }
 
-class _FacultySelectionWidgetState
-    extends State<FacultySelectionWidget> {
+class _FacultySelectionWidgetState extends State<FacultySelectionWidget> {
   int? _selectedIndex;
 
   final List<String> _faculties = [
@@ -31,20 +32,9 @@ class _FacultySelectionWidgetState
   ];
 
   void _onFacultyTap(int index) {
-    // ✅ ONLY allow Computers & Information
-    if (index != 0) return;
-
     setState(() {
       _selectedIndex = index;
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Selected: ${_faculties[index]}'),
-        duration: const Duration(milliseconds: 800),
-      ),
-    );
-
     widget.onFacultySelected();
   }
 
@@ -55,9 +45,7 @@ class _FacultySelectionWidgetState
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: isSelected
-              ? AppColors.accentAI
-              : Colors.grey.shade300,
+          color: isSelected ? AppColors.accentAI : Colors.grey.shade300,
           width: isSelected ? 4 : 1,
         ),
       ),
@@ -84,10 +72,7 @@ class _FacultySelectionWidgetState
         color: const Color(0XFFDDEDFA),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(
-        icon,
-        color: AppColors.accentProgramming1,
-      ),
+      child: Icon(icon, color: AppColors.accentProgramming1),
     );
   }
 
@@ -111,7 +96,6 @@ class _FacultySelectionWidgetState
         Column(
           children: List.generate(_faculties.length, (index) {
             final isSelected = _selectedIndex == index;
-
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: InkWell(
@@ -126,7 +110,6 @@ class _FacultySelectionWidgetState
                     children: [
                       _buildIconContainer(_icons[index]),
                       const SizedBox(width: 12),
-
                       Expanded(
                         child: Text(
                           _faculties[index],
@@ -136,7 +119,6 @@ class _FacultySelectionWidgetState
                           ),
                         ),
                       ),
-
                       _buildSelectionCircle(isSelected),
                     ],
                   ),

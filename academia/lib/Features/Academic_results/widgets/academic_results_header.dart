@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
+import 'package:academia/Features/Services/screens/services_main_screen.dart';
 
 class AcademicResultsHeader extends StatelessWidget {
   const AcademicResultsHeader({super.key});
@@ -10,7 +11,7 @@ class AcademicResultsHeader extends StatelessWidget {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
-      height: screenHeight * 0.23, // ✅ responsive height
+      height: screenHeight * 0.24, // ✅ responsive height
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         horizontal: 20,
@@ -24,10 +25,20 @@ class AcademicResultsHeader extends StatelessWidget {
           children: [
 
             // Top Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Icon(Icons.arrow_back, color: Colors.white, size: 28),
+           Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white,size: 28),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ServicesScreen(),
+                    ),
+                  );
+                },
+              ),
                 Icon(Icons.notifications, color: Colors.white, size: 28),
               ],
             ),

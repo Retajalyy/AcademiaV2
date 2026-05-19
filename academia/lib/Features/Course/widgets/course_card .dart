@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:academia/Core/utilities/colors.dart';
-import 'package:academia/Features/Course%20details/screens/CourseScreendetails.dart';
+import 'package:academia/Features/Course/screens/CourseScreendetails.dart';
 
 class CourseCard extends StatelessWidget {
   final String title;
@@ -23,9 +23,6 @@ class CourseCard extends StatelessWidget {
   });
 
   bool get _isCore => type.toLowerCase() == 'core';
-
-  Color get _accentColor =>
-      _isCore ? AppColors.primaryBlue : AppColors.secondaryYellow;
 
   Color get _accentBg =>
       _isCore ? AppColors.lightblue : AppColors.LightYellow;

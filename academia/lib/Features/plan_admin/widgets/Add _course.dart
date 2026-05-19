@@ -1,5 +1,9 @@
+// lib/Features/plan_admin/widgets/Add _course.dart
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
+import '../controller/plan_admin_controller.dart';
 
 class CourseModel {
   final String name;
@@ -18,59 +22,57 @@ class CourseModel {
 }
 
 class AddCoursesWidget extends StatefulWidget {
-  final VoidCallback onCloudSelected;
-
-  const AddCoursesWidget({
-    super.key,
-    required this.onCloudSelected,
-  });
+  const AddCoursesWidget({super.key});
 
   @override
   State<AddCoursesWidget> createState() => _AddCoursesWidgetState();
 }
 
 class _AddCoursesWidgetState extends State<AddCoursesWidget> {
-  bool isCloudSelected = false;
+  // Track selected state for ALL courses
+  final Set<String> _selectedCourses = {};
+
+  final List<CourseModel> courses = [
+    CourseModel(
+      name: "Cloud Computing",
+      type: "Core",
+      credits: 3,
+      icon: Icons.storage_rounded,
+      themeColor: const Color(0xFFDDEDFA),
+    ),
+    CourseModel(
+      name: "Internet of Things",
+      type: "Core",
+      credits: 3,
+      icon: Icons.language_rounded,
+      themeColor: const Color(0xFFDDEDFA),
+    ),
+    CourseModel(
+      name: "SW Quality and Analysis",
+      type: "Core",
+      credits: 3,
+      icon: Icons.manage_search_rounded,
+      themeColor: const Color(0xFFDDEDFA),
+    ),
+    CourseModel(
+      name: "Digital Marketing",
+      type: "Elective",
+      credits: 2,
+      icon: Icons.image_aspect_ratio_rounded,
+      themeColor: const Color(0xFFFFF3DF),
+    ),
+    CourseModel(
+      name: "Principles of Economics",
+      type: "Elective",
+      credits: 2,
+      icon: Icons.trending_up_rounded,
+      themeColor: const Color(0xFFFFF3DF),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final List<CourseModel> courses = [
-      CourseModel(
-        name: "Cloud Computing",
-        type: "Core",
-        credits: 3,
-        icon: Icons.storage_rounded,
-        themeColor: const Color(0xFFDDEDFA),
-      ),
-      CourseModel(
-        name: "Internet of Things",
-        type: "Core",
-        credits: 3,
-        icon: Icons.language_rounded,
-        themeColor: const Color(0xFFDDEDFA),
-      ),
-      CourseModel(
-        name: "SW Quality and Analysis",
-        type: "Core",
-        credits: 3,
-        icon: Icons.manage_search_rounded,
-        themeColor: const Color(0xFFDDEDFA),
-      ),
-      CourseModel(
-        name: "Digital Marketing",
-        type: "Elective",
-        credits: 2,
-        icon: Icons.image_aspect_ratio_rounded,
-        themeColor: const Color(0xFFFFF3DF),
-      ),
-      CourseModel(
-        name: "Principles of Economics",
-        type: "Elective",
-        credits: 2,
-        icon: Icons.trending_up_rounded,
-        themeColor: const Color(0XFFFFF3DF),
-      ),
-    ];
+    final c = Get.find<PlanAdminController>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,10 +91,10 @@ class _AddCoursesWidgetState extends State<AddCoursesWidget> {
 
             const SizedBox(width: 10),
 
-            if (isCloudSelected)
-              const Text(
-                ". 1 SELECTED",
-                style: TextStyle(
+            if (_selectedCourses.isNotEmpty)
+              Text(
+                ". ${_selectedCourses.length} SELECTED",
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Color(0XFFB18334),
@@ -111,9 +113,7 @@ class _AddCoursesWidgetState extends State<AddCoursesWidget> {
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final course = courses[index];
-
-            final bool isCloud = course.name == "Cloud Computing";
-            final bool isSelected = isCloudSelected && isCloud;
+            final bool isSelected = _selectedCourses.contains(course.name);
 
             final Color accentColor = course.type == "Core"
                 ? AppColors.accentProgramming1
@@ -139,11 +139,7 @@ class _AddCoursesWidgetState extends State<AddCoursesWidget> {
                       color: course.themeColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
-                      course.icon,
-                      color: accentColor,
-                      size: 28,
-                    ),
+                    child: Icon(course.icon, color: accentColor, size: 28),
                   ),
 
                   const SizedBox(width: 16),
@@ -173,31 +169,30 @@ class _AddCoursesWidgetState extends State<AddCoursesWidget> {
                     ),
                   ),
 
+                  // ✅ All courses tappable
                   GestureDetector(
-                    onTap: isCloud
-                        ? () {
-                            setState(() {
-                              isCloudSelected = !isCloudSelected;
-                            });
-
-                            if (isCloudSelected) {
-                              widget.onCloudSelected();
-                            }
-                          }
-                        : null,
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedCourses.remove(course.name);
+                        } else {
+                          _selectedCourses.add(course.name);
+                        }
+                      });
+                      // Show assign button if any course is selected
+                      c.showAssignButton.value = _selectedCourses.isNotEmpty;
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.accentProgramming1 // DARK BLUE SELECTED
-                            : course.themeColor, // NORMAL STATE
+                            ? AppColors.accentProgramming1
+                            : course.themeColor,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         isSelected ? Icons.check : Icons.add,
-                        color: isSelected
-                            ? Colors.white // WHITE CHECK WHEN SELECTED
-                            : accentColor, // NORMAL COLOR
+                        color: isSelected ? Colors.white : accentColor,
                         size: 20,
                       ),
                     ),

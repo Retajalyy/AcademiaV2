@@ -37,7 +37,7 @@ class PlanHeader1 extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const NoRegistrationScreen(),
+                      builder: (_) => const NoRegistrationAdminScreen(),
                     ),
                   );
                 },

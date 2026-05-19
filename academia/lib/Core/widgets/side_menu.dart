@@ -2,7 +2,9 @@ import 'package:academia/Features/Registiration_admin/screens/NoRegistirationScr
 import 'package:flutter/material.dart';
 import '../utilities/colors.dart';
 import 'package:academia/Features/Dashboard_admin/screens/Dashboard_screen.dart';
-
+import 'package:academia/Features/Fees_admin/screens/FeesAdminScreen.dart';
+import 'package:academia/Features/course_admin/screens/course_admin_screen.dart';
+import 'package:academia/Features/exam_results_admin/screens/exam_results_screen.dart';
 class SideMenu extends StatefulWidget {
   final String activeItem;
 
@@ -145,7 +147,7 @@ class _SideMenuState extends State<SideMenu> {
                         icon: Icons.edit_square,
                         title: "Registration",
                         active: widget.activeItem == "Registration",
-                        onTap: () => _navigate(context, const NoRegistrationScreen()),
+                        onTap: () => _navigate(context, const NoRegistrationAdminScreen()),
                       ),
 
                       /// ACADEMIC WITH EXPAND
@@ -176,16 +178,12 @@ class _SideMenuState extends State<SideMenu> {
                             SubMenuItem(
                               title: "Courses",
                               active: widget.activeItem == "Courses",
-                              onTap: () {
-                                // _navigate(context, const CoursesScreen());
-                              },
+                              onTap: () => _navigate(context, const CourseAdminScreen()),
                             ),
                             SubMenuItem(
                               title: "Exam Results",
                               active: widget.activeItem == "Exam Results",
-                              onTap: () {
-                                // _navigate(context, const ExamResultsScreen());
-                              },
+                             onTap: () => _navigate(context, const ExamResultsAdminScreen()),
                             ),
                           ],
                         ),
@@ -196,9 +194,7 @@ class _SideMenuState extends State<SideMenu> {
                         icon: Icons.credit_card_outlined,
                         title: "Fees & Payments",
                         active: widget.activeItem == "Fees & Payments",
-                        onTap: () {
-                          // _navigate(context, const FeesScreen());
-                        },
+                        onTap: () => _navigate(context, const FeesAdminScreen()),
                       ),
 
                       /// SCHEDULES WITH EXPAND

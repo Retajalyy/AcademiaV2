@@ -1,101 +1,88 @@
+// lib/Features/plan_admin/screens/PlanAdminScreen.dart
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:academia/Features/plan_admin/widgets/planAdminHeader.dart';
 import 'package:academia/Features/plan_admin/widgets/Faculty_selection.dart';
 import 'package:academia/Features/plan_admin/widgets/select_level.dart';
 import 'package:academia/Features/plan_admin/widgets/major_selection.dart';
 import 'package:academia/Features/plan_admin/widgets/Add%20_course.dart';
 import 'package:academia/Features/plan_admin/widgets/Assign_button.dart';
+import '../controller/plan_admin_controller.dart';
 import '../../../Core/utilities/colors.dart';
 
-class Planadminscreen1 extends StatefulWidget {
+class Planadminscreen1 extends StatelessWidget {
   const Planadminscreen1({super.key});
 
   @override
-  State<Planadminscreen1> createState() =>
-      _Planadminscreen1State();
-}
-
-class _Planadminscreen1State extends State<Planadminscreen1> {
-  bool showLevel = false;
-  bool showMajor = false;
-  bool showCourses = false;
-  bool showAddPlan = false;
-
-  @override
   Widget build(BuildContext context) {
+    if (!Get.isRegistered<PlanAdminController>()) {
+      Get.put(PlanAdminController(), permanent: true);
+    }
+    final c = Get.find<PlanAdminController>();
+
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
         child: Column(
           children: [
-            /// HEADER
             const PlanHeader1(currentStep: 1),
 
-            /// BODY
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.babyblue,
-                ),
+                decoration: const BoxDecoration(color: AppColors.babyblue),
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// FACULTY
-                      FacultySelectionWidget(
-                        onFacultySelected: () {
-                          setState(() {
-                            showLevel = true;
-                          });
-                        },
-                      ),
+                  child: Obx(() {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
 
-                      const SizedBox(height: 20),
-
-                      /// LEVEL
-                      if (showLevel)
-                        LevelSelectorWidget(
-                          onLevelConfirmed: () {
-                            setState(() {
-                              showMajor = true;
-                            });
+                        /// STEP 1 — always visible
+                        FacultySelectionWidget(
+                          onFacultySelected: () {
+                            c.showLevel.value = true;
                           },
                         ),
 
-                      const SizedBox(height: 20),
+                        /// STEP 2 — appears after faculty selected
+                        if (c.showLevel.value) ...[
+                          const SizedBox(height: 20),
+                          LevelSelectorWidget(
+                            onLevelConfirmed: () {
+                              c.showMajor.value = true;
+                            },
+                          ),
+                        ],
 
-                      /// MAJOR
-                      if (showMajor)
-                        MajorSelectorWidget(
-                          onMajorSelected: (major) {
-                            setState(() {
-                              showCourses =
+                        /// STEP 3 — appears after level selected
+                        if (c.showMajor.value) ...[
+                          const SizedBox(height: 20),
+                          MajorSelectorWidget(
+                            onMajorSelected: (major) {
+                              c.showCourses.value =
                                   major == "Software Engineering";
-                            });
-                          },
-                        ),
+                              c.showAssignButton.value = false;
+                            },
+                          ),
+                        ],
 
-                      const SizedBox(height: 20),
+                        /// STEP 4 — appears after major selected
+                        if (c.showCourses.value) ...[
+                          const SizedBox(height: 20),
+                          const AddCoursesWidget(),
+                        ],
 
-                      /// COURSES
-                      if (showCourses)
-                        AddCoursesWidget(
-                          onCloudSelected: () {
-                            setState(() {
-                              showAddPlan = true;
-                            });
-                          },
-                        ),
+                        /// STEP 5 — appears after cloud course selected
+                        if (c.showAssignButton.value) ...[
+                          const SizedBox(height: 20),
+                          const AddNewPlan(),
+                        ],
 
-                      const SizedBox(height: 20),
-
-                      /// BUTTON (ONLY AFTER CLOUD SELECTION)
-                      if (showAddPlan)
-                        const AddNewPlan(),
-                    ],
-                  ),
+                      ],
+                    );
+                  }),
                 ),
               ),
             ),

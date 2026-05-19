@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
-import 'package:academia/Features/plan_admin2/screens/PlanAdmin2Screen .dart';
+import 'package:academia/Features/plan_admin/screens/PlanAdmin2Screen .dart';
 
 class AddNewPlan extends StatelessWidget {
   const AddNewPlan({super.key});
