@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:academia/Core/utilities/colors.dart';
 
 class DegreeProgressCard extends StatelessWidget {
   final int completedCredits;
@@ -14,8 +15,10 @@ class DegreeProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double completedRatio = completedCredits / totalCredits;
-    final double remainingRatio = remainingCredits / totalCredits;
+    final double completedRatio =
+        totalCredits > 0 ? completedCredits / totalCredits : 0;
+    final double remainingRatio =
+        totalCredits > 0 ? remainingCredits / totalCredits : 0;
     final int percent = (completedRatio * 100).round();
 
     return Container(
@@ -25,7 +28,7 @@ class DegreeProgressCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -34,9 +37,10 @@ class DegreeProgressCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Top row: percent + credits pill ──────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,38 +50,51 @@ class DegreeProgressCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A2E),
+                      color: AppColors.primaryBlue,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     'Toward graduation',
                     style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                   ),
                 ],
               ),
-              Text(
-                '$completedCredits/$totalCredits credits',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A2E),
+              // Credits pill
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.lightblue,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$completedCredits/$totalCredits credits',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryBlue,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 22),
+
+          const SizedBox(height: 24),
+
+          // ── Progress rows ─────────────────────────────────────────────
           _ProgressRow(
             label: 'Completed credits',
             value: completedCredits,
             ratio: completedRatio,
-            color: const Color(0xFF1A1A2E),
+            color: AppColors.primaryBlue,
           ),
           const SizedBox(height: 16),
           _ProgressRow(
             label: 'Remaining credits',
             value: remainingCredits,
             ratio: remainingRatio,
-            color: const Color(0xFFFFCC00),
+            color: AppColors.secondaryYellow,
           ),
         ],
       ),
@@ -107,7 +124,14 @@ class _ProgressRow extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(width: 11, height: 11, color: color),
+                Container(
+                  width: 11,
+                  height: 11,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   label,
@@ -120,7 +144,7 @@ class _ProgressRow extends StatelessWidget {
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
-                color: Color(0xFF1A1A2E),
+                color: AppColors.primaryBlue,
               ),
             ),
           ],

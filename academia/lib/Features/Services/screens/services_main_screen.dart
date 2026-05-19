@@ -40,10 +40,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            CustomHeader(                                    
+            const CustomHeader(
               title: 'Services',
               description: 'Access your academic services quickly',
-              icon: Icons.notifications_outlined,
+              showBackButton: false,
             ),
             Expanded(
               child: _controller.isLoading

@@ -5,8 +5,8 @@ class SupabaseService {
 
   static Future<void> init() async {
     await Supabase.initialize(
-      url: 'https://fwyixcaqfhveqzjmgnuq.supabase.co',
-      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3eWl4Y2FxZmh2ZXF6am1nbnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NjcxNTcsImV4cCI6MjA5MjE0MzE1N30._B5SPenba3r3DO21GsNU_QqtIDZYCyRok0Lxo_ICzo4',
+      url: 'https://szwutxelehqzzmccpodg.supabase.co',
+      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6d3V0eGVsZWhxenptY2Nwb2RnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NzYyODAsImV4cCI6MjA5NDM1MjI4MH0.7VnoCCSjjuu86Y1Zd2pVjra3jVhmUSYEeP-6jTnooZk',
     );
 
     client = Supabase.instance.client;

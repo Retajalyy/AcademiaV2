@@ -1,87 +1,73 @@
 import 'package:flutter/material.dart';
-import '../widgets/course_headr.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
-import 'package:academia/Features/Course/widgets/search_bar.dart';
-import 'package:academia/Features/Course/widgets/course_card .dart';// ✅ IMPORT YOUR CARD
+import '../controllers/course_controller.dart';
+import 'package:academia/Core/widgets/custom_header.dart';
+import 'package:academia/Core/widgets/shared_bottom_nav.dart';
+import '../widgets/search_bar.dart';
+import '../widgets/course_card .dart';
 
 class CourseScreen extends StatelessWidget {
   const CourseScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(CourseController());
+
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
+      bottomNavigationBar: const SharedBottomNav(),
       body: SafeArea(
         child: Column(
           children: [
-            /// 🔵 HEADER
-            const courseHeader(),
-
-            /// 🔵 BODY
+            const CustomHeader(
+              title: 'Courses',
+              description: 'View and manage your courses',
+            ),
             Expanded(
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: const BoxDecoration(
-                  color: AppColors.babyblue,
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// 🔍 SEARCH
-                      const SearchBarWidget(),
-
-                      const SizedBox(height: 18),
-
-                      /// 📚 COURSES
-                      const CourseCard(
-                        title: "Cloud Computing",
-                        doctor: "Dr. Youssef Senousy",
-                        type: "Core",
-                        credits: "3 credits",
-                        day: "Sunday",
-                        time: "11:00 - 12:00",
-                        location: "Room B3",
-                        color: AppColors.accentProgramming1,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      const CourseCard(
-                        title: "Digital Marketing",
-                        doctor: "Dr. Kholoud Farag",
-                        type: "Elective",
-                        credits: "2 credits",
-                        day: "Monday",
-                        time: "11:00 - 12:00",
-                        location: "Lab 1",
-                        color: AppColors.accentAI,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      const CourseCard(
-                        title: "Design Patterns",
-                        doctor: "Dr. Marwa Ahmed",
-                        type: "Core",
-                        credits: "3 credits",
-                        day: "Tuesday",
-                        time: "11:00 - 12:00",
-                        location: "Room B3",
-                        color: AppColors.accentProgramming1,
-                      ),
-                    ],
-                  ),
+                decoration: const BoxDecoration(color: AppColors.babyblue),
+                child: Column(
+                  children: [
+                    const SearchBarWidget(),
+                    const SizedBox(height: 18),
+                    Expanded(
+                      child: Obx(() {
+                        if (controller.isLoading.value) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (controller.courses.isEmpty) {
+                          return const Center(
+                            child: Text('No courses found', style: TextStyle(color: Colors.grey)),
+                          );
+                        }
+                        return ListView.separated(
+                          itemCount: controller.courses.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            final course = controller.courses[index];
+                            return CourseCard(
+                              title:    course.title,
+                              doctor:   course.doctor,
+                              type:     course.type,
+                              credits:  course.credits,
+                              day:      course.day,
+                              time:     course.time,
+                              location: course.location,
+                            );
+                          },
+                        );
+                      }),
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
       ),
-
-   
-      
     );
   }
 }

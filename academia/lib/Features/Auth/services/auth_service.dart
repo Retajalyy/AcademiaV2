@@ -1,51 +1,118 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:academia/Features/Auth/models/auth_user_model.dart';
 
 class AuthService {
-  final supabase = Supabase.instance.client;
+  final _supabase = Supabase.instance.client;
 
-
-  Future<bool> login(String uniId, String password) async {
+  Future<AuthUserModel> login(String uniId, String password) async {
     try {
-      // 1. Get email using uni_id
-      final userData = await supabase
+      // ═══════════════════════════════════════════════════
+      // STEP 1: Find the email associated with the University ID
+      // ═══════════════════════════════════════════════════
+      
+      final dynamic searchResult = await _supabase
           .from('profiles')
           .select('email')
           .eq('uni_id', uniId)
           .maybeSingle();
 
-      if (userData == null) {
-        print("❌ LOGIN FAILED: University ID not found");
-        return false;
+      print('🔍 searchResult runtime type: ${searchResult.runtimeType}');
+      print('🔍 searchResult value: $searchResult');
+
+      if (searchResult == null) {
+        throw Exception('University ID not found.');
       }
 
-      final email = userData['email'];
+      if (searchResult is! Map<String, dynamic>) {
+        throw Exception('Unexpected data format: ${searchResult.runtimeType}');
+      }
 
-      // 2. Login with Supabase Auth
-      final response = await supabase.auth.signInWithPassword(
+      final email = searchResult['email'] as String?;
+      print('✉️ Extracted email: $email');
+
+      if (email == null || email.isEmpty) {
+        throw Exception('Email not found for this University ID.');
+      }
+
+      // ═══════════════════════════════════════════════════
+      // STEP 2: Authenticate with Supabase Auth
+      // ═══════════════════════════════════════════════════
+      
+      final authResponse = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
-      if (response.user != null) {
-        print("✅ LOGIN SUCCESS for uni_id: $uniId");
-        return true;
-      } else {
-        print("❌ LOGIN FAILED: Wrong password");
-        return false;
+      print('🔐 authResponse type: ${authResponse.runtimeType}');
+      print('🔐 authResponse.user: ${authResponse.user}');
+      print('🔐 authResponse.user?.id: ${authResponse.user?.id}');
+
+      final user = authResponse.user;
+      if (user == null) {
+        throw Exception('Authentication failed - user is null.');
       }
-    } catch (e) {
-      print("❌ LOGIN ERROR: $e");
-      return false;
+
+      if (user.id.isEmpty) {
+        throw Exception('Authentication failed - user ID is empty.');
+      }
+
+      // ═══════════════════════════════════════════════════
+      // STEP 3: Fetch full profile details
+      // ═══════════════════════════════════════════════════
+      
+      final dynamic profileData = await _supabase
+          .from('profiles')
+          .select('id, uni_id, fname, lname, role, email, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+      print('📊 profileData runtime type: ${profileData.runtimeType}');
+      print('📊 profileData value: $profileData');
+
+      if (profileData is! Map<String, dynamic>) {
+        throw Exception('Profile data is not a map: ${profileData.runtimeType}');
+      }
+
+      // Verify all required fields exist before fromMap
+      final requiredFields = ['id', 'uni_id', 'fname', 'lname', 'role', 'email'];
+      for (final field in requiredFields) {
+        if (!profileData.containsKey(field)) {
+          throw Exception('Missing required field in profile data: $field');
+        }
+        print('✅ Field $field: ${profileData[field]}');
+      }
+
+      return AuthUserModel.fromMap(profileData);
+
+    } on AuthException catch (e) {
+      print('❌ AuthException: ${e.message}');
+      switch (e.message) {
+        case 'Invalid login credentials':
+          throw Exception('Incorrect password. Please try again.');
+        case 'Email not confirmed':
+          throw Exception('Account not activated. Please verify your email.');
+        default:
+          throw Exception(e.message);
+      }
+    } on PostgrestException catch (e) {
+      print('❌ PostgrestException: ${e.message}');
+      throw Exception('Database error: ${e.message}');
+    } catch (e, stackTrace) {
+      print('❌ Unexpected error: $e');
+      print('📚 Stack trace:\n$stackTrace');
+      throw Exception('An unexpected error occurred: $e');
     }
   }
 
-  /// 🚪 Logout
   Future<void> logout() async {
-    await supabase.auth.signOut();
+    try {
+      await _supabase.auth.signOut();
+    } catch (e) {
+      throw Exception('Logout failed: $e');
+    }
   }
 
-  /// 👤 Current user
-  User? getCurrentUser() {
-    return supabase.auth.currentUser;
-  }
+  String? get currentUserId => _supabase.auth.currentUser?.id;
+  bool get isLoggedIn => _supabase.auth.currentUser != null;
+  User? get currentUser => _supabase.auth.currentUser;
 }

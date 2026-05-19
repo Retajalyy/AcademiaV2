@@ -1,134 +1,107 @@
 import 'package:flutter/material.dart';
-import '../widgets/Assessment_headr.dart';
+import 'package:get/get.dart';
+import '../../../Core/utilities/colors.dart';
+import '../controllers/assessment_controller.dart';
+import 'package:academia/Core/widgets/custom_header.dart';
+import 'package:academia/Core/widgets/shared_bottom_nav.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/stats_card.dart';
 import '../widgets/course_card.dart';
-import '../../../Core/utilities/colors.dart';
 
 class Assessmentscreen extends StatelessWidget {
   const Assessmentscreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(AssessmentController());
+
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
+      bottomNavigationBar: const SharedBottomNav(),
       body: SafeArea(
         child: Column(
           children: [
-            /// 🔵 HEADER
-            const AssessmentHeader(),
-
-            /// 🔵 BODY
+            const CustomHeader(
+              title: 'Assessments',
+              description: 'Track your midterm and participation results',
+            ),
             Expanded(
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: const BoxDecoration(
-                  color: AppColors.babyblue,
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// 🔍 SEARCH
-                      const SearchBarWidget(),
+                decoration: const BoxDecoration(color: AppColors.babyblue),
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SearchBarWidget(
+                          onChanged: (v) => controller.searchQuery.value = v,
+                        ),
+                        const SizedBox(height: 18),
 
-                      const SizedBox(height: 18),
-
-                      /// 📊 STATS
-                      Row(
-                        children: const [
-                          Expanded(
-                            child: StatCard(
-                              label: "Avg midterm",
-                              value: "74",
-                              showOutOfHundred: true,
+                        // Stats row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: StatCard(
+                                label: 'Avg midterm',
+                                value: controller.avgMidterm.toStringAsFixed(0),
+                                showOutOfHundred: true,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: StatCard(
-                              label: "Avg participation",
-                              value: "88",
-                              showOutOfHundred: true,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: StatCard(
+                                label: 'Avg participation',
+                                value: controller.avgParticipation.toStringAsFixed(0),
+                                showOutOfHundred: true,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: StatCard(
-                              label: "Avg attendance",
-                              value: "80%",
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: StatCard(
+                                label: 'Avg attendance',
+                                value: '${controller.avgAttendance.toStringAsFixed(0)}%',
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
-                      const SizedBox(height: 18),
+                        const SizedBox(height: 18),
 
-                      /// 📚 COURSE CARDS
+                        // Course assessment cards
+                        ...controller.filtered.asMap().entries.map((e) {
+                          final a = e.value;
+                          final color = e.key % 2 == 0
+                              ? AppColors.primaryBlue
+                              : AppColors.secondaryYellow;
+                          return CourseCard(
+                            title:                 a.courseName,
+                            type:                  a.courseType,
+                            midterm:               a.midtermStr,
+                            midtermStatus:         a.midtermStatus,
+                            participation:         a.participationStr,
+                            participationStatus:   a.participationStatus,
+                            attendance:            a.attendanceStr,
+                            attendanceStatus:      a.attendanceStatus,
+                            progress:              a.progress,
+                            progressColor:         color,
+                          );
+                        }),
 
-                      CourseCard(
-                        title: "Cloud Computing",
-                        type: "Core",
-                        midterm: "10/15",
-                        midtermStatus: "Average",
-                        participation: "25/25",
-                        participationStatus: "Excellent",
-                        attendance: "92%",
-                        attendanceStatus: "Excellent",
-                        progress: 0.9,
-                        progressColor: AppColors.primaryBlue,
-                      ),
-
-                      CourseCard(
-                        title: "Digital Marketing",
-                        type: "Elective",
-                        midterm: "8/15",
-                        midtermStatus: "Below avg",
-                        participation: "25/25",
-                        participationStatus: "Excellent",
-                        attendance: "92%",
-                        attendanceStatus: "Excellent",
-                        progress: 0.75,
-                        progressColor: AppColors.secondaryYellow,
-                      ),
-
-                      CourseCard(
-                        title: "Introduction to AI",
-                        type: "Core",
-                        midterm: "5/15",
-                        midtermStatus: "Fair",
-                        participation: "25/25",
-                        participationStatus: "Excellent",
-                        attendance: "88%",
-                        attendanceStatus: "Very Good",
-                        progress: 0.5,
-                        progressColor: AppColors.primaryBlue,
-                      ),
-
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  );
+                }),
               ),
             ),
           ],
         ),
-      ),
-
-      /// 🔻 BOTTOM NAV
-            bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: AppColors.babyblue,
-        selectedItemColor: const Color(0xFF2D4B94),
-        unselectedItemColor: Colors.grey,
-        currentIndex: 2,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: "Schedule"),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: "Services"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
-        ],
       ),
     );
   }

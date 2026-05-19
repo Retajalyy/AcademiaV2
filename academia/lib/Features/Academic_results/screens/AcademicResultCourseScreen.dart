@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/academic_results_header2.dart';
+import 'package:get/get.dart';
+import '../controllers/course_results_controller.dart';
+import 'package:academia/Core/widgets/custom_header.dart';
+import 'package:academia/Core/widgets/shared_bottom_nav.dart';
 import '../widgets/semster_result.dart';
-import '../widgets/semster_header.dart'; // 👈 added
-
+import '../widgets/semster_header.dart';
 import '../../../Core/utilities/colors.dart';
 
 class AcademicResultsCourseScreen extends StatelessWidget {
@@ -10,51 +12,49 @@ class AcademicResultsCourseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args       = Get.arguments as Map<String, dynamic>;
+    final controller = Get.put(CourseResultsController(
+      semesterResultId: args['id'] as int,
+      semesterLabel:    args['label'] as String,
+    ));
+
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
+      bottomNavigationBar: const SharedBottomNav(),
       body: SafeArea(
         child: Column(
           children: [
-            const AcademicHeader(),
-
+            const CustomHeader(
+              title: 'Academic Results',
+              description: 'Final exam results • All semesters',
+              showBackButton: false,
+            ),
             Expanded(
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: AppColors.babyblue,
-                ),
-                child: ListView(
-                  children: const [
-                    
-                    /// 🔹 NEW HEADER ROW
-                    SemesterHeaderRow(),
-
-                    SizedBox(height: 12),
-
-                    /// 🔹 SEMESTER CARD
-                    SemesterResultsCard(),
-
-                    SizedBox(height: 20),
-                  ],
-                ),
+                decoration: const BoxDecoration(color: AppColors.babyblue),
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return ListView(
+                    children: [
+                      SemesterHeaderRow(label: controller.semesterLabel),
+                      const SizedBox(height: 12),
+                      SemesterResultsCard(
+                        semesterLabel: controller.semesterLabel.split('·').first.trim(),
+                        gpa:           controller.gpa.value,
+                        courses:       controller.courseResults,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  );
+                }),
               ),
             ),
           ],
         ),
-      ),
-            bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF2D4B94),
-        backgroundColor: AppColors.babyblue,
-        unselectedItemColor: Colors.grey,
-        currentIndex: 2,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: "Schedule"),
-          BottomNavigationBarItem(icon: Icon(Icons.grid_view_rounded), label: "Services"),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: "Profile"),
-        ],
       ),
     );
   }

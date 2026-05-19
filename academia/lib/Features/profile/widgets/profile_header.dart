@@ -1,4 +1,5 @@
 import 'package:academia/Core/utilities/colors.dart';
+import 'package:academia/Features/profile/controllers/profile_controller.dart';
 import 'package:academia/Features/profile/screens/profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -135,23 +136,31 @@ class ProfileHeader extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              child: Center(
-                child: Text(
-                  initials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ),
+              child: Obx(() {
+                  final url = Get.find<ProfileController>().avatarUrl.value;
+                  return CircleAvatar(
+                    radius: avatarRadius - 3.5,
+                    backgroundColor: AppColors.primaryBlue,
+                    backgroundImage: url != null ? NetworkImage(url) : null,
+                    child: url == null
+                        ? Text(
+                            initials,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          )
+                        : null,
+                  );
+                }),
             ),
           ),
         ),

@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
+import '../models/course_result_model.dart';
 import 'subject_row.dart';
 
 class SemesterResultsCard extends StatelessWidget {
-  const SemesterResultsCard({super.key});
+  final String semesterLabel;
+  final double gpa;
+  final List<CourseResultModel> courses;
+
+  const SemesterResultsCard({
+    super.key,
+    required this.semesterLabel,
+    required this.gpa,
+    required this.courses,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,45 +30,25 @@ class SemesterResultsCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Semester 7',
-                      style: TextStyle(
-                        color: AppColors.primaryBlue,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Inter',
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Year 4 · Fall 2025',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'Inter',
-                      ),
-                    )
-                  ],
-                ),
-
-                /// 🔥 UPDATED GPA (3.8 styled differently)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
+                Text(
+                  semesterLabel,
+                  style: const TextStyle(
+                    color: AppColors.primaryBlue,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Inter',
                   ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF4DE),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: RichText(
-                    text: const TextSpan(
+                    text: TextSpan(
                       children: [
-                        TextSpan(
+                        const TextSpan(
                           text: 'GPA ',
                           style: TextStyle(
                             color: Color(0xFFB18334),
@@ -67,14 +57,14 @@ class SemesterResultsCard extends StatelessWidget {
                           ),
                         ),
                         TextSpan(
-                          text: '3.8',
-                          style: TextStyle(
+                          text: gpa.toStringAsFixed(1),
+                          style: const TextStyle(
                             color: Color(0xFFB18334),
                             fontWeight: FontWeight.w600,
                             fontSize: 20,
                           ),
                         ),
-                        TextSpan(
+                        const TextSpan(
                           text: '/4.0',
                           style: TextStyle(
                             color: Color(0xFFB18334),
@@ -85,67 +75,20 @@ class SemesterResultsCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
-
           Divider(color: Colors.grey.shade300, height: 1),
-
-          const SubjectRow(
-            subject: 'Cloud Computing',
-            grade: '98',
-            gpa: '4.0',
-            letter: 'A+',
-            badgeColor: Color(0xFFDDEDFA),
-            letterColor: AppColors.primaryBlue,
-          ),
-
-          const SubjectRow(
-            subject: 'Introduction to AI',
-            grade: '73',
-            gpa: '3.2',
-            letter: 'C',
-            badgeColor: Color(0xFFFFF3DF),
-            letterColor: Color(0xFFB18334),
-          ),
-
-          const SubjectRow(
-            subject: 'Data Structures',
-            grade: '85',
-            gpa: '3.4',
-            letter: 'B',
-            badgeColor: Color(0xFFDDEDFA),
-            letterColor: AppColors.primaryBlue,
-          ),
-
-          const SubjectRow(
-            subject: 'Programming 1',
-            grade: '98',
-            gpa: '4.0',
-            letter: 'A+',
-            badgeColor: Color(0xFFDDEDFA),
-            letterColor: AppColors.primaryBlue,
-          ),
-
-          const SubjectRow(
-            subject: 'Digital Marketing',
-            grade: '77',
-            gpa: '3.0',
-            letter: 'C',
-            badgeColor: Color(0xFFFFF3DF),
-            letterColor: Color(0xFFB18334),
-          ),
-
-          const SubjectRow(
-            subject: 'Design Patterns',
-            grade: '58',
-            gpa: '2.3',
-            letter: 'D',
-            badgeColor: Color(0xFFFFE8E8),
-            letterColor: Colors.red,
-            isLast: true,
-          ),
+          ...courses.asMap().entries.map((e) => SubjectRow(
+                subject:     e.value.courseName,
+                grade:       e.value.grade.toString(),
+                gpa:         e.value.gpaPoints.toStringAsFixed(1),
+                letter:      e.value.letter,
+                badgeColor:  e.value.badgeColor,
+                letterColor: e.value.letterColor,
+                isLast:      e.key == courses.length - 1,
+              )),
         ],
       ),
     );

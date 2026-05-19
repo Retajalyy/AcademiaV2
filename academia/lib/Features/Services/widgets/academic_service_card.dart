@@ -71,7 +71,7 @@ class AcademicServiceCard extends StatelessWidget {
                   child: Text(
                     item.title,
                     style: const TextStyle(
-                      fontSize: 15, // Slightly adjusted for exact UI feel
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF2B407D),
                       letterSpacing: -0.3,
@@ -80,13 +80,13 @@ class AcademicServiceCard extends StatelessWidget {
                 ),
                 Icon(
                   Icons.chevron_right,
-                  size: 14, // Smaller, subtle chevron like the image
-                  color: const Color(0xFF2B407D).withOpacity(0.7),
+                  size: 14,
+                  color: const Color(0xFF2B407D).withValues(alpha: 0.7),
                 ),
               ],
             ),
-            
-            const SizedBox(height: 2), // Very tight gap between title and subtitle
+
+            const SizedBox(height: 2),
 
             // 3. Subtitle
             Text(
@@ -99,7 +99,46 @@ class AcademicServiceCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
+
+            // 4. Status badge (only when not none)
+            if (item.status != ServiceStatus.none) ...[
+              const SizedBox(height: 8),
+              _StatusBadge(status: item.status),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final ServiceStatus status;
+  const _StatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, bg, fg) = switch (status) {
+      ServiceStatus.opened  => ('Opened',  const Color(0xFFE8F5E9), const Color(0xFF2E7D32)),
+      ServiceStatus.closed  => ('Closed',  const Color(0xFFFFEBEE), const Color(0xFFEF4444)),
+      ServiceStatus.pending => ('Not Opened Yet', const Color(0xFFFFF8E1), const Color(0xFFF59E0B)),
+      ServiceStatus.none    => ('',        Colors.transparent,       Colors.transparent),
+    };
+
+    if (label.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: fg,
         ),
       ),
     );

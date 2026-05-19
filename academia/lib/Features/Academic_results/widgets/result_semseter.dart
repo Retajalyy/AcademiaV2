@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
-import 'package:academia/Features/Academic_results/screens/AcademicResultCourseScreen.dart';
 
 class ResultSemesterCard extends StatelessWidget {
   final String status;
@@ -8,6 +7,7 @@ class ResultSemesterCard extends StatelessWidget {
   final String subtitle;
   final String gpa;
   final Color statusColor;
+  final VoidCallback? onTap;
 
   const ResultSemesterCard({
     super.key,
@@ -16,6 +16,7 @@ class ResultSemesterCard extends StatelessWidget {
     required this.subtitle,
     required this.gpa,
     required this.statusColor,
+    this.onTap,
   });
 
   Color getStatusColor() {
@@ -56,12 +57,6 @@ class ResultSemesterCard extends StatelessWidget {
     }
   }
 
-  /// ✅ FIXED: robust semester check
-  bool get isSemester7 {
-    final clean = semester.toLowerCase().replaceAll(" ", "");
-    return clean.contains("7");
-  }
-
   bool get isNotPublished => status.toLowerCase() == "not published yet";
 
   @override
@@ -69,7 +64,9 @@ class ResultSemesterCard extends StatelessWidget {
     final displayStatusColor = getStatusColor();
     final displayTextColor = getStatusTextColor();
 
-    return Container(
+    return GestureDetector(
+      onTap: isNotPublished ? null : onTap,
+      child: Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
@@ -77,7 +74,7 @@ class ResultSemesterCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -94,7 +91,7 @@ class ResultSemesterCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: displayStatusColor.withOpacity(0.12),
+                    color: displayStatusColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -171,34 +168,22 @@ class ResultSemesterCard extends StatelessWidget {
 
               const SizedBox(width: 6),
 
-              /// ARROW (ONLY SEMESTER 7 CLICKABLE)
               if (!isNotPublished)
-                isSemester7
-                    ? InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const AcademicResultsCourseScreen(),
-                            ),
-                          );
-                        },
-                        child: const Icon(
-                          Icons.chevron_right,
-                          color: AppColors.disabledText,
-                          size: 22,
-                        ),
-                      )
-                    : const Icon(
-                        Icons.chevron_right,
-                        color: Color(0xFFB0B0B0),
-                        size: 22,
-                      ),
+                InkWell(
+                  onTap: onTap,
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: onTap != null
+                        ? AppColors.disabledText
+                        : const Color(0xFFB0B0B0),
+                    size: 22,
+                  ),
+                ),
             ],
           ),
         ],
       ),
+    ),
     );
   }
 }

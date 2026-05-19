@@ -1,5 +1,6 @@
-import 'package:academia/Features/Home/models/schedule_model.dart';
+
 import 'package:flutter/material.dart';
+import 'package:academia/Features/Home/models/schedule_item_model.dart';
 
 class ScheduleCard extends StatelessWidget {
   final ScheduleItem item;
@@ -7,14 +8,15 @@ class ScheduleCard extends StatelessWidget {
   final bool isLast; // Added to handle the timeline line length
 
   const ScheduleCard({
-    required this.item, 
-    required this.accentColor, 
+    required this.item,
+    required this.accentColor,
     this.isLast = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight( // Ensures the vertical line matches the card height
+    return IntrinsicHeight(
+      // Ensures the vertical line matches the card height
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -23,7 +25,11 @@ class ScheduleCard extends StatelessWidget {
             children: [
               Text(
                 item.time.split(" - ")[0], // Start time
-                style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 item.time.split(" - ")[1], // End time
@@ -54,7 +60,7 @@ class ScheduleCard extends StatelessWidget {
                     color: Colors.black.withOpacity(0.02),
                     blurRadius: 10,
                     spreadRadius: 2,
-                  )
+                  ),
                 ],
               ),
               child: Row(
@@ -77,7 +83,7 @@ class ScheduleCard extends StatelessWidget {
                         Text(
                           item.title,
                           style: TextStyle(
-                            fontWeight: FontWeight.bold, 
+                            fontWeight: FontWeight.bold,
                             color: Color(0xFF2D4B94),
                             fontSize: 15,
                           ),
@@ -85,7 +91,10 @@ class ScheduleCard extends StatelessWidget {
                         SizedBox(height: 4),
                         Text(
                           "${item.location} . ${item.instructor}",
-                          style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
@@ -100,12 +109,12 @@ class ScheduleCard extends StatelessWidget {
                     child: Text(
                       item.type,
                       style: TextStyle(
-                        color: accentColor, 
-                        fontSize: 11, 
+                        color: accentColor,
+                        fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

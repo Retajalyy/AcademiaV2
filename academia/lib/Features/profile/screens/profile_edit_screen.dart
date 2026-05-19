@@ -49,7 +49,7 @@ class ProfileEditScreen extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: controller.isSaving.value ? null : () => controller.updateProfile(),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white.withOpacity(0.2),
+                                backgroundColor: Colors.white.withValues(alpha: 0.2),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
@@ -62,31 +62,57 @@ class ProfileEditScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: controller.pickProfileImage,
-                      child: Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          CircleAvatar(
-                            radius: 54,
-                            backgroundColor: const Color(0xFFFFD700), // Yellow border
-                            child: CircleAvatar(
-                              radius: 51,
-                              backgroundColor: const Color(0xFF1A337E),
-                              child: Text(
-                                user.name.substring(0, 2).toUpperCase(),
-                                style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold),
+                    Obx(() {
+                      final pending = controller.pendingImageBytes.value;
+                      final url    = controller.avatarUrl.value;
+
+                      // Priority: local pending > saved URL > initials
+                      ImageProvider? image;
+                      if (pending != null) {
+                        image = MemoryImage(pending);
+                      } else if (url != null) {
+                        image = NetworkImage(url);
+                      }
+
+                      return GestureDetector(
+                        onTap: controller.isSaving.value ? null : controller.pickProfileImage,
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            CircleAvatar(
+                              radius: 54,
+                              backgroundColor: const Color(0xFFFFD700),
+                              child: CircleAvatar(
+                                radius: 51,
+                                backgroundColor: const Color(0xFF1A337E),
+                                backgroundImage: image,
+                                child: image == null
+                                    ? Text(
+                                        user.name.substring(0, 2).toUpperCase(),
+                                        style: const TextStyle(
+                                            fontSize: 32,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    : null,
                               ),
                             ),
-                          ),
-                          const CircleAvatar(
-                            radius: 16,
-                            backgroundColor: Colors.white,
-                            child: Icon(Icons.camera_alt, color: Color(0xFF1A337E), size: 18),
-                          ),
-                        ],
-                      ),
-                    ),
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.white,
+                              child: controller.isSaving.value
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.camera_alt,
+                                      color: Color(0xFF1A337E), size: 18),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                     const SizedBox(height: 12),
                     const Text("Tap to change photo", style: TextStyle(color: Colors.white70, fontSize: 13)),
                   ],
@@ -121,8 +147,8 @@ class ProfileEditScreen extends StatelessWidget {
                 _buildInfoTile(Icons.person_outline, "Full name", user.name),
                 _buildInfoTile(Icons.credit_card_outlined, "Student ID", user.id),
                 _buildInfoTile(Icons.account_balance_outlined, "Faculty", user.faculty),
-                _buildInfoTile(Icons.school_outlined, "Major", "Software Engineering"),
-                _buildInfoTile(Icons.email_outlined, "University email", "mariam.ibrahim@university.edu.eg"),
+                _buildInfoTile(Icons.school_outlined, "Major", user.faculty),
+                _buildInfoTile(Icons.email_outlined, "University email", user.email),
               ]),
 
               // --- Personal Info (Editable) ---

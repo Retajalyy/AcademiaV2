@@ -12,7 +12,8 @@ class LoginScreen extends StatelessWidget {
 
   final LoginController controller = Get.put(LoginController());
 
-  final TextEditingController userIdController = TextEditingController();
+  // Renamed to uniIdController to stay consistent with your AuthService logic
+  final TextEditingController uniIdController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
@@ -20,7 +21,7 @@ class LoginScreen extends StatelessWidget {
   void handleLogin() {
     if (_formKey.currentState!.validate()) {
       controller.login(
-        userIdController.text.trim(),
+        uniIdController.text.trim(),
         passwordController.text.trim(),
       );
     }
@@ -56,7 +57,7 @@ class LoginScreen extends StatelessWidget {
                     ],
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(width * 0.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: Image.asset(
                       "lib/assets/Images/logoo.png",
                       fit: BoxFit.contain,
@@ -114,23 +115,35 @@ class LoginScreen extends StatelessWidget {
 
                         /// SUBTEXT
                         Text(
-                          "Sign in with your saved credentials",
+                          "Sign in with your University ID",
                           style: TextStyle(
                             fontSize: width * 0.04,
                             color: Colors.grey.shade600,
                           ),
                         ),
 
-                        SizedBox(height: height * 0.03),
+                        /// 🚨 ERROR MESSAGE DISPLAY
+                        Obx(() {
+                          if (controller.errorMessage.value.isEmpty) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 15),
+                            child: Text(
+                              controller.errorMessage.value,
+                              style: const TextStyle(color: Colors.red, fontSize: 13),
+                            ),
+                          );
+                        }),
 
-                        /// USER ID
+                        SizedBox(height: height * 0.02),
+
+                        /// UNIVERSITY ID
                         CustomTextField(
-                          controller: userIdController,
-                          hint: "User ID",
-                          label: "User ID",
+                          controller: uniIdController,
+                          hint: "Enter University ID",
+                          label: "University ID",
                           iconPath: "lib/assets/Icons/userlogin.svg",
                           validator: (v) =>
-                              v == null || v.isEmpty ? "please enter a valid user ID" : null,
+                              v == null || v.isEmpty ? "Please enter your University ID" : null,
                         ),
 
                         SizedBox(height: height * 0.02),
@@ -148,16 +161,17 @@ class LoginScreen extends StatelessWidget {
                                 controller.obscurePassword.value
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: AppColors.primaryBlue,
                               ),
                               onPressed: controller.togglePassword,
                             ),
                             validator: (v) => v == null || v.length < 6
-                                ? "please enter a valid password"
+                                ? "Password must be at least 6 characters"
                                 : null,
                           );
                         }),
 
-                        SizedBox(height: height * 0.02),
+                        SizedBox(height: height * 0.01),
 
                         /// REMEMBER ME ROW
                         Obx(() {
@@ -167,7 +181,8 @@ class LoginScreen extends StatelessWidget {
                             onForgotPassword: () {
                               Get.snackbar(
                                 "Forgot Password",
-                                "Feature not implemented yet",
+                                "Please contact the administration office.",
+                                snackPosition: SnackPosition.BOTTOM,
                               );
                             },
                           );
@@ -181,7 +196,7 @@ class LoginScreen extends StatelessWidget {
                             width: double.infinity,
                             child: PrimaryButton(
                               text: controller.isLoading.value
-                                  ? "Loading..."
+                                  ? "Verifying..."
                                   : "Sign in",
                               onPressed: controller.isLoading.value
                                   ? null

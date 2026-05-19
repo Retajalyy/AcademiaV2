@@ -34,8 +34,10 @@ class CourseLecture {
   // Section fields (null if this course has no section)
   final String? sectionDay;
   final String? sectionInstructor;
-  final String? sectionTime;   // e.g. "11:00 - 12:30"
+  final String? sectionTime;
   final String? sectionRoom;
+  final String? prerequisiteWarning;
+  final bool isLocked;
 
   const CourseLecture({
     required this.courseCode,
@@ -50,6 +52,8 @@ class CourseLecture {
     this.sectionInstructor,
     this.sectionTime,
     this.sectionRoom,
+    this.prerequisiteWarning,
+    this.isLocked = false,
   });
 }
 

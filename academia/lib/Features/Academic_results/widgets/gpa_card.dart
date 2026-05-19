@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import '../../../Core/utilities/colors.dart';
 
 class GpaCard extends StatelessWidget {
-  const GpaCard({super.key});
+  final double cumulativeGpa;
+  final List<double?> semesterGpas;
 
-  Widget semesterBox(String num, String sem) {
+  const GpaCard({
+    super.key,
+    required this.cumulativeGpa,
+    required this.semesterGpas,
+  });
+
+  Widget _semesterBox(String label, double? gpa) {
+    final display = gpa != null ? gpa.toStringAsFixed(1) : '-';
     return Container(
       width: 64,
       height: 51,
@@ -16,7 +24,7 @@ class GpaCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            num,
+            display,
             style: const TextStyle(
               color: Colors.white,
               fontFamily: 'Inter',
@@ -25,20 +33,20 @@ class GpaCard extends StatelessWidget {
             ),
           ),
           Text(
-            sem,
+            label,
             style: const TextStyle(
               color: Colors.white70,
               fontFamily: 'Inter',
               fontWeight: FontWeight.w500,
               fontSize: 12,
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget progressBar(double value) {
+  Widget _progressBar(double value) {
     return Container(
       height: 7,
       width: double.infinity,
@@ -51,10 +59,8 @@ class GpaCard extends StatelessWidget {
         child: Align(
           alignment: Alignment.centerLeft,
           child: FractionallySizedBox(
-            widthFactor: value,
-            child: Container(
-              color: AppColors.secondaryYellow,
-            ),
+            widthFactor: (value / 4.0).clamp(0.0, 1.0),
+            child: Container(color: AppColors.secondaryYellow),
           ),
         ),
       ),
@@ -63,6 +69,11 @@ class GpaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final completedCount = semesterGpas.where((g) => g != null).length;
+    final semLabel = completedCount > 0
+        ? 'Semesters 1-$completedCount'
+        : 'No semesters yet';
+
     return Column(
       children: [
         Container(
@@ -74,13 +85,11 @@ class GpaCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              /// HEADER ROW (fixed overflow-safe)
               Row(
                 children: [
                   const Expanded(
                     child: Text(
-                      "Cumulative GPA",
+                      'Cumulative GPA',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 15,
@@ -89,19 +98,15 @@ class GpaCard extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.white24,
                       borderRadius: BorderRadius.circular(11),
                     ),
-                    child: const Text(
-                      "Semesters 1-7",
-                      style: TextStyle(
+                    child: Text(
+                      semLabel,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontFamily: 'Inter',
@@ -111,24 +116,21 @@ class GpaCard extends StatelessWidget {
                   ),
                 ],
               ),
-
               const SizedBox(height: 6),
-
-              /// GPA TEXT (no UI change, only safe)
               RichText(
-                text: const TextSpan(
+                text: TextSpan(
                   children: [
                     TextSpan(
-                      text: "3.61",
-                      style: TextStyle(
+                      text: cumulativeGpa.toStringAsFixed(2),
+                      style: const TextStyle(
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w500,
                         fontSize: 40,
                         color: Colors.white,
                       ),
                     ),
-                    TextSpan(
-                      text: "/4.0",
+                    const TextSpan(
+                      text: '/4.0',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w500,
@@ -139,50 +141,28 @@ class GpaCard extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 6),
-
-              progressBar(0.7),
-
+              _progressBar(cumulativeGpa),
               const SizedBox(height: 9),
-
-              /// SEMESTERS GRID (keeps same design)
               Wrap(
                 spacing: 21,
                 runSpacing: 10,
-                children: [
-                  semesterBox("3.9", "Sem 1"),
-                  semesterBox("3.6", "Sem 2"),
-                  semesterBox("3.3", "Sem 3"),
-                  semesterBox("3.7", "Sem 4"),
-                  semesterBox("3.8", "Sem 5"),
-                  semesterBox("4.0", "Sem 6"),
-                  semesterBox("3.8", "Sem 7"),
-                  semesterBox("-", "Sem 8"),
-                ],
+                children: List.generate(8, (i) =>
+                    _semesterBox('Sem ${i + 1}', semesterGpas.length > i ? semesterGpas[i] : null)),
               ),
-
               const SizedBox(height: 8),
             ],
           ),
         ),
-
         const SizedBox(height: 6),
-
-        /// FOOTER (unchanged UI)
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 0),
           child: Row(
             children: [
-              Expanded(
-                child: Divider(
-                  thickness: 0.8,
-                  color: Color(0xFFD3D4D4),
-                ),
-              ),
+              Expanded(child: Divider(thickness: 0.8, color: Color(0xFFD3D4D4))),
               SizedBox(width: 8),
               Text(
-                "Year 4 • 2025-2026 (current)",
+                'Year 4 • 2025-2026 (current)',
                 style: TextStyle(
                   color: Color(0xFF979696),
                   fontSize: 12,
@@ -190,12 +170,7 @@ class GpaCard extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 8),
-              Expanded(
-                child: Divider(
-                  thickness: 1,
-                  color: Color(0xFFD3D4D4),
-                ),
-              ),
+              Expanded(child: Divider(thickness: 1, color: Color(0xFFD3D4D4))),
             ],
           ),
         ),

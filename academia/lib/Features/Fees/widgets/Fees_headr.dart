@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:academia/Core/utilities/colors.dart';
+import '../controllers/fees_controller.dart';
 
 class FeesHeader extends StatelessWidget {
-  const FeesHeader({super.key});
+  final FeesController ctrl;
+  const FeesHeader({super.key, required this.ctrl});
 
   @override
   Widget build(BuildContext context) {
+    final paidPct = (ctrl.progress * 100).round();
+    final currency = ctrl.fees.isNotEmpty ? ctrl.fees.first.currency : 'EGP';
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF0C4D83),
-            Color(0xFF223F7A),
-          ],
+          colors: [Color(0xFF0C4D83), Color(0xFF223F7A)],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
@@ -26,11 +28,14 @@ class FeesHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           /// Top Row
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.arrow_back, color: Colors.white, size: 28),
-              Icon(Icons.notifications, color: Colors.white, size: 28),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+              ),
+              const Icon(Icons.notifications, color: Colors.white, size: 28),
             ],
           ),
 
@@ -49,9 +54,9 @@ class FeesHeader extends StatelessWidget {
           const SizedBox(height: 4),
 
           /// Amount
-          const Text(
-            "5,000 EGP",
-            style: TextStyle(
+          Text(
+            ctrl.formattedOutstanding,
+            style: const TextStyle(
               fontSize: 40,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -61,76 +66,69 @@ class FeesHeader extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          /// Warning badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xCCFE5263).withOpacity(0.3),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFD78181),
+          /// Warning badge (only if there are unpaid fees)
+          if (ctrl.dueFees.isNotEmpty && ctrl.nearestDueDate.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xCCFE5263).withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFD78181)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: Color(0xFFDEABAB), size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    "Pay before ${ctrl.nearestDueDate} to avoid delays",
+                    style: const TextStyle(
+                      color: Color(0xFFD9D9D9),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, color: Color(0xFFDEABAB), size: 14),
-                SizedBox(width: 6),
-                Text(
-                  "Pay before April 20 to avoid delays",
-                  style: TextStyle(
-                    color: Color(0xFFD9D9D9),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
 
           const SizedBox(height: 18),
 
-          /// ── Inner bordered card ──────────────────────────────
+          /// Inner stats card
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
-                /// Stats Row
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _StatItem(title: "0 EGP", subtitle: "Minimum due"),
-                    _VerticalDivider(),
-                    _StatItem(title: "83% paid", subtitle: "Progress"),
-                    _VerticalDivider(),
-                    _StatItem(title: "30,000 EGP", subtitle: "Total Fees"),
+                    _StatItem(title: '0 $currency',          subtitle: 'Minimum due'),
+                    const _VerticalDivider(),
+                    _StatItem(title: '$paidPct% paid',       subtitle: 'Progress'),
+                    const _VerticalDivider(),
+                    _StatItem(title: ctrl.formattedTotal,    subtitle: 'Total Fees'),
                   ],
                 ),
-
                 const SizedBox(height: 14),
-
-                /// Progress Bar
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: const LinearProgressIndicator(
-                    value: 0.83,
+                  child: LinearProgressIndicator(
+                    value: ctrl.progress,
                     minHeight: 8,
-                    backgroundColor: Color(0xFFE5E7EB),
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.secondaryYellow),
+                    backgroundColor: const Color(0xFFE5E7EB),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.secondaryYellow),
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
-                /// Progress label
-                const Text(
-                  "25,000 of 30,000 EGP paid",
-                  style: TextStyle(
+                Text(
+                  "${ctrl.formattedPaid} of ${ctrl.formattedTotal} paid",
+                  style: const TextStyle(
                     color: Color(0xFFE5E7EB),
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -148,35 +146,25 @@ class FeesHeader extends StatelessWidget {
 class _StatItem extends StatelessWidget {
   final String title;
   final String subtitle;
-
-  const _StatItem({
-    required this.title,
-    required this.subtitle,
-  });
+  const _StatItem({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Inter',
-          ),
-        ),
+        Text(title,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Inter')),
         const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: const TextStyle(
-           color: Color(0xFFE5E7EB),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            fontFamily: 'Inter',
-          ),
-        ),
+        Text(subtitle,
+            style: const TextStyle(
+                color: Color(0xFFE5E7EB),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Inter')),
       ],
     );
   }
@@ -186,11 +174,6 @@ class _VerticalDivider extends StatelessWidget {
   const _VerticalDivider();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 30,
-      width: 1,
-      color: Colors.white24,
-    );
-  }
+  Widget build(BuildContext context) =>
+      Container(height: 30, width: 1, color: Colors.white24);
 }

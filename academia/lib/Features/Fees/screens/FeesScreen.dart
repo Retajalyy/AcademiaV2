@@ -1,9 +1,11 @@
-import 'package:academia/Features/Fees/widgets/pay_button.dart';
 import 'package:flutter/material.dart';
-import 'package:academia/Features/Fees/widgets/Fees_headr.dart';
-import 'package:academia/Features/Fees/widgets/DueFee_card.dart';
-import 'package:academia/Features/Fees/widgets/Paid_Fees.dart';
-
+import 'package:get/get.dart';
+import 'package:academia/Core/widgets/shared_bottom_nav.dart';
+import '../controllers/fees_controller.dart';
+import '../widgets/Fees_headr.dart';
+import '../widgets/DueFee_card.dart';
+import '../widgets/Paid_Fees.dart';
+import '../widgets/pay_button.dart';
 import '../../../Core/utilities/colors.dart';
 
 class Feesscreen extends StatelessWidget {
@@ -11,48 +13,56 @@ class Feesscreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Wrap with PopScope to handle system back button
+    final ctrl = Get.put(FeesController());
+
     return PopScope(
-      canPop: false, // Prevents default pop behavior
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        // Forces navigation to the services route
-        Navigator.pushReplacementNamed(context, '/services'); 
+        Navigator.pushReplacementNamed(context, '/services');
       },
       child: Scaffold(
         backgroundColor: AppColors.primaryBlue,
+        bottomNavigationBar: const SharedBottomNav(),
         body: SafeArea(
-          child: Column(
-            children: [
-              const FeesHeader(),
+          child: Obx(() {
+            if (ctrl.isLoading.value) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
+            }
 
-              /// 🔵 BODY
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: AppColors.babyblue,
-                  ),
-                  child: const SingleChildScrollView(
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        DueFeeCard(),
-                        SizedBox(height: 20),
-                        PaidFeeCard(),
-                        SizedBox(height: 20),
-                        PayButton(),
-                      ],
+            return Column(
+              children: [
+                FeesHeader(ctrl: ctrl),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(color: AppColors.babyblue),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (ctrl.dueFees.isNotEmpty) ...[
+                            DueFeeCard(fees: ctrl.dueFees),
+                            const SizedBox(height: 20),
+                          ],
+                          if (ctrl.paidFees.isNotEmpty) ...[
+                            PaidFeeCard(fees: ctrl.paidFees),
+                            const SizedBox(height: 20),
+                          ],
+                          if (ctrl.dueFees.isNotEmpty)
+                            PayButton(ctrl: ctrl),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            );
+          }),
         ),
-
-     
       ),
     );
   }

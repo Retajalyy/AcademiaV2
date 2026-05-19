@@ -1,63 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../utilities/colors.dart';
 
 class CustomHeader extends StatelessWidget {
   final String title;
   final String description;
-  final IconData icon;
+  final bool showBackButton;
+  final VoidCallback? onBack;
 
   const CustomHeader({
     super.key,
     required this.title,
     required this.description,
-    this.icon = Icons.notifications,
+    this.showBackButton = true,
+    this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 393, // Figma width
-      height: 166, // Figma height
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2F3E93), // dark blue color
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(2),
-          bottomRight: Radius.circular(2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      width: double.infinity,
+      color: AppColors.primaryBlue,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
+              // ── Top row ───────────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (showBackButton)
+                    GestureDetector(
+                      onTap: onBack ?? () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  SvgPicture.asset(
+                    'lib/assets/Icons/notification.svg',
+                    width: 24,
+                    height: 24,
+                    colorFilter: const ColorFilter.mode(
+                        Colors.white, BlendMode.srcIn),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── Title ─────────────────────────────────────────────────
               Text(
                 title,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 36,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Inter',
                 ),
               ),
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 28,
+
+              const SizedBox(height: 4),
+
+              // ── Subtitle ──────────────────────────────────────────────
+              Text(
+                description,
+                style: const TextStyle(
+                  color: Color(0xFFDEDEDE),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ],
           ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            description,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

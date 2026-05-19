@@ -18,7 +18,6 @@ import 'package:academia/Features/schedule/screens/schedule_screen.dart';
 import 'Features/Dashboard_admin/screens/Dashboard_screen.dart';
 import 'Features/AccountSettings_admin/screens/AccountSettingScreen.dart';
 import 'Features/plan_admin/screens/PlanAdminScreen.dart';
-import 'Features/Registiration_admin/screens/RegistirationScreen.dart' hide RegistrationScreen;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -66,7 +65,7 @@ class MyApp extends StatelessWidget {
       ),
 
       // 👇 start from splash instead of home
-      initialRoute: '/app',
+      initialRoute: '/splash',
 
       // 👇 routes
       getPages: [

@@ -1,9 +1,12 @@
+import 'package:academia/Features/Chatbot/screens/chatbot_screen.dart';
 import 'package:academia/Features/Home/screens/home_page.dart';
 import 'package:academia/Features/Schedule/screens/schedule_screen.dart';
 import 'package:academia/Features/Services/screens/services_main_screen.dart';
 import 'package:academia/Features/profile/screens/profile_page.dart';
+import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
 class BottomBar extends StatefulWidget {
   final int initialIndex;
@@ -60,6 +63,18 @@ class _BottomBarState extends State<BottomBar> {
       body: IndexedStack(
         index: currentIndex,
         children: pages,
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primaryBlue,
+        shape: const CircleBorder(),
+        onPressed: () => Get.to(() => const ChatbotScreen()),
+        child: SvgPicture.asset(
+          'lib/assets/Icons/chatbot.svg',
+          width: 26,
+          height: 26,
+          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        ),
       ),
 
       bottomNavigationBar: BottomNavigationBar(

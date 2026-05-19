@@ -1,5 +1,6 @@
 import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import '../controllers/registration_controller.dart';
 
@@ -7,7 +8,7 @@ class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget 
   const RegistrationAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(150);
+  Size get preferredSize => const Size.fromHeight(175);
 
   @override
   Widget build(BuildContext context) {
@@ -20,59 +21,40 @@ class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Top row: back arrow + bell icon ──────────────────────────
+            // ── Top row ───────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(4, 8, 16, 0),
+              padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
               child: Row(
                 children: [
-                  // Back arrow
                   GestureDetector(
                     onTap: () => Get.back(),
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       child: Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        size: 18,
+                        size: 20,
                         color: Colors.white,
                       ),
                     ),
                   ),
-
                   const Spacer(),
-
-                  // Bell icon
-                  Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      const Icon(
-                        Icons.notifications_none_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      Positioned(
-                        top: 1,
-                        right: 1,
-                        child: Container(
-                          width: 7,
-                          height: 7,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryBlue,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
+                  SvgPicture.asset(
+                    'lib/assets/Icons/notification.svg',
+                    width: 24,
+                    height: 24,
+                    colorFilter: const ColorFilter.mode(
+                        Colors.white, BlendMode.srcIn),
                   ),
                 ],
               ),
             ),
 
-            // ── Title + subtitle (center-left of bottom bar) ─────────────
+            // ── Title + subtitle ──────────────────────────────────────────
             const Expanded(
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,18 +62,17 @@ class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget 
                       Text(
                         'Registration',
                         style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          height: 1.2,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      SizedBox(height: 4),
                       Text(
-                        'Enroll and manage your courses',
+                        'Enroll in and manage your courses',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFFADB5D0),
+                          fontSize: 14,
+                          color: Color(0xFFDEDEDE),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -101,29 +82,30 @@ class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget 
               ),
             ),
 
-            // ── Group Tab Row ─────────────────────────────────────────────
+            // ── Group tabs ────────────────────────────────────────────────
             Obx(() {
+              final groups = ctrl.availableGroups;
+              if (groups.isEmpty) return const SizedBox(height: 20);
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: Row(
-                  children: [
-                    _GroupTab(
-                      label: 'Group SE1',
-                      isSelected: ctrl.selectedTabIndex.value == 0,
-                      onTap: () => ctrl.onTabChanged(0),
-                    ),
-                    const SizedBox(width: 24),
-                    _GroupTab(
-                      label: 'Group SE2',
-                      isSelected: ctrl.selectedTabIndex.value == 1,
-                      onTap: () => ctrl.onTabChanged(1),
-                    ),
-                  ],
+                  children: groups.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                          right: i < groups.length - 1 ? 28 : 0),
+                      child: _GroupTab(
+                        label: entry.value.label,
+                        isSelected: ctrl.selectedTabIndex.value == i,
+                        onTap: () => ctrl.onTabChanged(i),
+                      ),
+                    );
+                  }).toList(),
                 ),
               );
             }),
 
-            const SizedBox(height: 0),
+            const SizedBox(height: 10),
           ],
         ),
       ),
@@ -131,7 +113,6 @@ class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget 
   }
 }
 
-/// A single tab label with animated orange underline when selected.
 class _GroupTab extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -154,7 +135,7 @@ class _GroupTab extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               color: isSelected ? Colors.white : const Color(0xFF6B7A9F),
             ),
@@ -163,9 +144,9 @@ class _GroupTab extends StatelessWidget {
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             height: 3,
-            width: isSelected ? 60 : 0,
+            width: isSelected ? 70 : 0,
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B),
+              color: AppColors.secondaryYellow,
               borderRadius: BorderRadius.circular(2),
             ),
           ),

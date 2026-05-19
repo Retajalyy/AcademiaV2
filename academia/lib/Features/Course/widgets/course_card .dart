@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:academia/Core/utilities/colors.dart';
-import 'package:academia/Core/utilities/text_style.dart';
 import 'package:academia/Features/Course%20details/screens/CourseScreendetails.dart';
 
 class CourseCard extends StatelessWidget {
@@ -11,7 +10,6 @@ class CourseCard extends StatelessWidget {
   final String day;
   final String time;
   final String location;
-  final Color color;
 
   const CourseCard({
     super.key,
@@ -22,182 +20,144 @@ class CourseCard extends StatelessWidget {
     required this.day,
     required this.time,
     required this.location,
-    required this.color,
   });
+
+  bool get _isCore => type.toLowerCase() == 'core';
+
+  Color get _accentColor =>
+      _isCore ? AppColors.primaryBlue : AppColors.secondaryYellow;
+
+  Color get _accentBg =>
+      _isCore ? AppColors.lightblue : AppColors.LightYellow;
+
+  Color get _accentText =>
+      _isCore ? AppColors.primaryBlue : const Color(0xFFB7791F);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        if (title == "Cloud Computing") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const CourseScreenDetails(),
-            ),
-          );
-        }
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CourseScreenDetails()),
+      ),
       child: Container(
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            // Left colored bar
-            Container(
-              width: 8,
-              height: 136,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  bottomLeft: Radius.circular(15),
-                ),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Top row: name + badges ─────────────────────────────────
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Course name + doctor
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primaryBlue,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        doctor,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w400,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
 
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(width: 8),
+
+                // Type + Credits badges stacked
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    // Title + Doctor + badges
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(title, style: TextStyles.title),
-                              const SizedBox(height: 4),
-                              Text(doctor, style: TextStyles.doctor),
-                            ],
-                          ),
-                        ),
-
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            _buildBadge(
-                              type,
-                              _getTypeColor(type),
-                              _getTypeTextColor(type),
-                            ),
-                            const SizedBox(height: 6),
-                            _buildCredits(),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Time + Location
-                    Row(
-                      children: [
-                        const Icon(Icons.access_time,
-                            size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text("$day . $time", style: TextStyles.doctor),
-
-                        const SizedBox(width: 25),
-
-                        const Icon(Icons.location_on,
-                            size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(location, style: TextStyles.doctor),
-                      ],
-                    ),
+                    _Pill(label: type,    bg: _accentBg, fg: _accentText),
+                    const SizedBox(height: 6),
+                    _Pill(label: credits, bg: _accentBg, fg: _accentText),
                   ],
                 ),
-              ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // ── Bottom row: time + room ────────────────────────────────
+            Row(
+              children: [
+                const Icon(Icons.access_time_rounded,
+                    size: 14, color: Color(0xFF9CA3AF)),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '$day · $time',
+                    style: const TextStyle(
+                        fontSize: 12, color: Color(0xFF6B7280)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Icon(Icons.location_on_outlined,
+                    size: 14, color: Color(0xFF9CA3AF)),
+                const SizedBox(width: 4),
+                Text(
+                  location,
+                  style: const TextStyle(
+                      fontSize: 12, color: Color(0xFF6B7280)),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  // ---------------- TYPE BADGE ----------------
-  Widget _buildBadge(String text, Color bgColor, Color textColor) {
+class _Pill extends StatelessWidget {
+  final String label;
+  final Color bg;
+  final Color fg;
+  const _Pill({required this.label, required this.bg, required this.fg});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: bg,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        text,
-        style: TextStyles.caption.copyWith(
-          color: textColor,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  // ---------------- TYPE COLORS ----------------
-  Color _getTypeColor(String type) {
-    switch (type.toLowerCase()) {
-      case "core":
-        return const Color(0xFFDDEDFA);
-      case "elective":
-        return const Color(0xFFFFF3DF);
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Color _getTypeTextColor(String type) {
-    switch (type.toLowerCase()) {
-      case "core":
-        return const Color(0xFF0C4D83);
-      case "elective":
-        return const Color(0xFFB7791F);
-      default:
-        return Colors.white;
-    }
-  }
-
-  // ---------------- CREDITS ----------------
-  Color _getCreditsColor() {
-    switch (credits.toLowerCase()) {
-      case "3 credits":
-        return const Color(0xFFDDEDFA);
-      case "2 credits":
-        return const Color(0xFFFFF3DF);
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Color _getCreditsTextColor() {
-    switch (credits.toLowerCase()) {
-      case "3 credits":
-        return const Color(0xFF0C4D83);
-      case "2 credits":
-        return const Color(0xFFB7791F);
-      default:
-        return Colors.white;
-    }
-  }
-
-  Widget _buildCredits() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getCreditsColor(),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        credits,
-        style: TextStyles.caption.copyWith(
-          color: _getCreditsTextColor(),
-          fontWeight: FontWeight.w500,
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: fg,
         ),
       ),
     );

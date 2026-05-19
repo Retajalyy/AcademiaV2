@@ -1,42 +1,62 @@
-import 'package:academia/Features/Home/models/assignment_model.dart';
-import 'package:academia/Features/Home/models/schedule_model.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/schedule_item_model.dart';
+import '../models/assignment_model.dart';
+import '../services/home_service.dart';
 
 class HomeController extends GetxController {
-  var userName = "Mariam Ibrahim".obs;
-  var nextClass = ScheduleItem(
-          title: "Cloud Computing",
-          time: "09:00 - 11:00",
-          location: "Room B1",
-          instructor: "Dr. Youssef",
-          type: "Lecture")
-      .obs;
+  final HomeService _service = HomeService();
 
-  var assignments = <Assignment>[].obs;
+  // — Observables your HomePage already binds to —
+  var userName = ''.obs;
   var dailySchedule = <ScheduleItem>[].obs;
+  var assignments = <Assignment>[].obs;
+  var nextClass = Rxn<ScheduleItem>();
+  var isLoading = true.obs;
 
   @override
   void onInit() {
     super.onInit();
-    // CRITICAL: You must call both functions here
-    loadSchedule();
-    loadAssignments(); 
+    loadHomeData();
   }
 
-  void loadAssignments() {
-    assignments.assignAll([
-      Assignment(title: "Assignment 3", courseName: "Cloud Computing", dueDate: "Today", icon: Icons.note_add_outlined, color: Colors.red),
-      Assignment(title: "Quiz 2", courseName: "Digital Marketing", dueDate: "Tomorrow", icon: Icons.assignment_turned_in_outlined, color: Colors.amber),
-      Assignment(title: "Research submitting", courseName: "Technical Writing", dueDate: "Apr 12", icon: Icons.attachment_outlined, color: Colors.blue),
-    ]);
+  Future<void> loadHomeData() async {
+    isLoading.value = true;
+    try {
+      final userId = Supabase.instance.client.auth.currentUser!.id;
+
+      // Run name + studentId fetch in parallel
+      final results = await Future.wait([
+        _service.getStudentName(userId),
+        _service.getStudentId(userId),
+      ]);
+
+      final name = results[0] as String;
+      final studentId = results[1] as int;
+
+      userName.value = name;
+
+      // Run schedule + assignments in parallel
+      final data = await Future.wait([
+        _service.getTodaySchedule(studentId),
+        _service.getUpcomingAssignments(studentId),
+        _service.getNextClass(studentId),
+      ]);
+
+      dailySchedule.value = data[0] as List<ScheduleItem>;
+      assignments.value   = data[1] as List<Assignment>;
+      nextClass.value     = data[2] as ScheduleItem?;
+
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load home data: ${e.toString()}',
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  void loadSchedule() {
-    dailySchedule.assignAll([
-      ScheduleItem(title: "Cloud Computing", time: "09:00 - 11:00", location: "Room B1", instructor: "Dr. Youssef Senousy", type: "Lecture"),
-      ScheduleItem(title: "Introduction to AI", time: "09:00 - 11:00", location: "Lab 1", instructor: "Mr. Ahmed Mohamed", type: "Section"),
-      ScheduleItem(title: "Data Structures", time: "09:00 - 11:00", location: "Hall 001", instructor: "Dr. Marwa Ahmed", type: "Lecture"),
-    ]);
-  }
+  /// Pull-to-refresh
+  Future<void> refresh() => loadHomeData();
 }

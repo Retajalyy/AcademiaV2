@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../Core/utilities/colors.dart';
 import '../controllers/registration_controller.dart';
 import '../models/registration_model.dart';
 
-
-/// Shown when registration is open.
-/// Matches Figma: group card, lectures schedule cards, confirm CTA.
 class RegistrationOpenWidget extends StatelessWidget {
   const RegistrationOpenWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<RegistrationController>();
+    final w = MediaQuery.of(context).size.width;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _GroupCard(ctrl: ctrl),
-        const SizedBox(height: 20),
+        SizedBox(height: w * 0.05),
         _ScheduleSection(ctrl: ctrl),
-        const SizedBox(height: 20),
+        SizedBox(height: w * 0.05),
         _ConfirmButton(ctrl: ctrl),
-        const SizedBox(height: 24),
+        SizedBox(height: w * 0.06),
       ],
     );
   }
@@ -33,13 +32,140 @@ class _GroupCard extends StatelessWidget {
   final RegistrationController ctrl;
   const _GroupCard({required this.ctrl});
 
+  String _abbr(String label) {
+    final parts = label.trim().split(' ');
+    return parts.length > 1 ? parts.last : label.substring(0, 2).toUpperCase();
+  }
+
+  void _showGroupPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Obx(() {
+        final groups = ctrl.availableGroups;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Select a Group',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...groups.asMap().entries.map((entry) {
+                final i = entry.key;
+                final g = entry.value;
+                final isSelected = ctrl.selectedTabIndex.value == i;
+                return GestureDetector(
+                  onTap: () {
+                    ctrl.onTabChanged(i);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.lightblue
+                          : const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primaryBlue
+                            : const Color(0xFFE5E7EB),
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primaryBlue
+                                : const Color(0xFF0F1B3D),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              _abbr(g.label),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                g.label,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? AppColors.primaryBlue
+                                      : const Color(0xFF111827),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '${g.lectures.length} Courses · ${g.creditHours} Credits',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF9CA3AF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          const Icon(Icons.check_circle_rounded,
+                              color: AppColors.primaryBlue, size: 20),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final group = ctrl.selectedGroup;
-      final groupLabel = group?.label ?? 'Group SE1';
-      final courseCount = group?.lectures.length ?? 0;
-      final credits = group?.creditHours ?? 0;
+      if (group == null) return const SizedBox.shrink();
+      final abbr = _abbr(group.label);
 
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -48,7 +174,7 @@ class _GroupCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -56,7 +182,6 @@ class _GroupCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // "SE1" avatar — dark navy circle with white bold text
             Container(
               width: 42,
               height: 42,
@@ -64,10 +189,10 @@ class _GroupCard extends StatelessWidget {
                 color: Color(0xFF0F1B3D),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'SE1',
-                  style: TextStyle(
+                  abbr,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -82,16 +207,17 @@ class _GroupCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    groupLabel,
+                    group.label,
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF111827),
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$courseCount Courses · $credits Credits',
+                    '${group.lectures.length} Courses · ${group.creditHours} Credits',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF9CA3AF),
@@ -100,15 +226,14 @@ class _GroupCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             GestureDetector(
-              onTap: () {
-                // TODO: open group picker bottom sheet
-              },
+              onTap: () => _showGroupPicker(context),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A6EFF),
+                  color: AppColors.primaryBlue,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
@@ -141,7 +266,7 @@ class _ScheduleSection extends StatelessWidget {
         return const Center(
           child: Padding(
             padding: EdgeInsets.all(32),
-            child: CircularProgressIndicator(color: Color(0xFF1A6EFF)),
+            child: CircularProgressIndicator(color: AppColors.primaryBlue),
           ),
         );
       }
@@ -151,7 +276,6 @@ class _ScheduleSection extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -168,7 +292,7 @@ class _ScheduleSection extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: AppColors.lightblue,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -176,7 +300,7 @@ class _ScheduleSection extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A6EFF),
+                    color: AppColors.primaryBlue,
                   ),
                 ),
               ),
@@ -199,11 +323,55 @@ class _CourseCard extends StatelessWidget {
   final CourseWithWarning courseWithWarning;
   const _CourseCard({required this.courseWithWarning});
 
+  void _showAddDialog(BuildContext context, CourseLecture lec) {
+    final ctrl = Get.find<RegistrationController>();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 22),
+            SizedBox(width: 8),
+            Text('Add Anyway?', style: TextStyle(fontSize: 17)),
+          ],
+        ),
+        content: Text(
+          '${lec.courseName} has an unmet prerequisite.\n\n'
+          '${courseWithWarning.warningMessage ?? ''}\n\n'
+          'Do you want to add it anyway? Your advisor may need to approve this.',
+          style: const TextStyle(fontSize: 13, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF6B7280))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              ctrl.addLockedCourse(lec.courseCode);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text('Add Anyway'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final lec = courseWithWarning.lecture;
+    final lec        = courseWithWarning.lecture;
     final hasWarning = courseWithWarning.warningMessage != null;
-    final isLocked = courseWithWarning.isLocked ?? false;
+    final isLocked   = courseWithWarning.isLocked;
 
     return Container(
       decoration: BoxDecoration(
@@ -211,7 +379,7 @@ class _CourseCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -222,12 +390,12 @@ class _CourseCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Colored left border strip ─────────────────────────────
+            // ── Colored left border ───────────────────────────────────
             Container(
               width: 4,
               color: hasWarning
                   ? const Color(0xFFEF4444)
-                  : const Color(0xFF1A6EFF),
+                  : AppColors.primaryBlue,
             ),
 
             Expanded(
@@ -235,15 +403,15 @@ class _CourseCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Course name row + credits badge + lock ────
+                        // ── Course name + credits + lock ──────────────
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Expanded(
+                            Flexible(
                               child: Text(
                                 lec.courseName,
                                 style: const TextStyle(
@@ -251,32 +419,32 @@ class _CourseCard extends StatelessWidget {
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF111827),
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            // Credits badge (blue pill, top-right)
+                            const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
+                                color: AppColors.lightblue,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
-                                '${lec.creditHours} Credits',
+                                '${lec.creditHours} Cr',
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1A6EFF),
+                                  color: AppColors.primaryBlue,
                                 ),
                               ),
                             ),
-                            // Lock icon when prerequisite not met
                             if (isLocked) ...[
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 4),
                               const Icon(
                                 Icons.lock_outline_rounded,
-                                size: 14,
+                                size: 13,
                                 color: Color(0xFFEF4444),
                               ),
                             ],
@@ -284,29 +452,23 @@ class _CourseCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
 
-                        // ── LECTURE · Day chip ────────────────────────
+                        // ── LECTURE chip ──────────────────────────────
                         _InfoChip(
                           icon: Icons.menu_book_rounded,
                           label: 'LECTURE · ${lec.day}',
-                          color: const Color(0xFF1A6EFF),
-                          bgColor: const Color(0xFFEFF6FF),
+                          color: AppColors.primaryBlue,
+                          bgColor: AppColors.lightblue,
                         ),
                         const SizedBox(height: 8),
-
-                        // Time
                         _IconRow(
                           icon: Icons.access_time_rounded,
                           text: '${lec.timeFrom} - ${lec.timeTo}',
                         ),
                         const SizedBox(height: 4),
-
-                        // Instructor
                         _IconRow(
                           icon: Icons.person_outline_rounded,
                           text: lec.instructor,
                         ),
-
-                        // Room
                         if (lec.room != null) ...[
                           const SizedBox(height: 4),
                           _IconRow(
@@ -315,14 +477,14 @@ class _CourseCard extends StatelessWidget {
                           ),
                         ],
 
-                        // ── SECTION chip (amber) ──────────────────────
+                        // ── SECTION chip ──────────────────────────────
                         if (lec.sectionDay != null) ...[
                           const SizedBox(height: 10),
                           _InfoChip(
                             icon: Icons.edit_note_rounded,
                             label: 'SECTION · ${lec.sectionDay}',
-                            color: const Color(0xFFF59E0B),
-                            bgColor: const Color(0xFFFFFBEB),
+                            color: AppColors.secondaryYellow,
+                            bgColor: AppColors.LightYellow,
                           ),
                           if (lec.sectionInstructor != null) ...[
                             const SizedBox(height: 8),
@@ -350,12 +512,12 @@ class _CourseCard extends StatelessWidget {
                     ),
                   ),
 
-                  // ── Warning footer strip ──────────────────────────────
+                  // ── Warning footer ────────────────────────────────────
                   if (hasWarning)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 9),
+                          horizontal: 12, vertical: 8),
                       decoration: const BoxDecoration(
                         color: Color(0xFFFFF1F1),
                         border: Border(
@@ -382,42 +544,58 @@ class _CourseCard extends StatelessWidget {
                       ),
                     ),
 
-                  // ── "+ Add" button row (bottom-right) ─────────────────
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 12, 10),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          // TODO: add course action
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEFF6FF),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add_rounded,
-                                  size: 14, color: Color(0xFF1A6EFF)),
-                              SizedBox(width: 3),
-                              Text(
-                                'Add',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1A6EFF),
-                                ),
+                  // ── "+ Add" button — only on locked/warning cards ─────
+                  if (hasWarning || isLocked)
+                    Obx(() {
+                      final ctrl = Get.find<RegistrationController>();
+                      final added = ctrl.isCourseForceAdded(lec.courseCode);
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 4, 12, 10),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: added
+                                ? null
+                                : () => _showAddDialog(context, lec),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: added
+                                    ? const Color(0xFFE8F5E9)
+                                    : AppColors.lightblue,
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            ],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    added
+                                        ? Icons.check_rounded
+                                        : Icons.add_rounded,
+                                    size: 14,
+                                    color: added
+                                        ? Colors.green
+                                        : AppColors.primaryBlue,
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    added ? 'Added' : '+ Add',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: added
+                                          ? Colors.green
+                                          : AppColors.primaryBlue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
+                      );
+                    }),
                 ],
               ),
             ),
@@ -456,13 +634,16 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(icon, size: 11, color: color),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: color,
-              letterSpacing: 0.3,
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: color,
+                letterSpacing: 0.3,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -474,7 +655,6 @@ class _InfoChip extends StatelessWidget {
 class _IconRow extends StatelessWidget {
   final IconData icon;
   final String text;
-
   const _IconRow({required this.icon, required this.text});
 
   @override
@@ -487,6 +667,8 @@ class _IconRow extends StatelessWidget {
           child: Text(
             text,
             style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ],
@@ -494,7 +676,7 @@ class _IconRow extends StatelessWidget {
   }
 }
 
-// ── Confirm Registration Button ───────────────────────────────────────────────
+// ── Confirm Button ────────────────────────────────────────────────────────────
 
 class _ConfirmButton extends StatelessWidget {
   final RegistrationController ctrl;
@@ -502,41 +684,40 @@ class _ConfirmButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      return SizedBox(
-        width: double.infinity,
-        height: 52,
-        child: ElevatedButton(
-          onPressed:
-              ctrl.isSubmitting.value ? null : ctrl.confirmRegistration,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1A6EFF),
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: const Color(0xFF93C5FD),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+    final h = MediaQuery.of(context).size.height;
+    return Obx(() => SizedBox(
+          width: double.infinity,
+          height: h * 0.065,
+          child: ElevatedButton(
+            onPressed:
+                ctrl.isSubmitting.value ? null : ctrl.confirmRegistration,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: AppColors.lightblue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
             ),
-            elevation: 0,
+            child: ctrl.isSubmitting.value
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text(
+                    'Confirm Registration',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
           ),
-          child: ctrl.isSubmitting.value
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text(
-                  'Confirm Registration',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-        ),
-      );
-    });
+        ));
   }
 }

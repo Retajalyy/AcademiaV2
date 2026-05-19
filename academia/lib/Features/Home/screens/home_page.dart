@@ -1,3 +1,4 @@
+import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:academia/Features/Home/controllers/home_controller.dart';
@@ -15,7 +16,11 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F3FA),
-      body: Column(
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Column(
         children: [
           // ── 1. Header ──────────────────────────────────────────────
           _Header(controller: controller, sw: sw, sh: sh),
@@ -34,21 +39,21 @@ class HomePage extends StatelessWidget {
                     sw: sw,
                     sh: sh,
                   ),
-                  Obx(() => ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: EdgeInsets.symmetric(horizontal: sw * 0.045),
-                        itemCount: controller.dailySchedule.length,
-                        itemBuilder: (context, index) {
-                          return ScheduleCard(
-                            item: controller.dailySchedule[index],
-                            accentColor: index == 1
-                                ? const Color(0xFF4CAF50)
-                                : const Color(0xFF2D4B94),
-                            isLast: index == controller.dailySchedule.length - 1,
-                          );
-                        },
-                      )),
+                  ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.symmetric(horizontal: sw * 0.045),
+                      itemCount: controller.dailySchedule.length,
+                      itemBuilder: (context, index) {
+                        return ScheduleCard(
+                          item: controller.dailySchedule[index],
+                          accentColor: index % 2 == 1
+                              ? AppColors.secondaryYellow
+                              : AppColors.primaryBlue,
+                          isLast: index == controller.dailySchedule.length - 1,
+                        );
+                      },
+                    ),
 
                   SizedBox(height: sh * 0.02),
 
@@ -67,30 +72,29 @@ class HomePage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(sw * 0.04),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha:0.04),
                             blurRadius: sw * 0.04,
                             offset: Offset(0, sw * 0.01),
                           ),
                         ],
                       ),
-                      child: Obx(() => Column(
-                            children: List.generate(
-                              controller.assignments.length,
-                              (index) => Column(
-                                children: [
-                                  DueSoonCard(
-                                      assignment: controller.assignments[index]),
-                                  if (index != controller.assignments.length - 1)
-                                    Divider(
-                                      height: 1,
-                                      indent: sw * 0.04,
-                                      endIndent: sw * 0.04,
-                                      color: Colors.grey.shade100,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          )),
+                      child: Column(
+                        children: List.generate(
+                          controller.assignments.length,
+                          (index) => Column(
+                            children: [
+                              DueSoonCard(assignment: controller.assignments[index]),
+                              if (index != controller.assignments.length - 1)
+                                Divider(
+                                  height: 1,
+                                  indent: sw * 0.04,
+                                  endIndent: sw * 0.04,
+                                  color: Colors.grey.shade100,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -98,8 +102,8 @@ class HomePage extends StatelessWidget {
             ),
           ),
         ],
-      ),
-      // NO bottomNavigationBar — handled externally by BottomBar widget
+        );
+      }),
     );
   }
 }
@@ -112,8 +116,28 @@ class _Header extends StatelessWidget {
   final double sw, sh;
   const _Header({required this.controller, required this.sw, required this.sh});
 
+  String get _greeting {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good Morning,';
+    if (h < 17) return 'Good Afternoon,';
+    return 'Good Evening,';
+  }
+
+  String _minutesLabel(String time) {
+    final start = time.split(' - ')[0];
+    final parts = start.split(':');
+    final classMin = int.parse(parts[0]) * 60 + int.parse(parts[1]);
+    final now = TimeOfDay.now();
+    final diff = classMin - (now.hour * 60 + now.minute);
+    if (diff <= 0) return 'Starting now';
+    if (diff < 60) return 'In $diff min';
+    return 'In ${diff ~/ 60}h ${diff % 60}m';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final next = controller.nextClass.value;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -123,7 +147,7 @@ class _Header extends StatelessWidget {
         bottom: sh * 0.03,
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF2D4B94),
+        color: AppColors.primaryBlue,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(28),
           bottomRight: Radius.circular(28),
@@ -141,32 +165,32 @@ class _Header extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Good Morning,",
+                    _greeting,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha:0.85),
                       fontSize: sw * 0.038,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
                   SizedBox(height: sh * 0.003),
-                  Obx(() => Text(
-                        controller.userName.value,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: sw * 0.065,
-                          fontWeight: FontWeight.bold,
-                          height: 1.1,
-                        ),
-                      )),
+                  Text(
+                    controller.userName.value,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: sw * 0.065,
+                      fontWeight: FontWeight.bold,
+                      height: 1.1,
+                    ),
+                  ),
                 ],
               ),
-              // Notification bell with yellow dot badge
+              // Notification bell
               Stack(
                 children: [
                   Container(
                     padding: EdgeInsets.all(sw * 0.022),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha:0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -182,7 +206,7 @@ class _Header extends StatelessWidget {
                       width: sw * 0.025,
                       height: sw * 0.025,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFFC107),
+                        color: AppColors.secondaryYellow,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -202,88 +226,89 @@ class _Header extends StatelessWidget {
               vertical: sh * 0.018,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.13),
+              color: Colors.white.withValues(alpha:0.13),
               borderRadius: BorderRadius.circular(sw * 0.04),
               border: Border.all(
-                color: Colors.white.withOpacity(0.18),
+                color: Colors.white.withValues(alpha:0.18),
                 width: 1,
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // "NEXT CLASS" label + "In 20 min" pill
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "NEXT CLASS",
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: sw * 0.028,
-                        letterSpacing: 1.2,
-                        fontWeight: FontWeight.w600,
-                      ),
+            child: next == null
+                ? Text(
+                    'No more classes today',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: sw * 0.038,
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: sw * 0.03,
-                        vertical: sh * 0.005,
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'NEXT CLASS',
+                            style: TextStyle(
+                              color: Colors.white60,
+                              fontSize: sw * 0.028,
+                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: sw * 0.03,
+                              vertical: sh * 0.005,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondaryYellow,
+                              borderRadius: BorderRadius.circular(sw * 0.05),
+                            ),
+                            child: Text(
+                              _minutesLabel(next.time),
+                              style: TextStyle(
+                                color: AppColors.primaryBlue,
+                                fontSize: sw * 0.028,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFC107),
-                        borderRadius: BorderRadius.circular(sw * 0.05),
-                      ),
-                      child: Text(
-                        "In 20 min",
+                      SizedBox(height: sh * 0.008),
+                      Text(
+                        next.title,
                         style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: sw * 0.028,
+                          color: Colors.white,
+                          fontSize: sw * 0.052,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: sh * 0.008),
-
-                // Course name
-                Text(
-                  "Cloud Computing",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: sw * 0.052,
-                    fontWeight: FontWeight.bold,
+                      SizedBox(height: sh * 0.008),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time_rounded,
+                              color: Colors.white60, size: sw * 0.038),
+                          SizedBox(width: sw * 0.015),
+                          Text(
+                            next.time,
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: sw * 0.032),
+                          ),
+                          SizedBox(width: sw * 0.045),
+                          Icon(Icons.location_on_outlined,
+                              color: Colors.white60, size: sw * 0.038),
+                          SizedBox(width: sw * 0.01),
+                          Text(
+                            next.location,
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: sw * 0.032),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-
-                SizedBox(height: sh * 0.008),
-
-                // Time & Room row
-                Row(
-                  children: [
-                    Icon(Icons.access_time_rounded,
-                        color: Colors.white60, size: sw * 0.038),
-                    SizedBox(width: sw * 0.015),
-                    Text(
-                      "09:00 - 11:00",
-                      style: TextStyle(
-                          color: Colors.white70, fontSize: sw * 0.032),
-                    ),
-                    SizedBox(width: sw * 0.045),
-                    Icon(Icons.location_on_outlined,
-                        color: Colors.white60, size: sw * 0.038),
-                    SizedBox(width: sw * 0.01),
-                    Text(
-                      "Room B1",
-                      style: TextStyle(
-                          color: Colors.white70, fontSize: sw * 0.032),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -326,12 +351,12 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: () => Get.toNamed('/schedule'),
             child: Text(
               actionLabel,
               style: TextStyle(
                 fontSize: sw * 0.033,
-                color: const Color(0xFF2D4B94),
+                color:AppColors.primaryBlue,
                 fontWeight: FontWeight.w600,
               ),
             ),

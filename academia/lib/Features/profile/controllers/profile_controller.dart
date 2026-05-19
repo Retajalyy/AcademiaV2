@@ -1,18 +1,26 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:academia/Features/profile/models/student_model.dart';
 import 'package:academia/Features/profile/services/student_service.dart';
 
 class ProfileController extends GetxController {
   final StudentService _service = StudentService();
+  final _picker = ImagePicker();
 
-  // Observable state
   final Rxn<StudentModel> student = Rxn<StudentModel>();
   final RxBool isLoading = false.obs;
   final RxBool isSaving = false.obs;
   final RxString error = ''.obs;
 
-  // Controller for editable fields (Phone Number)
+  // Displayed avatar URL (from DB)
+  final Rxn<String> avatarUrl = Rxn<String>();
+
+  // Pending local image — set when user picks, cleared after save
+  final Rxn<Uint8List> pendingImageBytes = Rxn<Uint8List>();
+  String _pendingImageExt = 'jpg';
+
   late TextEditingController phoneController;
 
   @override
@@ -31,48 +39,63 @@ class ProfileController extends GetxController {
   Future<void> loadProfile() async {
     isLoading.value = true;
     error.value = '';
-
     try {
       final data = await _service.fetchStudentProfile();
       student.value = data;
-      // Initialize the text field with the current phone if available
-      // Note: If StudentModel doesn't have phone, you may need to update the model.
-      // phoneController.text = data.phone ?? ''; 
+      phoneController.text = data.phone;
+      avatarUrl.value = data.avatarUrl;
     } catch (e) {
-      error.value = 'Failed to load profile. Please try again.';
+      error.value = 'Failed to load profile: $e';
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Method triggered by the "Save" button in image_493b35.png
+  // Pick image — only stores locally, does NOT upload yet
+  Future<void> pickProfileImage() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 512,
+      maxHeight: 512,
+    );
+    if (image == null) return;
+    pendingImageBytes.value = await image.readAsBytes();
+    _pendingImageExt = image.path.split('.').last.toLowerCase();
+  }
+
+  // Save button — uploads image (if picked) + saves phone
   Future<void> updateProfile() async {
     if (student.value == null) return;
-
     isSaving.value = true;
     try {
-      // Assuming a service method exists to handle updates
-      bool success = await _service.updateStudentPhone(phoneController.text);
-      
-      if (success) {
-        Get.snackbar(
-          "Success", 
-          "Profile updated successfully",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withOpacity(0.8),
-          colorText: Colors.white,
+      // Upload image if one was picked
+      if (pendingImageBytes.value != null) {
+        final url = await _service.uploadAvatarByStudentNumber(
+          student.value!.id,
+          pendingImageBytes.value!,
+          _pendingImageExt,
         );
+        PaintingBinding.instance.imageCache.clear();
+        avatarUrl.value = url;
+        pendingImageBytes.value = null;
       }
+
+      // Save phone number
+      await _service.updateStudentPhone(
+          student.value!.id, phoneController.text);
+
+      Get.snackbar(
+        'Success',
+        'Profile updated successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withValues(alpha: 0.85),
+        colorText: Colors.white,
+      );
     } catch (e) {
-      Get.snackbar("Error", "Failed to save changes");
+      Get.snackbar('Error', e.toString(), duration: const Duration(seconds: 6));
     } finally {
       isSaving.value = false;
     }
-  }
-
-  // Method for the "Tap to change photo" action
-  Future<void> pickProfileImage() async {
-    // Logic for ImagePicker would go here
-    print("Opening gallery/camera...");
   }
 }

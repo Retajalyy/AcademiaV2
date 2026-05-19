@@ -38,23 +38,19 @@ class ExamCard extends StatelessWidget {
       bgColor = const Color(0xFFF7F7F7);
     }
 
-    /// 🔍 FIXED Midterm detection
     bool isMidtermExam =
         title.toLowerCase().contains('midterm') ||
         title.toLowerCase().contains('midterms');
 
-    /// 🔵 Border for next exam (Cloud Computing)
-    bool isCloudComputing = title == "Cloud Computing";
-
     return Opacity(
-      opacity: isCompleted ? 0.7 : 1.0, // ✅ better visibility
+      opacity: isCompleted ? 0.7 : 1.0,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(14),
 
-          border: isCloudComputing
+          border: isNext
               ? Border.all(
                   color: AppColors.primaryBlue,
                   width: 2,
@@ -63,7 +59,7 @@ class ExamCard extends StatelessWidget {
 
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isHighlighted ? 0.15 : 0.06),
+              color: Colors.black.withValues(alpha: isHighlighted ? 0.15 : 0.06),
               blurRadius: isHighlighted ? 5 : 10,
               offset: const Offset(0, 4),
             ),
@@ -96,7 +92,7 @@ class ExamCard extends StatelessWidget {
                       margin: const EdgeInsets.only(top: 8),
                       width: 2,
                       height: 40,
-                      color: AppColors.disabledText.withOpacity(0.2),
+                      color: AppColors.disabledText.withValues(alpha: 0.2),
                     ),
                   ],
                 ),

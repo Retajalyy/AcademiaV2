@@ -1,49 +1,49 @@
 import 'package:flutter/material.dart';
-import '../../../Core/utilities/colors.dart';
-import '../../../Core/utilities/text_style.dart';
+import 'package:get/get.dart';
+import 'package:academia/Core/utilities/colors.dart';
+import 'package:academia/Core/utilities/text_style.dart';
+import 'package:academia/Features/Home/models/schedule_item_model.dart';
 import 'package:academia/Features/Schedule/model/class_model.dart';
+import 'package:academia/Features/schedule/controllers/schedule_controller.dart';
 import '../widgets/calendar.dart';
 import '../widgets/class_card.dart';
 
 class ScheduleScreen extends StatefulWidget {
-  const ScheduleScreen({Key? key}) : super(key: key);
+  const ScheduleScreen({super.key});
 
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  DateTime _selectedDate = DateTime(2025, 9, 9);
+  late final ScheduleController _controller;
+  DateTime _selectedDate = DateTime.now();
 
-  final List<ClassModel> _classes = const [
-    ClassModel(
-      title: 'Programming 1',
-      room: 'Room B1',
-      instructor: 'Dr. Ahmed Safwat',
-      startTime: '8:00',
-      endTime: '9:30',
-      type: 'Lecture',
-      accentColor: AppColors.accentProgramming1,
-    ),
-    ClassModel(
-      title: 'Introduction to AI',
-      room: 'Lab 1',
-      instructor: 'Mr. Ahmed Mohamed',
-      startTime: '9:30',
-      endTime: '11:00',
-      type: 'Section',
-      accentColor: AppColors.accentAI,
-    ),
-    ClassModel(
-      title: 'Data Structures',
-      room: 'Room B1',
-      instructor: 'Dr. Marwa Ahmed',
-      startTime: '11:00',
-      endTime: '12:30',
-      type: 'Lecture',
-      accentColor: AppColors.accentProgramming1,
-    ),
+  static const _accentColors = [
+    AppColors.accentProgramming1,
+    AppColors.accentAI,
+    AppColors.accentDataStructures,
+    AppColors.accentStatistics,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(ScheduleController());
+  }
+
+  ClassModel _toClassModel(ScheduleItem item, int index) {
+    final parts = item.time.split(' - ');
+    return ClassModel(
+      title: item.title,
+      room: item.location,
+      instructor: item.instructor,
+      startTime: parts[0],
+      endTime: parts.length > 1 ? parts[1] : '',
+      type: item.type,
+      accentColor: _accentColors[index % _accentColors.length],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,28 +53,45 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Calendar
             CalendarWidget(
               selectedDate: _selectedDate,
               onDateSelected: (date) {
-                setState(() {
-                  _selectedDate = date;
-                });
+                setState(() => _selectedDate = date);
+                _controller.loadSchedule(date);
               },
             ),
 
             const SizedBox(height: 24),
 
-            // Title
-            Text(
-              'Classes',
-              style: TextStyles.header2,
-            ),
+            Text('Classes', style: TextStyles.header2),
 
             const SizedBox(height: 16),
 
-            // Class list
-            ..._classes.map((c) => ClassCardWidget(classModel: c)),
+            Obx(() {
+              if (_controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (_controller.classes.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Text(
+                      'No classes on this day',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                );
+              }
+              return Column(
+                children: _controller.classes
+                    .asMap()
+                    .entries
+                    .map((e) => ClassCardWidget(
+                          classModel: _toClassModel(e.value, e.key),
+                        ))
+                    .toList(),
+              );
+            }),
           ],
         ),
       ),
