@@ -14,10 +14,34 @@ class SplashController extends GetxController {
 
     final session = Supabase.instance.client.auth.currentSession;
 
-   // if (session != null) {
-    //  Get.offAllNamed('/app');      // Already logged in → go to BottomBar
-   // } else {
-      Get.offAllNamed('/login');    // Not logged in → go to Login
-   // }
+    if (session == null) {
+      Get.offAllNamed('/login');
+      return;
+    }
+
+    // Session exists — fetch role and route accordingly
+    try {
+      final profile = await Supabase.instance.client
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+      final role = (profile['role'] as String? ?? 'student').toLowerCase().trim();
+
+      switch (role) {
+        case 'admin':
+          Get.offAllNamed('/Dashboard');
+          break;
+        case 'professor':
+          Get.offAllNamed('/professorApp');
+          break;
+        default:
+          Get.offAllNamed('/app');
+      }
+    } catch (_) {
+      // If profile fetch fails, fall back to login
+      Get.offAllNamed('/login');
+    }
   }
 }

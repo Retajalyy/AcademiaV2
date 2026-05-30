@@ -1,4 +1,5 @@
 class CourseModel {
+  final int courseId;
   final int sectionId;
   final String title;
   final String code;
@@ -10,6 +11,7 @@ class CourseModel {
   final String location;
 
   CourseModel({
+    this.courseId = 0,
     required this.sectionId,
     required this.title,
     required this.code,
@@ -20,6 +22,23 @@ class CourseModel {
     required this.time,
     required this.location,
   });
+
+  factory CourseModel.fromRgs(Map<String, dynamic> row, {int courseId = 0}) {
+    final start = (row['lecture_start'] as String?)?.substring(0, 5) ?? '--:--';
+    final end   = (row['lecture_end']   as String?)?.substring(0, 5) ?? '--:--';
+    return CourseModel(
+      courseId:  courseId,
+      sectionId: row['section_id']        as int?    ?? 0,
+      title:     row['course_name']       as String? ?? '',
+      code:      row['course_code']       as String? ?? '',
+      doctor:    row['lecture_instructor'] as String? ?? '',
+      type:      '',
+      credits:   '${row['credit_hours'] ?? 3} credits',
+      day:       row['lecture_day']       as String? ?? '',
+      time:      '$start - $end',
+      location:  row['lecture_room']      as String? ?? '',
+    );
+  }
 
   factory CourseModel.fromMap(Map<String, dynamic> row) {
     final section   = row['sections'] as Map<String, dynamic>;

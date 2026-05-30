@@ -1,5 +1,8 @@
 import 'package:academia/Features/Dashboard_admin/controller/dashboard_controller.dart';
 import 'package:academia/Features/Dashboard_admin/screens/profile_menuScreen.dart';
+import 'package:academia/Features/Faculties_admin/screens/faculties_screen.dart';
+import 'package:academia/Features/Instructors_admin/screens/instructors_screen.dart';
+import 'package:academia/Features/Students_admin/screens/students_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -88,26 +91,35 @@ class DashboardHeader extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 1.6,
             children: [
-              StatCard(
-                icon: Icons.people_outline,
-                title: 'Total\nStudents',
-                value: controller.totalStudents,
-                subtitle: '${controller.semester} · Active',
-                height: 80,
+              GestureDetector(
+                onTap: () => Get.to(() => const AdminStudentsScreen()),
+                child: StatCard(
+                  icon: Icons.people_outline,
+                  title: 'Total\nStudents',
+                  value: controller.totalStudents,
+                  subtitle: '${controller.semester} · Active',
+                  height: 80,
+                ),
               ),
-              StatCard(
-                icon: Icons.account_balance_outlined,
-                title: 'Faculties',
-                value: controller.faculties,
-                subtitle: '${controller.majors} Majors total',
-                height: 80,
+              GestureDetector(
+                onTap: () => Get.to(() => const AdminFacultiesScreen()),
+                child: StatCard(
+                  icon: Icons.account_balance_outlined,
+                  title: 'Faculties',
+                  value: controller.faculties,
+                  subtitle: '${controller.majors} Majors total',
+                  height: 80,
+                ),
               ),
-              StatCard(
-                icon: Icons.person_outline,
-                title: 'Instructors',
-                value: controller.instructors,
-                subtitle: '${controller.totalCourses} Courses total',
-                height: 80,
+              GestureDetector(
+                onTap: () => Get.to(() => const AdminInstructorsScreen()),
+                child: StatCard(
+                  icon: Icons.person_outline,
+                  title: 'Instructors',
+                  value: controller.instructors,
+                  subtitle: '${controller.totalCourses} Courses total',
+                  height: 80,
+                ),
               ),
               StatCard(
                 icon: Icons.access_time,

@@ -7,8 +7,9 @@ class ServiceItemModel {
   final String title;
   final String subtitle;
   final String iconAsset;
-  final Color accentColor;      // 👈 icon tint color
-  final Color accentBackground; // 👈 icon container background
+  final IconData? iconData;     // fallback when no SVG is available
+  final Color accentColor;
+  final Color accentBackground;
   final ServiceStatus status;
   final String? route;
 
@@ -16,7 +17,8 @@ class ServiceItemModel {
     required this.id,
     required this.title,
     required this.subtitle,
-    required this.iconAsset,
+    this.iconAsset = '',
+    this.iconData,
     required this.accentColor,
     required this.accentBackground,
     this.status = ServiceStatus.none,

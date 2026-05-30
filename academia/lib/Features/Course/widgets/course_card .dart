@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:academia/Core/utilities/colors.dart';
-import 'package:academia/Features/Course/screens/CourseScreendetails.dart';
 
 class CourseCard extends StatelessWidget {
+  final int courseId;
   final String title;
   final String doctor;
   final String type;
@@ -13,6 +14,7 @@ class CourseCard extends StatelessWidget {
 
   const CourseCard({
     super.key,
+    this.courseId = 0,
     required this.title,
     required this.doctor,
     required this.type,
@@ -33,10 +35,10 @@ class CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const CourseScreenDetails()),
-      ),
+      onTap: () => Get.toNamed('/coursedetails', arguments: {
+        'courseId':   courseId,
+        'doctorName': doctor,
+      }),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(

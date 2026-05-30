@@ -1,132 +1,124 @@
-// lib/Features/plan_admin/widgets/Faculty_selection.dart
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:academia/Core/utilities/colors.dart';
+import '../controller/plan_admin_controller.dart';
 
-class FacultySelectionWidget extends StatefulWidget {
+class FacultySelectionWidget extends StatelessWidget {
   final VoidCallback onFacultySelected;
-
-  const FacultySelectionWidget({
-    super.key,
-    required this.onFacultySelected,
-  });
-
-  @override
-  State<FacultySelectionWidget> createState() =>
-      _FacultySelectionWidgetState();
-}
-
-class _FacultySelectionWidgetState extends State<FacultySelectionWidget> {
-  int? _selectedIndex;
-
-  final List<String> _faculties = [
-    'Computers & Information',
-    'Business Administration',
-    'Languages & Translation',
-  ];
-
-  final List<IconData> _icons = [
-    Icons.computer,
-    Icons.analytics_outlined,
-    Icons.language_outlined,
-  ];
-
-  void _onFacultyTap(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    widget.onFacultySelected();
-  }
-
-  Widget _buildSelectionCircle(bool isSelected) {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isSelected ? AppColors.accentAI : Colors.grey.shade300,
-          width: isSelected ? 4 : 1,
-        ),
-      ),
-      child: isSelected
-          ? Center(
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.accentProgramming1,
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-
-  Widget _buildIconContainer(IconData icon) {
-    return Container(
-      width: 39,
-      height: 39,
-      decoration: BoxDecoration(
-        color: const Color(0XFFDDEDFA),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(icon, color: AppColors.accentProgramming1),
-    );
-  }
+  const FacultySelectionWidget({super.key, required this.onFacultySelected});
 
   @override
   Widget build(BuildContext context) {
+    final c = Get.find<PlanAdminController>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
           padding: EdgeInsets.only(bottom: 12),
-          child: Text(
-            "SELECT FACULTY",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.smalltext,
-            ),
-          ),
+          child: Text('SELECT FACULTY',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.smalltext)),
         ),
-
-        Column(
-          children: List.generate(_faculties.length, (index) {
-            final isSelected = _selectedIndex == index;
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: InkWell(
-                onTap: () => _onFacultyTap(index),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      _buildIconContainer(_icons[index]),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _faculties[index],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppColors.accentProgramming1,
-                          ),
-                        ),
+        Obx(() {
+          if (c.facultiesLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (c.faculties.isEmpty) {
+            return Column(
+              children: [
+                Text(
+                  c.errorMessage.isNotEmpty
+                      ? c.errorMessage.value
+                      : 'No faculties found in database.',
+                  style: const TextStyle(color: Colors.red, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  onPressed: c.loadFaculties,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            );
+          }
+          return Column(
+            children: c.faculties.map((f) {
+              final code       = f['code']!;
+              final name       = f['name']!;
+              final isSelected = c.selectedFaculty.value == code;
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: InkWell(
+                  onTap: () async {
+                    await c.selectFaculty(code);
+                    onFacultySelected();
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primaryBlue
+                            : Colors.transparent,
+                        width: isSelected ? 1.5 : 1,
                       ),
-                      _buildSelectionCircle(isSelected),
-                    ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 39, height: 39,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDDEDFA),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.account_balance_outlined,
+                              color: AppColors.accentProgramming1),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(name,
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.accentProgramming1)),
+                        ),
+                        Container(
+                          width: 22, height: 22,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primaryBlue
+                                  : Colors.grey.shade300,
+                              width: isSelected ? 4 : 1,
+                            ),
+                          ),
+                          child: isSelected
+                              ? Center(
+                                  child: Container(
+                                    width: 10, height: 10,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.accentProgramming1,
+                                    ),
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
-        ),
+              );
+            }).toList(),
+          );
+        }),
       ],
     );
   }

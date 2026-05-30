@@ -1,10 +1,13 @@
+import 'package:academia/Features/Auth/services/auth_service.dart';
 import 'package:academia/Features/Registiration_admin/screens/NoRegistirationScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../utilities/colors.dart';
 import 'package:academia/Features/Dashboard_admin/screens/Dashboard_screen.dart';
 import 'package:academia/Features/Fees_admin/screens/FeesAdminScreen.dart';
 import 'package:academia/Features/course_admin/screens/course_admin_screen.dart';
 import 'package:academia/Features/exam_results_admin/screens/exam_results_screen.dart';
+import 'package:academia/Features/Exam_schedule_admin/screens/exam_schedule_admin_screen.dart';
 class SideMenu extends StatefulWidget {
   final String activeItem;
 
@@ -201,9 +204,9 @@ class _SideMenuState extends State<SideMenu> {
                       MenuItem(
                         icon: Icons.calendar_month_outlined,
                         title: "Schedules",
-                        active: widget.activeItem == "Schedules" ||
-                            widget.activeItem == "Course Schedule" ||
-                            widget.activeItem == "Exam Schedule",
+                        active: widget.activeItem == 'Schedules' ||
+                            widget.activeItem == 'Course Schedule' ||
+                            widget.activeItem == 'Exam Schedule',
                         trailing: _schedulesExpanded
                             ? Icons.keyboard_arrow_up_rounded
                             : Icons.keyboard_arrow_down_rounded,
@@ -232,9 +235,8 @@ class _SideMenuState extends State<SideMenu> {
                             SubMenuItem(
                               title: "Exam Schedule",
                               active: widget.activeItem == "Exam Schedule",
-                              onTap: () {
-                                // _navigate(context, const ExamScheduleScreen());
-                              },
+                              onTap: () => _navigate(
+                                  context, const ExamScheduleAdminScreen()),
                             ),
                           ],
                         ),
@@ -263,8 +265,10 @@ class _SideMenuState extends State<SideMenu> {
                       MenuItem(
                         icon: Icons.logout_rounded,
                         title: "Sign Out",
-                        onTap: () {
+                        onTap: () async {
                           Navigator.pop(context);
+                          await AuthService().logout();
+                          Get.offAllNamed('/login');
                         },
                       ),
 

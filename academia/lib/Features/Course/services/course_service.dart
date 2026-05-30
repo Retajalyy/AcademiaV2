@@ -14,21 +14,44 @@ class CourseService {
   }
 
   Future<List<CourseModel>> getEnrolledCourses(int studentId) async {
-    final data = await _db
+    final enrollments = await _db
         .from('enrollments')
-        .select('''
-          sections!inner(
-            id,
-            room,
-            courses(name, code, credit_hours, type),
-            professors(
-              profiles(full_name)
-            ),
-            schedules(day, start_time, end_time)
-          )
-        ''')
+        .select('section_id')
         .eq('student_id', studentId);
 
-    return (data as List).map((row) => CourseModel.fromMap(row)).toList();
+    final sectionIds = (enrollments as List)
+        .map((e) => e['section_id'])
+        .where((id) => id != null)
+        .map((id) => id is int ? id : int.tryParse(id.toString()))
+        .whereType<int>()
+        .toList();
+
+    if (sectionIds.isEmpty) return [];
+
+    // Fetch schedule info from registration_group_sections
+    final data = await _db
+        .from('registration_group_sections')
+        .select(
+          'course_name, course_code, credit_hours, '
+          'lecture_instructor, lecture_day, lecture_start, lecture_end, lecture_room, '
+          'section_id',
+        )
+        .inFilter('section_id', sectionIds);
+
+    // Fetch course_id for each section_id
+    final sectionsData = await _db
+        .from('sections')
+        .select('id, course_id')
+        .inFilter('id', sectionIds);
+
+    final sectionToCourseId = {
+      for (final s in sectionsData as List)
+        s['id'] as int: s['course_id'] as int,
+    };
+
+    return (data as List).map((row) {
+      final sId = row['section_id'] as int? ?? 0;
+      return CourseModel.fromRgs(row, courseId: sectionToCourseId[sId] ?? 0);
+    }).toList();
   }
 }

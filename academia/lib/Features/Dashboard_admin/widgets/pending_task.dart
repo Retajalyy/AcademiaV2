@@ -19,7 +19,7 @@ class PendingTasksSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Pending Tasks',
+            'General Overview',
             style: TextStyles.title.copyWith(color: Colors.black),
           ),
           const SizedBox(height: 14),
@@ -62,6 +62,21 @@ class PendingTasksSection extends StatelessWidget {
           iconColor: AppColors.fail,
           buttonColor: const Color(0xFFFFF2F3),
           buttonTextColor: AppColors.fail,
+        );
+      case 'reset':
+        return GestureDetector(
+          onTap: () => Get.toNamed('/passwordResetRequests'),
+          child: PendingTaskCard(
+            icon: Icons.lock_reset_outlined,
+            title: task.title,
+            subtitle: task.subtitle,
+            buttonText: 'Reset',
+            leftBarColor: AppColors.primaryBlue,
+            iconBgColor: const Color(0xFFE8F0FE),
+            iconColor: AppColors.primaryBlue,
+            buttonColor: const Color(0xFFE8F0FE),
+            buttonTextColor: AppColors.primaryBlue,
+          ),
         );
       default: // 'notify'
         return PendingTaskCard(

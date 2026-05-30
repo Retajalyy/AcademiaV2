@@ -42,8 +42,7 @@ class CourseScreenDetails extends StatelessWidget {
                             onPressed: () {
                               final courseId =
                                   (Get.arguments as Map<String, dynamic>?)?[
-                                          'courseId'] as String? ??
-                                      'default-id';
+                                          'courseId'] as int? ?? 0;
                               ctrl.fetchDetails(courseId);
                             },
                             child: const Text('Retry'),

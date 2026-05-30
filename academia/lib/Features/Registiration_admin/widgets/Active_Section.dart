@@ -72,6 +72,7 @@ class ActivePlansSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final plan = plans[index];
               return SemesterCard(
+                planId: plan.id,
                 title: plan.title,
                 faculty: plan.faculty,
                 progress: plan.progress,
@@ -81,6 +82,7 @@ class ActivePlansSection extends StatelessWidget {
                 groups: plan.groups,
                 openDate: plan.openDate,
                 closeDate: plan.closeDate,
+                isActive: plan.isActive,
               );
             },
           );

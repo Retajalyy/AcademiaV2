@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../core/utilities/colors.dart';
+import '../controller/exam_results_controller.dart';
 import '../model/exam_result_model.dart';
 
 class ExamResultTile extends StatelessWidget {
@@ -123,18 +125,20 @@ class ExamResultTile extends StatelessWidget {
 
               const SizedBox(width: 8),
 
-              Icon(
-                Icons.visibility_outlined,
-                size: 18,
-                color: AppColors.primaryBlue,
+              GestureDetector(
+                onTap: () =>
+                    Get.find<ExamResultsController>().viewResult(result),
+                child: const Icon(Icons.visibility_outlined,
+                    size: 20, color: AppColors.primaryBlue),
               ),
 
               const SizedBox(width: 14),
 
-              Icon(
-                Icons.download_outlined,
-                size: 18,
-                color: AppColors.primaryBlue,
+              GestureDetector(
+                onTap: () =>
+                    Get.find<ExamResultsController>().downloadResult(result),
+                child: const Icon(Icons.download_outlined,
+                    size: 20, color: AppColors.primaryBlue),
               ),
             ],
           ),

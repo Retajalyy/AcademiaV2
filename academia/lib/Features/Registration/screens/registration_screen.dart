@@ -8,6 +8,8 @@ import '../widgets/registration_app_bar.dart';
 import '../widgets/registration_open.dart';
 import '../widgets/registration_closed.dart';
 import '../widgets/registration_not_opened.dart';
+import '../widgets/registration_done.dart';
+import '../widgets/registration_fees_required.dart';
 
 class RegistrationScreen extends StatelessWidget {
   const RegistrationScreen({super.key});
@@ -44,6 +46,10 @@ class RegistrationScreen extends StatelessWidget {
         return const RegistrationClosedWidget();
       case RegistrationState.notOpenedYet:
         return const RegistrationNotOpenedWidget();
+      case RegistrationState.done:
+        return const RegistrationDoneWidget();
+      case RegistrationState.feesRequired:
+        return const RegistrationFeesRequiredWidget();
     }
   }
 }

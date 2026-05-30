@@ -15,13 +15,12 @@ class SaveButton extends StatelessWidget {
       width: double.infinity,
       height: 45,
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const Planadminscreen3(),
-            ),
-          );
+        onPressed: () async {
+          final c = Get.find<PlanAdminController>();
+          await c.saveAssignments();
+          if (c.errorMessage.isEmpty) {
+            Get.to(() => const Planadminscreen3());
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,

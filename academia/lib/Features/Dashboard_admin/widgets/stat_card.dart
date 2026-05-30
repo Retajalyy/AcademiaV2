@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class StatCard extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String value;
-  final String subtitle;
-  final double height;
+  final String   title;
+  final String   value;
+  final String   subtitle;
+  final double   height;
 
   const StatCard({
     super.key,
@@ -18,105 +18,75 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double w = MediaQuery.of(context).size.width;
-    final double iconBoxSize = w * 0.082;
-    final double iconSize = w * 0.055;
-    final double titleFontSize = w * 0.032;
-    final double valueFontSize = w * 0.065;
-    final double subtitleFontSize = w * 0.028;
-    final double borderRadius = w * 0.04;
-    final double padding = w * 0.03;
+    final w = MediaQuery.of(context).size.width;
 
     return Container(
-      height: height,
-      padding: EdgeInsets.all(padding),
+      padding: EdgeInsets.all(w * 0.033),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.13),
-        borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.08),
-        ),
+        color:        Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(w * 0.038),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment:  MainAxisAlignment.spaceBetween,
         children: [
-
-          /// TOP ROW — icon + title side by side
+          // ── Icon + Title row ─────────────────────────────────────────
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-
-              /// ICON FRAME
               Container(
-                width: iconBoxSize,
-                height: iconBoxSize,
+                width:  w * 0.08,
+                height: w * 0.08,
                 decoration: BoxDecoration(
-                  color: const Color(0xDDEDFA).withOpacity(0.21),
-                  borderRadius: BorderRadius.circular(w * 0.022),
-                
+                  color:        Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(w * 0.02),
                 ),
-                child: Center(
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: iconSize,
-                  ),
-                ),
+                child: Icon(icon, color: Colors.white, size: w * 0.048),
               ),
-
-              SizedBox(width: w * 0.02),
-
-              /// TITLE
+              SizedBox(width: w * 0.018),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: const Color(0xFFDEDEDE).withOpacity(0.8),
-                    fontSize: titleFontSize,
+                    color:      Colors.white.withValues(alpha: 0.85),
+                    fontSize:   w * 0.03,
                     fontWeight: FontWeight.w500,
-                    fontFamily: 'Inter',
-                    height: 1.2,
+                    height:     1.2,
                   ),
                 ),
               ),
-
             ],
           ),
 
-          /// BOTTOM — value + subtitle stacked
+          // ── Value + Subtitle ─────────────────────────────────────────
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FittedBox(
-                fit: BoxFit.scaleDown,
+                fit:       BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
                   value,
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: valueFontSize,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Inter',
-                    height: 1,
+                    color:      Colors.white,
+                    fontSize:   w * 0.068,
+                    fontWeight: FontWeight.w700,
+                    height:     1,
                   ),
                 ),
               ),
-              SizedBox(height: w * 0.01),
               Text(
                 subtitle,
                 style: TextStyle(
-                  color: const Color(0xFFDEDEDE).withOpacity(0.8),
-                  fontSize: subtitleFontSize,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Inter',
+                  color:      Colors.white.withValues(alpha: 0.75),
+                  fontSize:   w * 0.027,
+                  fontWeight: FontWeight.w400,
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
               ),
             ],
           ),
-
         ],
       ),
     );

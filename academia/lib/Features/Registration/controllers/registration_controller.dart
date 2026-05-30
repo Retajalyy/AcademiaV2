@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/registration_model.dart';
 import '../services/registration_service.dart';
@@ -37,9 +36,11 @@ class RegistrationController extends GetxController {
       final state = await _service.fetchRegistrationState();
       registrationState.value = state;
       switch (state) {
-        case RegistrationState.open:        await _loadGroups();       break;
-        case RegistrationState.closed:      await _loadSemesterInfo(); break;
-        case RegistrationState.notOpenedYet: await _loadBalanceInfo(); break;
+        case RegistrationState.open:          await _loadGroups();       break;
+        case RegistrationState.closed:        await _loadSemesterInfo(); break;
+        case RegistrationState.notOpenedYet:  await _loadBalanceInfo();  break;
+        case RegistrationState.feesRequired:  await _loadBalanceInfo();  break;
+        case RegistrationState.done:          break;
       }
     } catch (e) {
       errorMessage.value = 'Failed to load registration data. Please try again.';
@@ -116,16 +117,7 @@ class RegistrationController extends GetxController {
         groupId:          selectedGroupId.value,
         forceAddedCodes:  forceAddedCodes.toList(),
       );
-      Get.snackbar(
-        'Registration Confirmed!',
-        'Your courses have been enrolled successfully.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withValues(alpha: 0.9),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-      // Switch state to closed after successful registration
-      registrationState.value = RegistrationState.closed;
+      registrationState.value = RegistrationState.done;
     } catch (e) {
       errorMessage.value = 'Submission failed: $e';
     } finally {

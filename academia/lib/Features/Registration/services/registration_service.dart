@@ -4,72 +4,212 @@ import '../models/registration_model.dart';
 class RegistrationService {
   final _db = Supabase.instance.client;
 
-  Future<int> _getStudentId() async {
+  // ── Internal helpers ──────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> _getStudentRow() async {
     final userId = _db.auth.currentUser!.id;
-    final row = await _db
+    return await _db
         .from('students')
-        .select('id')
+        .select('id, faculty, major, level')
         .eq('profile_id', userId)
         .single();
-    return row['id'] as int;
   }
+
+  // ── Public API ────────────────────────────────────────────────────────────
 
   Future<RegistrationState> fetchRegistrationState() async {
     final row = await _db
         .from('registration_windows')
-        .select('status')
+        .select('id, status')
         .order('id', ascending: false)
         .limit(1)
         .maybeSingle();
 
     if (row == null) return RegistrationState.notOpenedYet;
-    switch (row['status'] as String) {
-      case 'open':   return RegistrationState.open;
+
+    final status   = row['status'] as String;
+    final windowId = row['id'];
+
+    // If window is open, check if the student already registered in this window
+    if (status == 'open') {
+      final student   = await _getStudentRow();
+      final studentId = student['id'] as int;
+
+      final existing = await _db
+          .from('student_registrations')
+          .select('id, registration_groups!inner(window_id)')
+          .eq('student_id', studentId)
+          .eq('registration_groups.window_id', windowId)
+          .maybeSingle();
+
+      if (existing != null) return RegistrationState.done;
+
+      // Student hasn't registered yet — check for unpaid fees in this window
+      final feeRow = await _db
+          .from('student_fees')
+          .select('is_paid')
+          .eq('student_id', studentId)
+          .eq('window_id', windowId)
+          .order('id', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      // feeRow == null → admin hasn't uploaded fees yet → allow registration
+      if (feeRow != null && feeRow['is_paid'] == false) {
+        return RegistrationState.feesRequired;
+      }
+
+      return RegistrationState.open;
+    }
+
+    switch (status) {
       case 'closed': return RegistrationState.closed;
       default:       return RegistrationState.notOpenedYet;
     }
   }
 
   Future<List<CourseGroup>> fetchGroups(String semesterTab) async {
-    final data = await _db
+    // 1. Student profile for filtering
+    final student   = await _getStudentRow();
+    final studentId = student['id'] as int;
+    final faculty   = student['faculty'] as String?;
+    final major     = student['major']   as String?;
+    final level     = student['level']   as int?;
+
+    // 2. Active registration window
+    final windowRow = await _db
+        .from('registration_windows')
+        .select('id')
+        .eq('status', 'open')
+        .order('id', ascending: false)
+        .limit(1)
+        .maybeSingle();
+    final windowId = windowRow?['id'];
+
+    // 3. Fetch groups filtered by student's faculty/major/level
+    final filters = <String, dynamic>{};
+    if (windowId != null) filters['window_id'] = windowId;
+    if (faculty  != null) filters['faculty']   = faculty;
+    if (major    != null) filters['major']     = major;
+    if (level    != null) filters['level']     = level;
+
+    const select = '''
+      id, label, total_credits,
+      registration_group_sections(
+        course_name, course_code, credit_hours,
+        lecture_day, lecture_start, lecture_end, lecture_instructor, lecture_room,
+        section_day, section_start, section_end, section_instructor, section_room,
+        prerequisite_warning, is_locked, section_id
+      )
+    ''';
+
+    final rawGroups = await _db
         .from('registration_groups')
-        .select('''
-          id, label, total_credits,
-          registration_group_sections(
-            course_name, course_code, credit_hours,
-            lecture_day, lecture_start, lecture_end, lecture_instructor, lecture_room,
-            section_day, section_start, section_end, section_instructor, section_room,
-            prerequisite_warning, is_locked
-          )
-        ''')
+        .select(select)
+        .match(filters.cast<String, Object>())
         .order('id');
 
-    return (data as List).map((g) {
+    // 4. Collect all section_ids across all groups
+    final allSectionIds = (rawGroups as List)
+        .expand((g) => (g['registration_group_sections'] as List? ?? []))
+        .map((s) => s['section_id'])
+        .whereType<int>()
+        .toSet()
+        .toList();
+
+    // 5. Build section_id → course_id map
+    Map<int, int> sectionToCourse = {};
+    if (allSectionIds.isNotEmpty) {
+      final sectionsData = await _db
+          .from('sections')
+          .select('id, course_id')
+          .inFilter('id', allSectionIds);
+      sectionToCourse = {
+        for (final s in sectionsData as List)
+          (s['id'] as int): (s['course_id'] as int),
+      };
+    }
+
+    // 6. Fetch prerequisites for all courses in these groups
+    final allCourseIds = sectionToCourse.values.toSet().toList();
+    Map<int, List<int>> prereqMap = {};
+    if (allCourseIds.isNotEmpty) {
+      final prereqData = await _db
+          .from('course_prerequisites')
+          .select('course_id, prereq_id')
+          .inFilter('course_id', allCourseIds);
+      for (final p in prereqData as List) {
+        final cId = p['course_id'] as int;
+        final pId = p['prereq_id'] as int;
+        prereqMap.putIfAbsent(cId, () => []).add(pId);
+      }
+    }
+
+    // 7. Fetch student's passed course_ids from completed semester results
+    Set<int> passedCourseIds = {};
+    if (prereqMap.isNotEmpty) {
+      final semResults = await _db
+          .from('semester_results')
+          .select('id')
+          .eq('student_id', studentId);
+      final semIds = (semResults as List).map((s) => s['id'] as int).toList();
+      if (semIds.isNotEmpty) {
+        final passed = await _db
+            .from('course_results')
+            .select('course_id')
+            .inFilter('semester_result_id', semIds)
+            .not('course_id', 'is', null)
+            .neq('letter', 'F');
+        passedCourseIds = (passed as List)
+            .map((r) => r['course_id'] as int?)
+            .whereType<int>()
+            .toSet();
+      }
+    }
+
+    // 8. Build CourseGroup list with dynamic prerequisite locking
+    return rawGroups.map<CourseGroup>((g) {
       final sections = (g['registration_group_sections'] as List? ?? []);
       return CourseGroup(
-        id: g['id'].toString(),
-        label: g['label'] as String,
+        id:          g['id'].toString(),
+        label:       g['label'] as String,
         creditHours: (g['total_credits'] as int?) ?? 0,
-        lectures: sections.map((s) {
+        lectures: sections.map<CourseLecture>((s) {
+          final sectionId = s['section_id'] as int?;
+          final courseId  = sectionId != null ? sectionToCourse[sectionId] : null;
+
+          // Start with admin-set values, then override dynamically
+          bool   isLocked     = s['is_locked']            as bool?   ?? false;
+          String? prereqWarn  = s['prerequisite_warning'] as String?;
+
+          if (courseId != null && prereqMap.containsKey(courseId)) {
+            final unmet = prereqMap[courseId]!
+                .where((pId) => !passedCourseIds.contains(pId))
+                .toList();
+            if (unmet.isNotEmpty) {
+              isLocked    = true;
+              prereqWarn ??= 'Prerequisite not completed';
+            }
+          }
+
           final secStart = s['section_start'] as String?;
           final secEnd   = s['section_end']   as String?;
           return CourseLecture(
-            courseCode:         s['course_code']        as String,
-            courseName:         s['course_name']        as String,
-            creditHours:        (s['credit_hours'] as int?) ?? 3,
-            day:                s['lecture_day']        as String? ?? '',
-            timeFrom:           s['lecture_start']      as String? ?? '',
-            timeTo:             s['lecture_end']        as String? ?? '',
-            instructor:         s['lecture_instructor'] as String? ?? '',
-            room:               s['lecture_room']       as String?,
-            sectionDay:         s['section_day']        as String?,
-            sectionInstructor:  s['section_instructor'] as String?,
+            courseCode:          s['course_code']       as String,
+            courseName:          s['course_name']       as String,
+            creditHours:         (s['credit_hours']     as int?) ?? 3,
+            day:                 s['lecture_day']       as String? ?? '',
+            timeFrom:            s['lecture_start']     as String? ?? '',
+            timeTo:              s['lecture_end']       as String? ?? '',
+            instructor:          s['lecture_instructor'] as String? ?? '',
+            room:                s['lecture_room']      as String?,
+            sectionDay:          s['section_day']       as String?,
+            sectionInstructor:   s['section_instructor'] as String?,
             sectionTime: (secStart != null && secEnd != null)
-                ? '$secStart - $secEnd'
-                : null,
-            sectionRoom:          s['section_room']           as String?,
-            prerequisiteWarning:  s['prerequisite_warning']   as String?,
-            isLocked:             s['is_locked']              as bool? ?? false,
+                ? '$secStart - $secEnd' : null,
+            sectionRoom:         s['section_room']        as String?,
+            prerequisiteWarning: prereqWarn,
+            isLocked:            isLocked,
           );
         }).toList(),
       );
@@ -94,7 +234,9 @@ class RegistrationService {
   }
 
   Future<BalanceInfo> fetchBalanceInfo() async {
-    final studentId = await _getStudentId();
+    final student   = await _getStudentRow();
+    final studentId = student['id'] as int;
+
     final row = await _db
         .from('student_fees')
         .select('amount, currency, due_date, is_paid')
@@ -114,8 +256,8 @@ class RegistrationService {
 
     return BalanceInfo(
       outstandingAmount: (row['amount'] as num).toDouble(),
-      currency:          row['currency']  as String? ?? 'EGP',
-      isPaid:            row['is_paid']   as bool?   ?? false,
+      currency:          row['currency'] as String? ?? 'EGP',
+      isPaid:            row['is_paid']  as bool?   ?? false,
       dueDate:           _fmt(row['due_date']),
     );
   }
@@ -124,53 +266,13 @@ class RegistrationService {
     required String groupId,
     required List<String> forceAddedCodes,
   }) async {
-    final userId = _db.auth.currentUser!.id;
-
-    // Resolve student id
-    final sRow = await _db
-        .from('students')
-        .select('id')
-        .eq('profile_id', userId)
-        .single();
-    final studentId = sRow['id'] as int;
-
-    // Save / overwrite the student's registration group
-    await _db.from('student_registrations').upsert({
-      'student_id': studentId,
-      'group_id':   int.parse(groupId),
-    }, onConflict: 'student_id');
-
-    // Fetch sections linked to this group
-    final sections = await _db
-        .from('registration_group_sections')
-        .select('section_id, course_code, is_locked')
-        .eq('group_id', int.parse(groupId));
-
-    // Build list of section IDs to enroll in:
-    // include unlocked courses + locked courses that the student force-added
-    final sectionIds = (sections as List)
-        .where((s) {
-          final locked = s['is_locked'] as bool? ?? false;
-          final code   = s['course_code'] as String;
-          return !locked || forceAddedCodes.contains(code);
-        })
-        .map((s) => s['section_id'] as int?)
-        .whereType<int>()
-        .toList();
-
-    if (sectionIds.isEmpty) return;
-
-    // Remove old enrollments for this student
-    await _db.from('enrollments').delete().eq('student_id', studentId);
-
-    // Create new enrollments
-    await _db.from('enrollments').insert(
-      sectionIds.map((id) => {'student_id': studentId, 'section_id': id}).toList(),
-    );
+    await _db.rpc('enroll_student_sections', params: {
+      'p_group_id':    int.parse(groupId),
+      'p_force_codes': forceAddedCodes,
+    });
   }
 
   Future<String> initiatePayment({required double amount}) async {
-    // TODO: redirect to payment portal
     return '';
   }
 
@@ -178,7 +280,8 @@ class RegistrationService {
     if (raw == null) return 'N/A';
     try {
       final dt = DateTime.parse(raw as String);
-      const m = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const m = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return '${m[dt.month]} ${dt.day}, ${dt.year}';
     } catch (_) {
       return raw.toString();

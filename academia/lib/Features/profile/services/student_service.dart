@@ -120,6 +120,34 @@ class StudentService {
     return 'Level 1';
   }
 
+  /// Returns {currentWeek, totalWeeks, semesterLabel} from the active semester.
+  Future<Map<String, dynamic>> fetchSemesterProgress() async {
+    final row = await _db
+        .from('registration_windows')
+        .select('semester_start, week_count, next_semester_label')
+        .order('id', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    final totalWeeks = (row?['week_count'] as int?) ?? 16;
+    final label = (row?['next_semester_label'] as String?) ?? '';
+
+    int currentWeek = 0;
+    if (row?['semester_start'] != null) {
+      final start = DateTime.parse(row!['semester_start'] as String);
+      final now = DateTime.now();
+      if (now.isAfter(start)) {
+        currentWeek = ((now.difference(start).inDays ~/ 7) + 1).clamp(1, totalWeeks);
+      }
+    }
+
+    return {
+      'currentWeek': currentWeek,
+      'totalWeeks': totalWeeks,
+      'semesterLabel': label,
+    };
+  }
+
   Future<bool> updateStudentPhone(String studentId, String phone) async {
     await _db
         .from('students')

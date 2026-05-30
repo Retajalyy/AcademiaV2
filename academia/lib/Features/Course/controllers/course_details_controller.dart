@@ -8,16 +8,18 @@ class CourseDetailsController extends GetxController {
   var course       = Rx<CourseDetailsModel?>(null);
   var isLoading    = false.obs;
   var errorMessage = ''.obs;
+  var doctorName   = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
     final args     = Get.arguments as Map<String, dynamic>?;
-    final courseId = args?['courseId'] as String? ?? 'default-id';
+    final courseId = args?['courseId'] as int? ?? 0;
+    doctorName.value = args?['doctorName'] as String? ?? '';
     fetchDetails(courseId);
   }
 
-  Future<void> fetchDetails(String courseId) async {
+  Future<void> fetchDetails(int courseId) async {
     isLoading.value    = true;
     errorMessage.value = '';
     try {

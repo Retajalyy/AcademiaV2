@@ -130,12 +130,12 @@ class ConfirmCourseDialog extends StatelessWidget {
                     course.prerequisite.isEmpty ? "None" : course.prerequisite,
                   ),
                   const SizedBox(height: 12),
-                  CoursePrimaryButton(
+                  Obx(() => CoursePrimaryButton(
                     label: "Save Course",
                     textSize: 17,
-                    loading: false,
+                    loading: c.isSubmitting.value,
                     onTap: c.confirmAdd,
-                  ),
+                  )),
                   const SizedBox(height: 8),
                   CourseOutlinedButton(
                     label: "Edit",
@@ -208,7 +208,7 @@ class CourseFormFields extends StatelessWidget {
               label: "Faculty",
               value: f.faculty,
               items: c.faculties,
-              onChanged: (v) => c.setField(faculty: v),
+              onChanged: c.onFacultySelected,
             ),
             right: _FDropdownField(
               label: "Level",
@@ -223,7 +223,7 @@ class CourseFormFields extends StatelessWidget {
               label: "Major",
               value: f.major,
               items: c.majors,
-              onChanged: (v) => c.setField(major: v),
+              onChanged: c.onMajorSelected,
             ),
             right: _FDropdownField(
               label: "Credits",
@@ -240,16 +240,13 @@ class CourseFormFields extends StatelessWidget {
               items: c.types,
               onChanged: (v) => c.setField(type: v),
             ),
-            right: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _FLabel("Prerequisite"),
-                const SizedBox(height: 6),
-                _FTextField(
-                  value: f.prerequisite,
-                  onChanged: (v) => c.setField(prerequisite: v),
-                ),
-              ],
+            right: _FDropdownField(
+              label: "Prerequisite",
+              value: f.prerequisite,
+              items: ['None', ...c.prerequisiteCourses],
+              onChanged: (v) => c.setField(
+                prerequisite: (v == null || v == 'None') ? '' : v,
+              ),
             ),
           ),
         ],
@@ -471,12 +468,7 @@ class _FLabel extends StatelessWidget {
 class _FTextField extends StatelessWidget {
   final String value;
   final ValueChanged<String> onChanged;
-  final String hint;
-  const _FTextField({
-    required this.value,
-    required this.onChanged,
-    this.hint = "",
-  });
+  const _FTextField({required this.value, required this.onChanged});
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -484,7 +476,6 @@ class _FTextField extends StatelessWidget {
       onChanged: onChanged,
       style: const TextStyle(fontSize: 13, color: AppColors.accentProgramming1),
       decoration: InputDecoration(
-        hintText: hint,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
@@ -504,17 +495,16 @@ class _FTextField extends StatelessWidget {
     );
   }
 }
+
 class _FDropdown extends StatelessWidget {
   final String? value;
   final List<String> items;
   final ValueChanged<String?> onChanged;
-  final String hint;
 
   const _FDropdown({
     required this.value,
     required this.items,
     required this.onChanged,
-    this.hint = "Select...",
   });
   @override
   Widget build(BuildContext context) {
@@ -531,7 +521,7 @@ class _FDropdown extends StatelessWidget {
           value: value,
           isExpanded: true,
           hint: Text(
-            hint,
+            'Select...',
             style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
           ),
           items: items

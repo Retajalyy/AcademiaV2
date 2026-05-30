@@ -31,12 +31,7 @@ class FeesAdminController extends GetxController {
   final RxBool isSubmitting = false.obs;
   final RxBool isReminding = false.obs;
 
-  final List<String> faculties = [
-    'All Faculties',
-    'Computers & Information',
-    'Languages & Translation',
-    'Business Administration',
-  ];
+  final RxList<String> faculties = <String>[].obs;
 
   final List<String> levels = ['All', '1', '2', '3', '4'];
 
@@ -53,9 +48,11 @@ class FeesAdminController extends GetxController {
       final results = await Future.wait([
         _service.fetchSummary(),
         _service.fetchActiveFees(),
+        _service.fetchFaculties(),
       ]);
       summary.value = results[0] as FeesSummaryModel;
       activeFees.assignAll(results[1] as List<ActiveFeeModel>);
+      faculties.assignAll(results[2] as List<String>);
 
       // Set base values for live calculation
       _baseCollected = summary.value!.collectedRaw;

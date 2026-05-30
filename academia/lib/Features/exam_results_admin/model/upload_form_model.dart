@@ -1,64 +1,65 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Model: UploadFormModel
-// Immutable value object that holds the 3-step upload form state.
-// Use copyWith() to produce updated instances; never mutate directly.
-// ─────────────────────────────────────────────────────────────────────────────
-
 class UploadFormModel {
   final String? faculty;
+  final String? facultyCode;
   final String? level;
   final String? major;
+  final String? majorCode;
   final String? resultsTitle;
   final String? semester;
+  final int?    semesterId;
   final String? academicYear;
 
-  /// The picked file object (dart:io File or XFile from file_picker).
-  final Object? file;
-  final String? fileName;
-  final int? fileRows;
-  final double? fileSizeMb;
+  final List<int>? fileBytes;
+  final String?    fileName;
+  final int?       fileRows;
+  final double?    fileSizeMb;
 
   const UploadFormModel({
     this.faculty,
+    this.facultyCode,
     this.level,
     this.major,
+    this.majorCode,
     this.resultsTitle,
     this.semester,
+    this.semesterId,
     this.academicYear,
-    this.file,
+    this.fileBytes,
     this.fileName,
     this.fileRows,
     this.fileSizeMb,
   });
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
   UploadFormModel copyWith({
-    String? faculty,
-    String? level,
-    String? major,
-    String? resultsTitle,
-    String? semester,
-    String? academicYear,
-    Object? file,
-    String? fileName,
-    int? fileRows,
-    double? fileSizeMb,
+    String?   faculty,
+    String?   facultyCode,
+    String?   level,
+    String?   major,
+    String?   majorCode,
+    String?   resultsTitle,
+    String?   semester,
+    int?      semesterId,
+    String?   academicYear,
+    List<int>? fileBytes,
+    String?   fileName,
+    int?      fileRows,
+    double?   fileSizeMb,
   }) =>
       UploadFormModel(
-        faculty: faculty ?? this.faculty,
-        level: level ?? this.level,
-        major: major ?? this.major,
+        faculty:      faculty      ?? this.faculty,
+        facultyCode:  facultyCode  ?? this.facultyCode,
+        level:        level        ?? this.level,
+        major:        major        ?? this.major,
+        majorCode:    majorCode    ?? this.majorCode,
         resultsTitle: resultsTitle ?? this.resultsTitle,
-        semester: semester ?? this.semester,
+        semester:     semester     ?? this.semester,
+        semesterId:   semesterId   ?? this.semesterId,
         academicYear: academicYear ?? this.academicYear,
-        file: file ?? this.file,
-        fileName: fileName ?? this.fileName,
-        fileRows: fileRows ?? this.fileRows,
-        fileSizeMb: fileSizeMb ?? this.fileSizeMb,
+        fileBytes:    fileBytes    ?? this.fileBytes,
+        fileName:     fileName     ?? this.fileName,
+        fileRows:     fileRows     ?? this.fileRows,
+        fileSizeMb:   fileSizeMb   ?? this.fileSizeMb,
       );
-
-  // ── Per-step validators ───────────────────────────────────────────────────
 
   bool get isStep1Valid =>
       (faculty?.isNotEmpty ?? false) &&
@@ -67,8 +68,8 @@ class UploadFormModel {
 
   bool get isStep2Valid =>
       (resultsTitle?.isNotEmpty ?? false) &&
-      (semester?.isNotEmpty ?? false) &&
+      (semesterId != null) &&
       (academicYear?.isNotEmpty ?? false);
 
-  bool get isStep3Valid => file != null;
+  bool get isStep3Valid => fileBytes != null;
 }

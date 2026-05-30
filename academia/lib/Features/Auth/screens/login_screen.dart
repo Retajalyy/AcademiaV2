@@ -178,13 +178,8 @@ class LoginScreen extends StatelessWidget {
                           return RememberMeRow(
                             value: controller.rememberMe.value,
                             onChanged: controller.toggleRememberMe,
-                            onForgotPassword: () {
-                              Get.snackbar(
-                                "Forgot Password",
-                                "Please contact the administration office.",
-                                snackPosition: SnackPosition.BOTTOM,
-                              );
-                            },
+                            onForgotPassword: () =>
+                                Get.toNamed('/forgotPassword'),
                           );
                         }),
 

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
-import 'package:academia/Features/Course/screens/CourseScreen.dart';
+import '../controllers/course_details_controller.dart';
 
 class CourseHeaderDetails extends StatelessWidget {
   const CourseHeaderDetails({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = Get.find<CourseDetailsController>();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
@@ -15,28 +18,19 @@ class CourseHeaderDetails extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// 🔵 Top Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white,size: 28),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CourseScreen(),
-                    ),
-                  );
-                },
+                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                onPressed: Get.back,
               ),
-              const Icon(Icons.notifications, color: Colors.white,size: 28),
+              const Icon(Icons.notifications, color: Colors.white, size: 28),
             ],
           ),
 
           const SizedBox(height: 16),
 
-          /// 🔵 Title
           Text(
             "Course Details",
             style: TextStyles.header2.copyWith(
@@ -49,89 +43,95 @@ class CourseHeaderDetails extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          /// 🔵 Inner Card
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2468A0),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// Title + Credits
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Cloud Computing",
-                      style: TextStyles.title.copyWith(color: Colors.white),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.accentAI,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        "3 credits",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontFamily: 'Instrument Sans',
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.accentProgramming1,
+          Obx(() {
+            final c       = ctrl.course.value;
+            final name    = c?.courseName    ?? '';
+            final credits = c?.credits       ?? 0;
+            final progress = c?.progress     ?? 0.0;
+            final doctor  = ctrl.doctorName.value;
+
+            return Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2468A0),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name.isEmpty ? '—' : name,
+                          style: TextStyles.title.copyWith(color: Colors.white),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    )
-                  ],
-                ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentAI,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '$credits credits',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontFamily: 'Instrument Sans',
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.accentProgramming1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
 
-                const SizedBox(height: 4),
-
-                Text(
-                  "Dr. Youssef Senousy",
-                  style: TextStyles.doctor2.copyWith(color: Colors.white70),
-                ),
-
-                const SizedBox(height: 12),
-
-                /// Progress Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+                  if (doctor.isNotEmpty) ...[
+                    const SizedBox(height: 4),
                     Text(
-                      "Course Progress",
-                      style: TextStyles.doctor2
-                          .copyWith(color: AppColors.accentAI),
-                    ),
-                    Text(
-                      "65% completed",
-                      style: TextStyles.percenatge
-                          .copyWith(color: AppColors.accentAI),
+                      doctor,
+                      style: TextStyles.doctor2.copyWith(color: Colors.white70),
                     ),
                   ],
-                ),
 
-                const SizedBox(height: 6),
+                  const SizedBox(height: 12),
 
-                /// Progress Bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: 0.65,
-                    minHeight: 6,
-                    backgroundColor: const Color(0xFFE5E7EB),
-                    valueColor: const AlwaysStoppedAnimation(
-                      AppColors.primaryBlue,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Course Progress",
+                        style: TextStyles.doctor2.copyWith(
+                            color: AppColors.accentAI),
+                      ),
+                      Text(
+                        "${(progress * 100).toStringAsFixed(0)}% completed",
+                        style: TextStyles.percenatge
+                            .copyWith(color: AppColors.accentAI),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 6,
+                      backgroundColor: const Color(0xFFE5E7EB),
+                      valueColor: const AlwaysStoppedAnimation(
+                          AppColors.primaryBlue),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

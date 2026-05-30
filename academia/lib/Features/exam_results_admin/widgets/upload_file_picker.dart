@@ -28,7 +28,7 @@ class UploadFilePicker extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        form.file == null
+        form.fileBytes == null
             ? _PickArea(onTap: onPickFile)
             : _FilePreview(form: form, onRemove: onRemoveFile),
       ],

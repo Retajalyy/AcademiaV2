@@ -1,5 +1,7 @@
 import 'package:academia/Core/utilities/colors.dart';
+import 'package:academia/Features/AddUser_admin/screens/add_new_user_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/text_style.dart';
 import 'quick_action_item.dart';
 
@@ -23,51 +25,57 @@ class QuickActionsSection extends StatelessWidget {
           const SizedBox(height: 14),
 
           Row(
-            children: const [
+            children: [
 
-              Expanded(
+              const Expanded(
                 child: QuickActionItem(
                   icon: Icons.file_upload_outlined,
                   title: 'Upload Schedule',
                   borderColor: Color(0xFFDDEDFA),
-                  iconColor:AppColors.accentProgramming1,
+                  iconColor: AppColors.accentProgramming1,
                   backgroundColor: Color(0xFFDDEDFA),
                 ),
               ),
 
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
 
-              Expanded(
+              const Expanded(
                 child: QuickActionItem(
                   icon: Icons.trending_up_rounded,
                   title: 'Upload Results',
                   borderColor: Color(0xFFDDEDFA),
-                  iconColor:AppColors.accentProgramming1,
+                  iconColor: AppColors.accentProgramming1,
                   backgroundColor: Color(0xFFDDEDFA),
                 ),
               ),
 
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
 
               Expanded(
-                child: QuickActionItem(
-                  icon: Icons.credit_card_outlined,
-                  title: 'Manage Fees',
-                  borderColor: Color(0xFFFFF3DF),
-                  iconColor: Color(0xFFB18334),
-                  backgroundColor: Color(0xFFFFF3DF),
+                child: GestureDetector(
+                  onTap: () => Get.to(() => const AddNewUserScreen()),
+                  child: const QuickActionItem(
+                    icon: Icons.person_add_outlined,
+                    title: 'Add New User',
+                    borderColor: Color(0xFFEDE7F6),
+                    iconColor: Color(0xFF7B1FA2),
+                    backgroundColor: Color(0xFFEDE7F6),
+                  ),
                 ),
               ),
 
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
 
               Expanded(
-                child: QuickActionItem(
-                  icon: Icons.notifications,
-                  title: 'Send Notification',
-                  borderColor: Color(0xFFFFF3DF),
-                  iconColor: Color(0xFFB18334),
-                  backgroundColor: Color(0xFFFFF3DF),
+                child: GestureDetector(
+                  onTap: () => Get.toNamed('/adminAnnouncements'),
+                  child: const QuickActionItem(
+                    icon: Icons.notifications,
+                    title: 'Send Notification',
+                    borderColor: Color(0xFFFFF3DF),
+                    iconColor: Color(0xFFB18334),
+                    backgroundColor: Color(0xFFFFF3DF),
+                  ),
                 ),
               ),
 

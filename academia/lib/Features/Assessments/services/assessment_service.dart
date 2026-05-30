@@ -20,7 +20,13 @@ class AssessmentService {
           sections!inner(
             courses(name, type)
           ),
-          grades(midterm, midterm_total, participation, participation_total, attendance)
+          grades(
+            midterm, midterm_total,
+            final, final_total,
+            quiz, quiz_total,
+            participation, participation_total,
+            attendance
+          )
         ''')
         .eq('student_id', studentId);
 

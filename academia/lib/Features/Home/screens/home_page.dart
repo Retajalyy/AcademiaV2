@@ -185,33 +185,36 @@ class _Header extends StatelessWidget {
                 ],
               ),
               // Notification bell
-              Stack(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(sw * 0.022),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha:0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.notifications_outlined,
-                      color: Colors.white,
-                      size: sw * 0.065,
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      width: sw * 0.025,
-                      height: sw * 0.025,
-                      decoration: const BoxDecoration(
-                        color: AppColors.secondaryYellow,
+              GestureDetector(
+                onTap: () => Get.toNamed('/announcements'),
+                child: Stack(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(sw * 0.022),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        color: Colors.white,
+                        size: sw * 0.065,
+                      ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: sw * 0.025,
+                        height: sw * 0.025,
+                        decoration: const BoxDecoration(
+                          color: AppColors.secondaryYellow,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

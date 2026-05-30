@@ -42,13 +42,19 @@ class AdminServiceTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               padding: const EdgeInsets.all(10),
-              child: SvgPicture.asset(
-                item.iconAsset, // 👈 uses registration.svg or fees.svg
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFFF5A623),
-                  BlendMode.srcIn,
-                ),
-              ),
+              child: item.iconAsset.isNotEmpty
+                  ? SvgPicture.asset(
+                      item.iconAsset,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFFF5A623),
+                        BlendMode.srcIn,
+                      ),
+                    )
+                  : Icon(
+                      item.iconData ?? Icons.grid_view_outlined,
+                      color: const Color(0xFFF5A623),
+                      size: 22,
+                    ),
             ),
             const SizedBox(width: 14),
             // Title & subtitle

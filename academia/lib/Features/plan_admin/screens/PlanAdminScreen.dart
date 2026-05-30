@@ -1,5 +1,3 @@
-// lib/Features/plan_admin/screens/PlanAdminScreen.dart
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:academia/Features/plan_admin/widgets/planAdminHeader.dart';
@@ -11,16 +9,32 @@ import 'package:academia/Features/plan_admin/widgets/Assign_button.dart';
 import '../controller/plan_admin_controller.dart';
 import '../../../Core/utilities/colors.dart';
 
-class Planadminscreen1 extends StatelessWidget {
+class Planadminscreen1 extends StatefulWidget {
   const Planadminscreen1({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<Planadminscreen1> createState() => _Planadminscreen1State();
+}
+
+class _Planadminscreen1State extends State<Planadminscreen1> {
+  late final PlanAdminController c;
+
+  @override
+  void initState() {
+    super.initState();
     if (!Get.isRegistered<PlanAdminController>()) {
       Get.put(PlanAdminController(), permanent: true);
     }
-    final c = Get.find<PlanAdminController>();
+    c = Get.find<PlanAdminController>();
+    // Load faculties after first frame to avoid build-time side effects
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      c.loadFaculties();
+      c.loadProfessors();
+    });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
@@ -60,11 +74,7 @@ class Planadminscreen1 extends StatelessWidget {
                         if (c.showMajor.value) ...[
                           const SizedBox(height: 20),
                           MajorSelectorWidget(
-                            onMajorSelected: (major) {
-                              c.showCourses.value =
-                                  major == "Software Engineering";
-                              c.showAssignButton.value = false;
-                            },
+                            onMajorSelected: (major) {},
                           ),
                         ],
 
@@ -74,7 +84,7 @@ class Planadminscreen1 extends StatelessWidget {
                           const AddCoursesWidget(),
                         ],
 
-                        /// STEP 5 — appears after cloud course selected
+                        /// STEP 5 — appears after courses selected
                         if (c.showAssignButton.value) ...[
                           const SizedBox(height: 20),
                           const AddNewPlan(),

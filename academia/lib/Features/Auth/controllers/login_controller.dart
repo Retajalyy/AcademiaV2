@@ -55,7 +55,7 @@ class LoginController extends GetxController {
         Get.offAllNamed('/app', arguments: user);
         break;
       case 'professor':
-        Get.offAllNamed('/app', arguments: user);
+        Get.offAllNamed('/professorApp', arguments: user);
         break;
       case 'admin':
         Get.offAllNamed('/Dashboard', arguments: user);

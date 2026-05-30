@@ -1,7 +1,9 @@
 // lib/Features/plan_admin/widgets/select_level.dart
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:academia/Core/utilities/colors.dart';
+import '../controller/plan_admin_controller.dart';
 
 class LevelSelectorWidget extends StatefulWidget {
   final VoidCallback onLevelConfirmed;
@@ -20,6 +22,7 @@ class _LevelSelectorWidgetState extends State<LevelSelectorWidget> {
 
   void _onLevelTap(int level) {
     setState(() => selectedLevel = level);
+    Get.find<PlanAdminController>().selectLevel(level);
     widget.onLevelConfirmed();
   }
 

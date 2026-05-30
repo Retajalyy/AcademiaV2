@@ -1,244 +1,142 @@
-// lib/Features/plan_admin/widgets/group_widget.dart
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
 import '../controller/plan_admin_controller.dart';
 
+// ── Static option lists ───────────────────────────────────────────────────────
+
+const _days = [
+  'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+];
+
+const _halls = [
+  'Hall A1', 'Hall A2', 'Hall B1', 'Hall B2',
+  'Hall C1', 'Hall C2', 'Lab 01', 'Lab 02',
+  'Lab 03', 'Room B3', 'Room C4',
+];
+
+List<String> _buildTimes() {
+  final list = <String>[];
+  for (int h = 8; h <= 20; h++) {
+    list.add('${h.toString().padLeft(2, '0')}:00');
+    if (h < 20) list.add('${h.toString().padLeft(2, '0')}:30');
+  }
+  return list;
+}
+
+final _times = _buildTimes();
+
+// ── Outer wrapper ─────────────────────────────────────────────────────────────
+
 class GroupFormWidget extends StatelessWidget {
   final VoidCallback? onAddAnotherGroup;
-
-  const GroupFormWidget({
-    super.key,
-    this.onAddAnotherGroup,
-  });
+  const GroupFormWidget({super.key, this.onAddAnotherGroup});
 
   @override
   Widget build(BuildContext context) {
     final c = Get.find<PlanAdminController>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── GROUP HEADER ──────────────────────────────────────────────────
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: const BoxDecoration(
-            color: AppColors.primaryBlue,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: const Text(
-            "Group 1 – SE1",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+    return Obx(() {
+      final courses = c.selectedCourseNames.toList();
 
-        // ── OUTER BODY ────────────────────────────────────────────────────
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
+      if (courses.isEmpty) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(32),
+            child: Text(
+              'No courses selected.\nGo back and select at least one course.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.smalltext),
             ),
-            border: Border.all(color: Colors.grey.shade300),
           ),
-          child: Container(
+        );
+      }
+
+      return Column(
+        children: [
+          // ── Group header ─────────────────────────────────────────────
+          Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Text(
+              'Group – ${c.selectedMajor.value.isNotEmpty ? c.selectedMajor.value : "SE"}1',
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600),
+            ),
+          ),
+
+          // ── Course cards ─────────────────────────────────────────────
+          Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0x14000000)),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              border: Border.all(color: Colors.grey.shade300),
             ),
-            child: Obx(() {
-              final isLecture = c.isLecture.value;
-              final capacity = c.groupCapacity.value;
+            child: Column(
+              children: [
+                // One card per selected course
+                for (int i = 0; i < courses.length; i++) ...[
+                  _CourseCard(courseName: courses[i]),
+                  if (i < courses.length - 1)
+                    Divider(color: Colors.grey.shade200, height: 1),
+                ],
 
-              return Column(
-                children: [
-                  // COURSE HEADER
-                  Row(
+                // ── Capacity ─────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.bluegroundicon,
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: const Icon(
-                          Icons.storage_rounded,
-                          size: 22,
-                          color: AppColors.accentProgramming1,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          "Cloud Computing",
-                          style: TextStyles.body.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 17,
-                          ),
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          _badge("Core"),
-                          const SizedBox(height: 4),
-                          _badge("3 Credits"),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  const Divider(color: Color(0xffE6E6E6)),
-                  const SizedBox(height: 14),
-
-                  // LECTURE / SECTION TOGGLE
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _typeButton(
-                          title: "LECTURE",
-                          selected: isLecture,
-                          onTap: () => c.setScheduleType(true),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _typeButton(
-                          title: "SECTION",
-                          selected: !isLecture,
-                          onTap: () => c.setScheduleType(false),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      isLecture ? "PROFESSOR" : "TEACHING ASSISTANT",
-                      style: TextStyles.caption.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.smalltext,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-                  _buildDropdown(),
-
-                  const SizedBox(height: 16),
-
-                  // DAY / HALL
-                  Row(
-                    children: [
-                      Expanded(child: _buildColumnTitle("DAY")),
-                      const SizedBox(width: 10),
-                      Expanded(child: _buildColumnTitle("HALL")),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(child: _buildDropdown()),
-                      const SizedBox(width: 10),
-                      Expanded(child: _buildDropdown()),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // FROM / TO
-                  Row(
-                    children: [
-                      Expanded(child: _buildColumnTitle("FROM")),
-                      const SizedBox(width: 10),
-                      Expanded(child: _buildColumnTitle("TO")),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(child: _buildDropdown()),
-                      const SizedBox(width: 10),
-                      Expanded(child: _buildDropdown()),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // CAPACITY
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "GROUP CAPACITY",
-                      style: TextStyles.caption.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.smalltext,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: c.decrementCapacity,
-                        child: _capacityButton(Icons.remove),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F4FC),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0x12000000)),
-                          ),
-                          child: Center(
-                            child: Text(
-                              "$capacity",
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
+                      _label('GROUP CAPACITY'),
+                      const SizedBox(height: 10),
+                      Obx(() => Row(
+                            children: [
+                              _capBtn(Icons.remove, c.decrementCapacity),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Container(
+                                  height: 38,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F4FC),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: const Color(0x12000000)),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${c.groupCapacity.value}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      GestureDetector(
-                        onTap: c.incrementCapacity,
-                        child: _capacityButton(Icons.add),
-                      ),
+                              const SizedBox(width: 10),
+                              _capBtn(Icons.add, c.incrementCapacity),
+                            ],
+                          )),
                     ],
                   ),
+                ),
 
-                  const SizedBox(height: 20),
-
-                  // ADD ANOTHER GROUP BUTTON
-                  SizedBox(
+                // ── Add another group button ──────────────────────────
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                  child: SizedBox(
                     width: double.infinity,
                     height: 40,
                     child: ElevatedButton(
@@ -247,126 +145,387 @@ class GroupFormWidget extends StatelessWidget {
                         backgroundColor: AppColors.primaryBlue,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
-                        ),
+                            borderRadius: BorderRadius.circular(9)),
                       ),
                       child: const Text(
-                        "Add Another Group",
+                        'Add Another Group',
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
-                ],
-              );
-            }),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _badge(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.bluegroundicon,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: TextStyles.caption.copyWith(
-          color: AppColors.primaryBlue,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _typeButton({
-    required String title,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 38,
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primaryBlue : Colors.white,
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(
-            color: selected ? AppColors.primaryBlue : Colors.grey.shade300,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: selected ? Colors.white : AppColors.primaryBlue,
+                ),
+              ],
             ),
           ),
-        ),
-      ),
-    );
+        ],
+      );
+    });
   }
 
-  Widget _buildDropdown() {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(9),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: null,
-          isExpanded: true,
-          hint: Text(
-            "Select...",
-            style: TextStyles.caption.copyWith(
-              fontSize: 12,
-              color: Colors.grey.shade500,
-            ),
+  Widget _capBtn(IconData icon, VoidCallback onTap) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(7),
+            border: Border.all(color: const Color(0x12000000)),
           ),
-          items: const [],
-          onChanged: (value) {},
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.smalltext),
+          child: Icon(icon, size: 18, color: Colors.black),
         ),
-      ),
-    );
-  }
-
-  Widget _buildColumnTitle(String title) {
-    return Text(
-      title,
-      style: TextStyles.caption.copyWith(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: AppColors.smalltext,
-      ),
-    );
-  }
-
-  Widget _capacityButton(IconData icon) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: const Color(0x12000000)),
-      ),
-      child: Icon(icon, size: 18, color: Colors.black),
-    );
-  }
+      );
 }
+
+// ── Per-course card (StatefulWidget to avoid Obx/dropdown conflicts) ──────────
+
+class _CourseCard extends StatefulWidget {
+  final String courseName;
+  const _CourseCard({required this.courseName});
+
+  @override
+  State<_CourseCard> createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<_CourseCard> {
+  late final PlanAdminController _c;
+
+  bool    _hasSection        = false;
+
+  int?    _lectureProfId;
+  String? _lectureDay;
+  String? _lectureHall;
+  String? _lectureFrom;
+  String? _lectureTo;
+
+  int?    _sectionProfId;
+  String? _sectionDay;
+  String? _sectionHall;
+  String? _sectionFrom;
+  String? _sectionTo;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = Get.find<PlanAdminController>();
+    // Restore any previously saved state
+    final a = _c.assignments[widget.courseName];
+    if (a != null) {
+      _hasSection      = a.hasSection;
+      _lectureProfId   = a.lectureProfessorId;
+      _lectureDay      = a.lectureDay;
+      _lectureHall     = a.lectureHall;
+      _lectureFrom     = a.lectureFrom;
+      _lectureTo       = a.lectureTo;
+      _sectionProfId   = a.sectionProfessorId;
+      _sectionDay      = a.sectionDay;
+      _sectionHall     = a.sectionHall;
+      _sectionFrom     = a.sectionFrom;
+      _sectionTo       = a.sectionTo;
+    }
+  }
+
+  void _update(VoidCallback update) {
+    setState(update);
+    // Push state into the controller so saveAssignments() can read it
+    _c.setLectureProfessor(widget.courseName, _lectureProfId);
+    _c.setLectureDay(widget.courseName, _lectureDay);
+    _c.setLectureHall(widget.courseName, _lectureHall);
+    _c.setLectureFrom(widget.courseName, _lectureFrom);
+    _c.setLectureTo(widget.courseName, _lectureTo);
+    _c.toggleSection(widget.courseName, _hasSection);
+    _c.setSectionProfessor(widget.courseName, _sectionProfId);
+    _c.setSectionDay(widget.courseName, _sectionDay);
+    _c.setSectionHall(widget.courseName, _sectionHall);
+    _c.setSectionFrom(widget.courseName, _sectionFrom);
+    _c.setSectionTo(widget.courseName, _sectionTo);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Course title row
+          Row(
+            children: [
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.bluegroundicon,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.book_outlined,
+                    size: 18, color: AppColors.accentProgramming1),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(widget.courseName,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+
+          const Divider(height: 20, color: Color(0xffE6E6E6)),
+
+          // LECTURE / + SECTION toggle
+          Row(
+            children: [
+              Expanded(child: _toggleBtn('LECTURE', !_hasSection, () {
+                _update(() => _hasSection = false);
+              })),
+              const SizedBox(width: 10),
+              Expanded(child: _toggleBtn('+ SECTION', _hasSection, () {
+                _update(() => _hasSection = !_hasSection);
+              })),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // ── LECTURE fields ────────────────────────────────────────────
+          _label('PROFESSOR'),
+          const SizedBox(height: 6),
+          // Use Obx only for professor dropdown (needs reactive professors list)
+          Obx(() {
+            final profs = _c.professors.toList();
+            return _dropdown<int>(
+              value: profs.any((p) => p.id == _lectureProfId)
+                  ? _lectureProfId
+                  : null,
+              hint: profs.isEmpty ? 'Loading professors...' : 'Select professor',
+              items: profs
+                  .map((p) => DropdownMenuItem(
+                        value: p.id,
+                        child: Text(p.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13)),
+                      ))
+                  .toList(),
+              onChanged: profs.isEmpty
+                  ? null
+                  : (v) => _update(() => _lectureProfId = v),
+            );
+          }),
+
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: _label('DAY')),
+            const SizedBox(width: 10),
+            Expanded(child: _label('HALL')),
+          ]),
+          const SizedBox(height: 6),
+          Row(children: [
+            Expanded(child: _strDropdown(
+              value: _lectureDay, items: _days, hint: 'Day',
+              onChanged: (v) => _update(() => _lectureDay = v),
+            )),
+            const SizedBox(width: 10),
+            Expanded(child: _strDropdown(
+              value: _lectureHall, items: _halls, hint: 'Hall',
+              onChanged: (v) => _update(() => _lectureHall = v),
+            )),
+          ]),
+
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: _label('FROM')),
+            const SizedBox(width: 10),
+            Expanded(child: _label('TO')),
+          ]),
+          const SizedBox(height: 6),
+          Row(children: [
+            Expanded(child: _strDropdown(
+              value: _lectureFrom, items: _times, hint: 'Time',
+              onChanged: (v) => _update(() => _lectureFrom = v),
+            )),
+            const SizedBox(width: 10),
+            Expanded(child: _strDropdown(
+              value: _lectureTo, items: _times, hint: 'Time',
+              onChanged: (v) => _update(() => _lectureTo = v),
+            )),
+          ]),
+
+          // ── SECTION fields ────────────────────────────────────────────
+          if (_hasSection) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBF0),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFFE082)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('SECTION',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFB18334),
+                          letterSpacing: 0.5)),
+                  const SizedBox(height: 10),
+
+                  _label('TEACHING ASSISTANT'),
+                  const SizedBox(height: 6),
+                  Obx(() {
+                    final profs = _c.professors.toList();
+                    return _dropdown<int>(
+                      value: profs.any((p) => p.id == _sectionProfId)
+                          ? _sectionProfId
+                          : null,
+                      hint: profs.isEmpty
+                          ? 'Loading...'
+                          : 'Select teaching assistant',
+                      items: profs
+                          .map((p) => DropdownMenuItem(
+                                value: p.id,
+                                child: Text(p.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 13)),
+                              ))
+                          .toList(),
+                      onChanged: profs.isEmpty
+                          ? null
+                          : (v) => _update(() => _sectionProfId = v),
+                    );
+                  }),
+
+                  const SizedBox(height: 12),
+                  Row(children: [
+                    Expanded(child: _label('DAY')),
+                    const SizedBox(width: 10),
+                    Expanded(child: _label('HALL')),
+                  ]),
+                  const SizedBox(height: 6),
+                  Row(children: [
+                    Expanded(child: _strDropdown(
+                      value: _sectionDay, items: _days, hint: 'Day',
+                      onChanged: (v) => _update(() => _sectionDay = v),
+                    )),
+                    const SizedBox(width: 10),
+                    Expanded(child: _strDropdown(
+                      value: _sectionHall, items: _halls, hint: 'Hall',
+                      onChanged: (v) => _update(() => _sectionHall = v),
+                    )),
+                  ]),
+
+                  const SizedBox(height: 12),
+                  Row(children: [
+                    Expanded(child: _label('FROM')),
+                    const SizedBox(width: 10),
+                    Expanded(child: _label('TO')),
+                  ]),
+                  const SizedBox(height: 6),
+                  Row(children: [
+                    Expanded(child: _strDropdown(
+                      value: _sectionFrom, items: _times, hint: 'Time',
+                      onChanged: (v) => _update(() => _sectionFrom = v),
+                    )),
+                    const SizedBox(width: 10),
+                    Expanded(child: _strDropdown(
+                      value: _sectionTo, items: _times, hint: 'Time',
+                      onChanged: (v) => _update(() => _sectionTo = v),
+                    )),
+                  ]),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Small helpers ─────────────────────────────────────────────────────────
+
+  Widget _toggleBtn(String title, bool active, VoidCallback onTap) =>
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 36,
+          decoration: BoxDecoration(
+            color: active ? AppColors.primaryBlue : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+                color:
+                    active ? AppColors.primaryBlue : Colors.grey.shade300),
+          ),
+          child: Center(
+            child: Text(title,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color:
+                        active ? Colors.white : AppColors.primaryBlue)),
+          ),
+        ),
+      );
+
+  Widget _strDropdown({
+    required String? value,
+    required List<String> items,
+    required String hint,
+    required ValueChanged<String?> onChanged,
+  }) =>
+      _dropdown<String>(
+        value: items.contains(value) ? value : null,
+        hint: hint,
+        items: items
+            .map((s) => DropdownMenuItem(
+                  value: s,
+                  child: Text(s,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13)),
+                ))
+            .toList(),
+        onChanged: onChanged,
+      );
+
+  Widget _dropdown<T>({
+    required T? value,
+    required String hint,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?>? onChanged,
+  }) =>
+      Container(
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<T>(
+            value: value,
+            isExpanded: true,
+            hint: Text(hint,
+                style: const TextStyle(
+                    fontSize: 12, color: Color(0xFF9CA3AF))),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                color: AppColors.smalltext, size: 18),
+            items: items,
+            onChanged: onChanged,
+          ),
+        ),
+      );
+}
+
+// ── Shared label ──────────────────────────────────────────────────────────────
+
+Widget _label(String text) => Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Text(text,
+          style: TextStyles.caption.copyWith(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.smalltext)),
+    );

@@ -1,5 +1,4 @@
-// lib/Features/course_admin/controller/course_admin_controller.dart
-
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../model/course_admin_model.dart';
 import '../service/course_admin_service.dart';
@@ -12,53 +11,60 @@ class CourseAdminController extends GetxController {
 
   // ─── State ────────────────────────────────────────────────────────────────
   final Rx<CourseStatsModel?> stats = Rx(null);
-  final RxList<CourseAdminModel> allCourses = <CourseAdminModel>[].obs;
+  final RxList<CourseAdminModel> allCourses      = <CourseAdminModel>[].obs;
   final RxList<CourseAdminModel> filteredCourses = <CourseAdminModel>[].obs;
-  final RxBool isLoading = true.obs;
-  final RxString errorMessage = ''.obs;
+  final RxBool   isLoading      = true.obs;
+  final RxBool   isSubmitting   = false.obs;
+  final RxString errorMessage   = ''.obs;
 
   // ─── Filter ───────────────────────────────────────────────────────────────
   final RxString searchQuery = ''.obs;
   final RxString selectedTab = 'All'.obs;
-
-  // ✅ FIXED TAB LABELS (consistent everywhere)
-  final List<String> tabs = [
-    'All',
-    'Computers & Information',
-    'Business Administration',
-    'Languages & Translation',
-  ];
+  final RxList<String> tabs  = <String>['All'].obs;
 
   // ─── Form ─────────────────────────────────────────────────────────────────
-  final Rx<CourseFormModel> form = const CourseFormModel().obs;
-  final RxBool isSubmitting = false.obs;
+  final Rx<CourseFormModel>     form           = const CourseFormModel().obs;
+  final Rx<CourseAdminModel?>   pendingCourse  = Rx(null);
+  final Rx<CourseAdminModel?>   editingCourse  = Rx(null);
+  final Rx<CourseAdminModel?>   deletingCourse = Rx(null);
 
-  // ─── Dialog / sheet state ─────────────────────────────────────────────────
-  final Rx<CourseAdminModel?> pendingCourse = Rx(null);
-  final Rx<CourseAdminModel?> editingCourse = Rx(null);
-  final Rx<CourseAdminModel?> deletingCourse = Rx(null);
+  // ─── Reference data (loaded from DB) ─────────────────────────────────────
+  // Each entry: {code, name} for faculties; {code, name, faculty_code} for majors
+  final List<Map<String, String>> _facultyOptions = [];
+  final List<Map<String, String>> _majorOptions   = [];
 
-  // ─── Dropdown options ─────────────────────────────────────────────────────
-  final List<String> faculties = [
-    'Computers & Information',
-    'Business Administration',
-    'Languages & Translation',
-  ];
+  // Name→code lookup maps (used by service when inserting/updating)
+  Map<String, String> _facMap = {}; // code → name
+  Map<String, String> _majMap = {}; // code → name
 
-  final List<String> levels = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
+  // ─── Dropdown item lists (names only) ────────────────────────────────────
+  List<String> get faculties => _facultyOptions.map((f) => f['name']!).toList();
 
-  final List<String> majors = [
-    'Software Engineering',
-    'Cyber Security',
-    'Artificial Intelligence',
-    'Business Administration',
-    'Finance & Investment',
-    'Languages & Translation',
-    'General',
-  ];
+  List<String> get majors {
+    final code = form.value.facultyCode;
+    if (code.isEmpty) return _majorOptions.map((m) => m['name']!).toList();
+    return _majorOptions
+        .where((m) => m['faculty_code'] == code)
+        .map((m) => m['name']!)
+        .toList();
+  }
 
+  final List<String> levels      = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
   final List<String> creditsList = ['1', '2', '3', '4'];
-  final List<String> types = ['Core', 'Elective'];
+  final List<String> types       = ['Core', 'Elective'];
+
+  /// Course names for the selected faculty, excluding the course being edited.
+  /// Empty faculty → all courses shown.
+  List<String> get prerequisiteCourses {
+    final faculty     = form.value.faculty;
+    final editingId   = editingCourse.value?.id;
+    return allCourses
+        .where((c) => faculty.isEmpty || c.faculty == faculty)
+        .where((c) => c.id != editingId)
+        .map((c) => c.name)
+        .toList()
+      ..sort();
+  }
 
   @override
   void onInit() {
@@ -67,17 +73,31 @@ class CourseAdminController extends GetxController {
   }
 
   Future<void> loadData() async {
-    isLoading.value = true;
+    isLoading.value   = true;
     errorMessage.value = '';
     try {
-      final results = await Future.wait([
+      // Load reference data first so the maps are ready for courses
+      final refResults = await Future.wait([
+        _service.fetchFaculties(),
+        _service.fetchMajors(),
         _service.fetchStats(),
-        _service.fetchCourses(),
       ]);
 
-      stats.value = results[0] as CourseStatsModel;
-      allCourses.assignAll(results[1] as List<CourseAdminModel>);
+      _facultyOptions
+        ..clear()
+        ..addAll(refResults[0] as List<Map<String, String>>);
+      _majorOptions
+        ..clear()
+        ..addAll(refResults[1] as List<Map<String, String>>);
+      stats.value = refResults[2] as CourseStatsModel;
 
+      _facMap = {for (final f in _facultyOptions) f['code']!: f['name']!};
+      _majMap = {for (final m in _majorOptions)   m['code']!: m['name']!};
+
+      tabs.assignAll(['All', ..._facultyOptions.map((f) => f['name']!)]);
+
+      final courses = await _service.fetchCourses(_facMap, _majMap);
+      allCourses.assignAll(courses);
       _applyFilter();
     } catch (e) {
       errorMessage.value = e.toString();
@@ -86,6 +106,7 @@ class CourseAdminController extends GetxController {
     }
   }
 
+  // ─── Filter ───────────────────────────────────────────────────────────────
   void onSearch(String q) {
     searchQuery.value = q;
     _applyFilter();
@@ -96,75 +117,74 @@ class CourseAdminController extends GetxController {
     _applyFilter();
   }
 
-  // ─── FIXED FILTER LOGIC ───────────────────────────────────────────────────
   void _applyFilter() {
     var list = allCourses.toList();
-
-    // Faculty filter
     if (selectedTab.value != 'All') {
-      list = list.where((c) {
-        final faculty = c.faculty.toLowerCase();
-
-        switch (selectedTab.value) {
-          case 'Computers & Information':
-            return faculty.contains('computers');
-          case 'Business Administration':
-            return faculty.contains('business');
-          case 'Languages & Translation':
-            return faculty.contains('languages');
-          default:
-            return true;
-        }
-      }).toList();
+      list = list.where((c) => c.faculty == selectedTab.value).toList();
     }
-
-    // Search filter
     if (searchQuery.value.isNotEmpty) {
-      final query = searchQuery.value.toLowerCase();
-      list = list
-          .where((c) => c.name.toLowerCase().contains(query))
-          .toList();
+      final q = searchQuery.value.toLowerCase();
+      list = list.where((c) => c.name.toLowerCase().contains(q)).toList();
     }
-
     filteredCourses.assignAll(list);
   }
 
-  // ─── Form ─────────────────────────────────────────────────────────────────
+  // ─── Form helpers ─────────────────────────────────────────────────────────
   void setField({
     String? name,
-    String? faculty,
     String? level,
-    String? major,
     String? credits,
     String? type,
     String? prerequisite,
   }) {
     form.value = form.value.copyWith(
-      name: name,
-      faculty: faculty,
-      level: level,
-      major: major,
-      credits: credits,
-      type: type,
+      name:         name,
+      level:        level,
+      credits:      credits,
+      type:         type,
       prerequisite: prerequisite,
     );
   }
 
+  void onFacultySelected(String? facultyName) {
+    if (facultyName == null) return;
+    final opt  = _facultyOptions.firstWhereOrNull((f) => f['name'] == facultyName);
+    form.value = form.value.copyWith(
+      faculty:     facultyName,
+      facultyCode: opt?['code'] ?? '',
+      major:       '',
+      majorCode:   '',
+    );
+  }
+
+  void onMajorSelected(String? majorName) {
+    if (majorName == null) return;
+    final opt  = _majorOptions.firstWhereOrNull((m) => m['name'] == majorName);
+    form.value = form.value.copyWith(
+      major:     majorName,
+      majorCode: opt?['code'] ?? '',
+    );
+  }
+
   void resetForm() {
-    form.value = const CourseFormModel();
-    pendingCourse.value = null;
-    editingCourse.value = null;
+    form.value          = const CourseFormModel();
+    pendingCourse.value  = null;
+    editingCourse.value  = null;
   }
 
   void loadEditForm(CourseAdminModel course) {
     editingCourse.value = course;
+    final facOpt = _facultyOptions.firstWhereOrNull((f) => f['name'] == course.faculty);
+    final majOpt = _majorOptions.firstWhereOrNull((m) => m['name'] == course.major);
     form.value = CourseFormModel(
-      name: course.name,
-      faculty: course.faculty,
-      level: course.level,
-      major: course.major,
-      credits: course.credits.toString(),
-      type: course.type,
+      name:        course.name,
+      faculty:     course.faculty,
+      facultyCode: facOpt?['code'] ?? '',
+      level:       course.level,
+      major:       course.major,
+      majorCode:   majOpt?['code'] ?? '',
+      credits:     course.credits.toString(),
+      type:        course.type,
       prerequisite: course.prerequisite == '—' ? '' : course.prerequisite,
     );
   }
@@ -172,57 +192,76 @@ class CourseAdminController extends GetxController {
   // ─── Add ──────────────────────────────────────────────────────────────────
   Future<void> previewAdd() async {
     if (!form.value.isValid) {
-      Get.snackbar(
-        'Incomplete',
-        'Please fill all required fields',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Incomplete', 'Please fill all required fields',
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
+    // Build a local preview — DB insert happens only on confirmAdd
+    pendingCourse.value = CourseAdminModel(
+      id:          '',
+      name:        form.value.name,
+      faculty:     form.value.faculty,
+      level:       form.value.level,
+      major:       form.value.major.isEmpty ? 'General' : form.value.major,
+      credits:     int.tryParse(form.value.credits) ?? 3,
+      type:        form.value.type,
+      prerequisite: form.value.prerequisite.isEmpty ? '—' : form.value.prerequisite,
+    );
+  }
 
+  Future<void> confirmAdd() async {
+    if (pendingCourse.value == null) return;
     isSubmitting.value = true;
     try {
-      final course = await _service.addCourse(form.value);
-      pendingCourse.value = course;
+      final created = await _service.addCourse(form.value, _facMap, _majMap);
+      allCourses.add(created);
+      // Update stats count
+      if (stats.value != null) {
+        stats.value = CourseStatsModel(
+          totalCourses: stats.value!.totalCourses + 1,
+          professors:   stats.value!.professors,
+          faculties:    stats.value!.faculties,
+        );
+      }
+      _applyFilter();
+      resetForm();
+      Get.back(); // close confirm dialog
+      Get.back(); // close add sheet
+      Get.snackbar('Success', 'Course added successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade100,
+          colorText: Colors.green.shade900);
     } catch (e) {
       Get.snackbar('Error', e.toString(),
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900);
     } finally {
       isSubmitting.value = false;
     }
   }
 
-  Future<void> confirmAdd() async {
-    if (pendingCourse.value == null) return;
-
-    allCourses.add(pendingCourse.value!);
-    _applyFilter();
-    resetForm();
-
-    Get.back();
-    Get.back();
-  }
-
   // ─── Edit ─────────────────────────────────────────────────────────────────
   Future<void> saveEdit() async {
     if (editingCourse.value == null) return;
-
     isSubmitting.value = true;
     try {
       final updated = await _service.editCourse(
-        editingCourse.value!.id,
-        form.value,
-      );
-
+          editingCourse.value!.id, form.value, _facMap, _majMap);
       final idx = allCourses.indexWhere((c) => c.id == updated.id);
       if (idx != -1) allCourses[idx] = updated;
-
       _applyFilter();
       resetForm();
       Get.back();
+      Get.snackbar('Success', 'Course updated successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.shade100,
+          colorText: Colors.green.shade900);
     } catch (e) {
       Get.snackbar('Error', e.toString(),
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900);
     } finally {
       isSubmitting.value = false;
     }
@@ -231,19 +270,27 @@ class CourseAdminController extends GetxController {
   // ─── Delete ───────────────────────────────────────────────────────────────
   Future<void> confirmDelete() async {
     if (deletingCourse.value == null) return;
-
     isSubmitting.value = true;
     try {
       await _service.deleteCourse(deletingCourse.value!.id);
-
       allCourses.removeWhere((c) => c.id == deletingCourse.value!.id);
+      if (stats.value != null) {
+        stats.value = CourseStatsModel(
+          totalCourses: (stats.value!.totalCourses - 1).clamp(0, 99999),
+          professors:   stats.value!.professors,
+          faculties:    stats.value!.faculties,
+        );
+      }
       _applyFilter();
-
       deletingCourse.value = null;
       Get.back();
+      Get.snackbar('Deleted', 'Course removed successfully',
+          snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       Get.snackbar('Error', e.toString(),
-          snackPosition: SnackPosition.BOTTOM);
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900);
     } finally {
       isSubmitting.value = false;
     }

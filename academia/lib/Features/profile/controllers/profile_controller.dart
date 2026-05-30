@@ -14,6 +14,11 @@ class ProfileController extends GetxController {
   final RxBool isSaving = false.obs;
   final RxString error = ''.obs;
 
+  // Semester week progress
+  final RxInt currentWeek   = 0.obs;
+  final RxInt totalWeeks    = 16.obs;
+  final RxString semesterLabel = ''.obs;
+
   // Displayed avatar URL (from DB)
   final Rxn<String> avatarUrl = Rxn<String>();
 
@@ -40,10 +45,18 @@ class ProfileController extends GetxController {
     isLoading.value = true;
     error.value = '';
     try {
-      final data = await _service.fetchStudentProfile();
-      student.value = data;
+      final results = await Future.wait([
+        _service.fetchStudentProfile(),
+        _service.fetchSemesterProgress(),
+      ]);
+      final data = results[0] as StudentModel;
+      final sem  = results[1] as Map<String, dynamic>;
+      student.value       = data;
       phoneController.text = data.phone;
-      avatarUrl.value = data.avatarUrl;
+      avatarUrl.value     = data.avatarUrl;
+      currentWeek.value   = sem['currentWeek'] as int;
+      totalWeeks.value    = sem['totalWeeks']  as int;
+      semesterLabel.value = sem['semesterLabel'] as String;
     } catch (e) {
       error.value = 'Failed to load profile: $e';
     } finally {

@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utilities/colors.dart';
@@ -227,14 +228,10 @@ class _Step2 extends StatelessWidget {
             value: form.semester,
             onChanged: c.setSemester,
           ),
-          const SizedBox(height: 14),
-          AppDropdownField(
-            label: 'Academic Year',
-            hint: 'Select year...',
-            items: c.academicYears,
-            value: form.academicYear,
-            onChanged: c.setAcademicYear,
-          ),
+          if (form.academicYear != null) ...[
+            const SizedBox(height: 14),
+            _ReadOnlyField(label: 'Academic Year', value: form.academicYear!),
+          ],
         ],
       );
     });
@@ -255,10 +252,10 @@ class _Step3 extends StatelessWidget {
         children: [
           UploadFilePicker(
             form: form,
-            onPickFile: () => _pickFile(c),
+            onPickFile: () => _pickFile(context, c),
             onRemoveFile: c.removeFile,
           ),
-          if (form.file != null) UploadSummaryCard(form: form),
+          if (form.fileBytes != null) UploadSummaryCard(form: form),
           if (c.uploadStatus.value == UploadStatus.error)
             Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -274,30 +271,63 @@ class _Step3 extends StatelessWidget {
     });
   }
 
-  void _pickFile(ExamResultsController c) {
-    // TODO: real FilePicker integration:
-    // final result = await FilePicker.platform.pickFiles(
-    //   type: FileType.custom,
-    //   allowedExtensions: ['xlsx', 'xls', 'csv'],
-    // );
-    // if (result != null) {
-    //   c.setPickedFile(
-    //     file: File(result.files.single.path!),
-    //     fileName: result.files.single.name,
-    //     rows: 246,
-    //     sizeMb: result.files.single.size / 1024 / 1024,
-    //   );
-    // }
+  Future<void> _pickFile(BuildContext context, ExamResultsController c) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls', 'csv'],
+      withData: true,
+    );
+    if (result == null) return;
+    final file = result.files.single;
+    final bytes = file.bytes;
+    if (bytes == null) return;
     c.setPickedFile(
-      file: Object(),
-      fileName: 'final_results_sem8.xlsx',
-      rows: 246,
-      sizeMb: 2.4,
+      fileBytes: bytes,
+      fileName:  file.name,
+      rows:      0,
+      sizeMb:    file.size / 1024 / 1024,
     );
   }
 }
 
 // ─── Bottom buttons ───────────────────────────────────────────────────────────
+
+class _ReadOnlyField extends StatelessWidget {
+  final String label;
+  final String value;
+  const _ReadOnlyField({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _BottomButtons extends StatelessWidget {
   final ExamResultsController c;

@@ -3,6 +3,8 @@ enum RegistrationState {
   open,          // Semester A/B tabs, schedule list, confirm CTA
   closed,        // Lock icon, "Registration is now closed"
   notOpenedYet,  // Clock icon, registration hasn't opened yet
+  done,          // Success screen shown after confirming registration
+  feesRequired,  // Window is open but student has unpaid fees
 }
 
 // ─── Group Model ────────────────────────────────────────────────────────────

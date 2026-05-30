@@ -25,38 +25,36 @@ class HomeController extends GetxController {
     try {
       final userId = Supabase.instance.client.auth.currentUser!.id;
 
-      // Run name + studentId fetch in parallel
       final results = await Future.wait([
         _service.getStudentName(userId),
         _service.getStudentId(userId),
       ]);
 
-      final name = results[0] as String;
+      final name      = results[0] as String;
       final studentId = results[1] as int;
+      userName.value  = name;
 
-      userName.value = name;
-
-      // Run schedule + assignments in parallel
-      final data = await Future.wait([
+      // Schedule & next class — critical path, run together
+      final scheduleData = await Future.wait([
         _service.getTodaySchedule(studentId),
-        _service.getUpcomingAssignments(studentId),
         _service.getNextClass(studentId),
       ]);
+      dailySchedule.value = scheduleData[0] as List<ScheduleItem>;
+      nextClass.value     = scheduleData[1] as ScheduleItem?;
 
-      dailySchedule.value = data[0] as List<ScheduleItem>;
-      assignments.value   = data[1] as List<Assignment>;
-      nextClass.value     = data[2] as ScheduleItem?;
-
+      // Assignments — optional; failure must not wipe the schedule
+      try {
+        assignments.value = await _service.getUpcomingAssignments(studentId);
+      } catch (_) {
+        assignments.value = [];
+      }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load home data: ${e.toString()}',
-      );
+      Get.snackbar('Error', 'Failed to load home data: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Pull-to-refresh
+  @override
   Future<void> refresh() => loadHomeData();
 }

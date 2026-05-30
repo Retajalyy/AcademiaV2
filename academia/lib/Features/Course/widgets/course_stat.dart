@@ -1,45 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
+import '../controllers/course_details_controller.dart';
 
 class CourseStats extends StatelessWidget {
   const CourseStats({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: const [
-          Expanded(
-            child: CircleStat(
-              title: "Classwork",
-              value: "75%",
-              percent: 0.75,
-              color: AppColors.accentProgramming1,
+    final ctrl = Get.find<CourseDetailsController>();
+
+    return Obx(() {
+      final c = ctrl.course.value;
+      final classwork   = c?.classworkPercent    ?? 0.0;
+      final assignments = c?.assignmentsPercent  ?? 0.0;
+      final attendance  = c?.attendancePercent   ?? 0.0;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: CircleStat(
+                title:   "Classwork",
+                value:   "${(classwork * 100).toStringAsFixed(0)}%",
+                percent: classwork,
+                color:   AppColors.accentProgramming1,
+              ),
             ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: CircleStat(
-              title: "Assignments",
-              value: "75%",
-              percent: 0.75,
-              color: AppColors.accentAI,
+            const SizedBox(width: 12),
+            Expanded(
+              child: CircleStat(
+                title:   "Assignments",
+                value:   "${(assignments * 100).toStringAsFixed(0)}%",
+                percent: assignments,
+                color:   AppColors.accentAI,
+              ),
             ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: CircleStat(
-              title: "Attendance",
-              value: "15%",
-              percent: 0.15,
-              color: AppColors.fail, // fixed (fail → alertError)
+            const SizedBox(width: 12),
+            Expanded(
+              child: CircleStat(
+                title:   "Attendance",
+                value:   "${(attendance * 100).toStringAsFixed(0)}%",
+                percent: attendance,
+                color:   AppColors.fail,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -57,16 +68,11 @@ class CircleStat extends StatelessWidget {
     required this.color,
   });
 
-  Color getColor() {
-    return percent >= 0.5
-        ? AppColors.accentProgramming1 // blue
-        : AppColors.fail;        // red
-  }
+  Color get _dynamicColor =>
+      percent >= 0.5 ? AppColors.accentProgramming1 : AppColors.fail;
 
   @override
   Widget build(BuildContext context) {
-    final dynamicColor = getColor(); // ✅ override based on percent
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
@@ -88,8 +94,7 @@ class CircleStat extends StatelessWidget {
                     value: percent,
                     strokeWidth: 6,
                     backgroundColor: Colors.grey.shade300,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(dynamicColor), // ✅
+                    valueColor: AlwaysStoppedAnimation<Color>(_dynamicColor),
                     strokeCap: StrokeCap.round,
                   ),
                 ),
@@ -97,7 +102,7 @@ class CircleStat extends StatelessWidget {
                   value,
                   style: TextStyles.percenatge.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: dynamicColor, // ✅ match color
+                    color: _dynamicColor,
                   ),
                 ),
               ],
@@ -106,7 +111,10 @@ class CircleStat extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             title,
-            style: TextStyles.percenatge.copyWith(fontWeight: FontWeight.w500,color:  Color(0xFF848282)),
+            style: TextStyles.percenatge.copyWith(
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF848282),
+            ),
             textAlign: TextAlign.center,
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:academia/Core/utilities/colors.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/service_item_model.dart';
 
@@ -66,7 +67,7 @@ class ServicesService {
         ],
       ),
       ServiceSectionModel(
-        title: 'ADMINISTRATION',
+        title: 'CAMPUS',
         items: [
           ServiceItemModel(
             id: 'registration',
@@ -75,7 +76,7 @@ class ServicesService {
             iconAsset: 'lib/assets/Icons/Registration.svg',
             accentColor: AppColors.primaryBlue,
             accentBackground: AppColors.lightblue,
-            status: registrationStatus,   // ← live from DB
+            status: registrationStatus,
             route: '/Registration',
           ),
           const ServiceItemModel(
@@ -86,6 +87,15 @@ class ServicesService {
             accentColor: AppColors.secondaryYellow,
             accentBackground: AppColors.LightYellow,
             route: '/Fees',
+          ),
+          const ServiceItemModel(
+            id: 'navigation',
+            title: 'Navigation',
+            subtitle: 'Find rooms & buildings',
+            iconData: Icons.map_outlined,
+            accentColor: AppColors.primaryBlue,
+            accentBackground: AppColors.lightblue,
+            route: '/navigation',
           ),
         ],
       ),

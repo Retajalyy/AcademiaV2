@@ -22,6 +22,14 @@ import 'Features/Fees_admin/screens/FeesAdminScreen.dart';
 import 'package:academia/Features/course_admin/screens/course_admin_screen.dart';
 import 'Features/exam_results_admin/screens/exam_results_screen.dart';
 import 'Features/exam_results_admin/bindings/exam_results_binding.dart';
+import 'Core/widgets/professor_bottom_bar.dart';
+import 'Features/Professor/screens/professor_course_detail_screen.dart';
+import 'Features/Navigation/screens/navigation_screen.dart';
+import 'Features/Auth/screens/forgot_password_screen.dart';
+import 'Features/Dashboard_admin/screens/password_reset_screen.dart';
+import 'Features/Announcements/screens/announcements_screen.dart';
+import 'Features/Announcements/screens/admin_announcements_screen.dart';
+import 'Features/Announcements/screens/create_announcement_screen.dart';
 
 import 'Features/Registiration_admin/screens/RegistirationScreen.dart';
 
@@ -180,9 +188,41 @@ class MyApp extends StatelessWidget {
   binding: ExamResultsBinding(),
 ),
         GetPage(
-  name: '/app',
-  page: () => const BottomBar(),
-),
+          name: '/app',
+          page: () => const BottomBar(),
+        ),
+        GetPage(
+          name: '/professorApp',
+          page: () => const ProfessorBottomBar(),
+        ),
+        GetPage(
+          name: '/professorCourseDetail',
+          page: () => const ProfessorCourseDetailScreen(),
+        ),
+        GetPage(
+          name: '/navigation',
+          page: () => const NavigationScreen(),
+        ),
+        GetPage(
+          name: '/forgotPassword',
+          page: () => const ForgotPasswordScreen(),
+        ),
+        GetPage(
+          name: '/passwordResetRequests',
+          page: () => const PasswordResetScreen(),
+        ),
+        GetPage(
+          name: '/announcements',
+          page: () => const AnnouncementsScreen(),
+        ),
+        GetPage(
+          name: '/adminAnnouncements',
+          page: () => const AdminAnnouncementsScreen(),
+        ),
+        GetPage(
+          name: '/createAnnouncement',
+          page: () => const CreateAnnouncementScreen(),
+        ),
       ],
     );
   }

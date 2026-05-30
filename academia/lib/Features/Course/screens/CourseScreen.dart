@@ -49,6 +49,7 @@ class CourseScreen extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final course = controller.courses[index];
                             return CourseCard(
+                              courseId: course.courseId,
                               title:    course.title,
                               doctor:   course.doctor,
                               type:     course.type,

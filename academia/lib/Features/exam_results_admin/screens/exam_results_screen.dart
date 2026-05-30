@@ -9,12 +9,6 @@ import '../widgets/upload_bottom_sheet.dart';
 class ExamResultsAdminScreen extends StatelessWidget {
   const ExamResultsAdminScreen({super.key});
 
-  static const _tabs = [
-    'All',
-    'Computers and Information',
-    'Business Administration',
-    'Languages and Translation',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -337,8 +331,6 @@ class _SearchBar extends StatelessWidget {
 class _FilterChips extends StatelessWidget {
   const _FilterChips();
 
-  static const _tabs = ExamResultsAdminScreen._tabs;
-
   @override
   Widget build(BuildContext context) {
     final c = Get.find<ExamResultsController>();
@@ -347,6 +339,7 @@ class _FilterChips extends StatelessWidget {
       height: 46,
       child: Obx(() {
         final active = c.activeFilter.value;
+        final tabs   = c.filterTabs;
 
         return ListView.builder(
           scrollDirection: Axis.horizontal,
@@ -354,16 +347,16 @@ class _FilterChips extends StatelessWidget {
             horizontal: 16,
             vertical: 7,
           ),
-          itemCount: _tabs.length,
+          itemCount: tabs.length,
           itemBuilder: (_, i) {
-            final isSelected = active == _tabs[i];
+            final isSelected = active == tabs[i];
 
             return Padding(
               padding: EdgeInsets.only(
-                right: i < _tabs.length - 1 ? 8 : 0,
+                right: i < tabs.length - 1 ? 8 : 0,
               ),
               child: GestureDetector(
-                onTap: () => c.onFilterChanged(_tabs[i]),
+                onTap: () => c.onFilterChanged(tabs[i]),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(
@@ -382,7 +375,7 @@ class _FilterChips extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    _tabs[i],
+                    tabs[i],
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected

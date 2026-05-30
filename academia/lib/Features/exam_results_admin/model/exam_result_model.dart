@@ -1,10 +1,6 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Model: ExamResultModel
-// Represents a single published exam-result record returned from the API.
-// ─────────────────────────────────────────────────────────────────────────────
-
 class ExamResultModel {
   final String id;
+  final int semesterId;
   final String title;
   final String faculty;
   final String level;
@@ -19,6 +15,7 @@ class ExamResultModel {
 
   const ExamResultModel({
     required this.id,
+    required this.semesterId,
     required this.title,
     required this.faculty,
     required this.level,
@@ -32,36 +29,23 @@ class ExamResultModel {
     required this.uploadedAt,
   });
 
-  // ── JSON ──────────────────────────────────────────────────────────────────
-  factory ExamResultModel.fromJson(Map<String, dynamic> json) {
+  factory ExamResultModel.fromDb(Map<String, dynamic> row) {
     return ExamResultModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      faculty: json['faculty'] as String,
-      level: json['level'] as String,
-      major: json['major'] as String,
-      semester: json['semester'] as String,
-      academicYear: json['academic_year'] as String,
-      studentsCount: json['students_count'] as int,
-      passRate: (json['pass_rate'] as num).toDouble(),
-      avgGpa: (json['avg_gpa'] as num).toDouble(),
-      fileName: json['file_name'] as String,
-      uploadedAt: DateTime.parse(json['uploaded_at'] as String),
+      id:            row['id'].toString(),
+      semesterId:    (row['semester_id'] as int?) ?? 0,
+      title:         row['title']          as String,
+      faculty:       row['faculty']        as String? ?? '',
+      level:         row['year_level'] != null ? 'Level ${row['year_level']}' : '',
+      major:         row['major']          as String? ?? '',
+      semester:      row['semester_label'] as String? ?? '',
+      academicYear:  row['academic_year']  as String? ?? '',
+      studentsCount: (row['students_count'] as int?) ?? 0,
+      passRate:      (row['pass_rate']  as num?)?.toDouble() ?? 0,
+      avgGpa:        (row['avg_gpa']    as num?)?.toDouble() ?? 0,
+      fileName:      row['file_name']      as String? ?? '',
+      uploadedAt:    row['uploaded_at'] != null
+                       ? DateTime.parse(row['uploaded_at'] as String)
+                       : DateTime.now(),
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'faculty': faculty,
-        'level': level,
-        'major': major,
-        'semester': semester,
-        'academic_year': academicYear,
-        'students_count': studentsCount,
-        'pass_rate': passRate,
-        'avg_gpa': avgGpa,
-        'file_name': fileName,
-        'uploaded_at': uploadedAt.toIso8601String(),
-      };
 }

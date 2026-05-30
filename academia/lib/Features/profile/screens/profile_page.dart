@@ -1,5 +1,7 @@
 import 'package:academia/Core/utilities/colors.dart';
+import 'package:academia/Features/Auth/services/auth_service.dart';
 import 'package:academia/Features/profile/widgets/degree_progress.dart';
+import 'package:academia/Features/profile/widgets/semester_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
@@ -101,6 +103,19 @@ class _ProfileBody extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
 
+                // ── Academic Progress (semester weeks) ───────────────────
+                const _SectionTitle(title: 'ACADEMIC PROGRESS'),
+                const SizedBox(height: 14),
+                Obx(() {
+                  final c = Get.find<ProfileController>();
+                  return SemesterProgressCard(
+                    currentWeek:   c.currentWeek.value,
+                    totalWeeks:    c.totalWeeks.value,
+                    semesterLabel: c.semesterLabel.value,
+                  );
+                }),
+                const SizedBox(height: 30),
+
                 // ── Degree Progress ──────────────────────────────────────
                 const _SectionTitle(title: 'DEGREE PROGRESS'),
                 const SizedBox(height: 14),
@@ -108,6 +123,30 @@ class _ProfileBody extends StatelessWidget {
                   completedCredits: student.completedCredits,
                   totalCredits: student.totalCredits,
                   remainingCredits: student.remainingCredits,
+                ),
+                const SizedBox(height: 30),
+
+                // ── Sign Out ─────────────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await AuthService().logout();
+                      Get.offAllNamed('/login');
+                    },
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    label: const Text(
+                      'Sign Out',
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

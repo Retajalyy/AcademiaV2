@@ -1,49 +1,43 @@
-// lib/Features/Course/services/course_details_service.dart
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../model/course_detail_model.dart';
 
-import 'package:academia/Features/Course/model/course_detail_model.dart';
 class CourseDetailsService {
-  Future<CourseDetailsModel> fetchCourseDetails(String courseId) async {
-    await Future.delayed(const Duration(milliseconds: 800));
+  final _db = Supabase.instance.client;
 
-    // TODO: replace with real API call
-    // final res = await dio.get('/courses/$courseId/details');
-    // return CourseDetailsModel.fromJson(res.data);
+  Future<CourseDetailsModel> fetchCourseDetails(int courseId) async {
+    // Course info
+    final courseRow = await _db
+        .from('courses')
+        .select('id, name, code, credit_hours')
+        .eq('id', courseId)
+        .maybeSingle();
+
+    final courseName   = courseRow?['name']         as String? ?? '';
+    final credits      = courseRow?['credit_hours'] as int?    ?? 3;
+
+    // Materials from course_materials table
+    List<CourseMaterial> materials = [];
+    try {
+      final mData = await _db
+          .from('course_materials')
+          .select('id, name, file_type, file_size_kb, file_url, uploaded_at')
+          .eq('course_id', courseId)
+          .order('uploaded_at', ascending: true);
+      materials = (mData as List)
+          .map((m) => CourseMaterial.fromMap(m))
+          .toList();
+    } catch (_) {}
 
     return CourseDetailsModel(
-      id: courseId,
-      courseName: 'Cloud Computing',
-      doctorName: 'Dr. Youssef Senousy',
-      credits: 3,
-      progress: 0.65,
-      classworkPercent: 0.75,
-      assignmentsPercent: 0.75,
-      attendancePercent: 0.15,
-      materials: const [
-        CourseMaterial(
-          title: 'Lecture 1',
-          subtitle: 'PDF · 2.4 MB',
-          type: 'pdf',
-          isAssignment: false,
-        ),
-        CourseMaterial(
-          title: 'Lecture 2',
-          subtitle: 'PDF · 3.1 MB',
-          type: 'pdf',
-          isAssignment: false,
-        ),
-        CourseMaterial(
-          title: 'Lecture 3',
-          subtitle: 'PDF · 2.8 MB',
-          type: 'pdf',
-          isAssignment: false,
-        ),
-        CourseMaterial(
-          title: 'Assignment 1',
-          subtitle: 'DOCX · Due May 5',
-          type: 'docx',
-          isAssignment: true,
-        ),
-      ],
+      id:                   courseId.toString(),
+      courseName:           courseName,
+      doctorName:           '',
+      credits:              credits,
+      progress:             0,
+      classworkPercent:     0,
+      assignmentsPercent:   0,
+      attendancePercent:    0,
+      materials:            materials,
     );
   }
 }

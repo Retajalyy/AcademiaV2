@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../controller/registiration_controller.dart';
+import 'create_plan_sheet.dart';
 
 class AddNewPlan extends StatelessWidget {
   const AddNewPlan({super.key});
@@ -30,10 +31,16 @@ class AddNewPlan extends StatelessWidget {
             ),
             onPressed: loading
                 ? null
-                : () {
-                    // Navigate to plan creation flow.
-                    // On completion, call controller.createNewPlan(data).
-                  },
+                : () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (_) => const CreatePlanSheet(),
+                    ),
             child: loading
                 ? const SizedBox(
                     width: 20,

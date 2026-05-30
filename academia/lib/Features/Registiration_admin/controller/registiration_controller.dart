@@ -118,6 +118,49 @@ class RegistrationController extends GetxController {
     }
   }
 
+  Future<void> togglePlanStatus(String planId) async {
+    isActionLoading.value = true;
+    try {
+      final idx = activePlans.indexWhere((p) => p.id == planId);
+      if (idx == -1) return;
+      final plan      = activePlans[idx];
+      final newStatus = plan.isActive ? 'closed' : 'open';
+      await _service.updateWindowStatus(int.parse(planId), newStatus);
+      activePlans[idx] = plan.copyWith(isActive: !plan.isActive);
+      registrationStatus.value = await _service.fetchRegistrationStatus();
+      Get.snackbar(
+        'Updated',
+        'Registration ${!plan.isActive ? 'opened' : 'closed'}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update status: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isActionLoading.value = false;
+    }
+  }
+
+  Future<void> updatePlanLabels(
+      String planId, String semLabel, String yearLabel) async {
+    isActionLoading.value = true;
+    try {
+      await _service.updateWindowLabels(int.parse(planId), semLabel, yearLabel);
+      final idx = activePlans.indexWhere((p) => p.id == planId);
+      if (idx != -1) {
+        activePlans[idx] =
+            activePlans[idx].copyWith(title: '$semLabel · $yearLabel');
+      }
+      Get.snackbar('Saved', 'Plan labels updated',
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to update labels: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isActionLoading.value = false;
+    }
+  }
+
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   bool get isLoading => status.value == RegistrationStatus.loading;

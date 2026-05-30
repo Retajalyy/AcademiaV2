@@ -46,50 +46,56 @@ class Planadminscreen3 extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// GROUP CARD
-                      GroupSE1Card(
-                        groupName: "SE1",
-                        department: "Software Engineering",
-                        level: "Level 4",
-                        courseCount: 6,
-                      ),
+                      /// GROUP CARD — from controller
+                      Obx(() => GroupSE1Card(
+                        groupName:   '${c.selectedMajor.value}${c.selectedLevel.value}',
+                        department:  c.selectedMajorName.value,
+                        level:       'Level ${c.selectedLevel.value}',
+                        courseCount: c.scheduleCards.length,
+                      )),
 
                       const SizedBox(height: 20),
 
-                      /// SCHEDULE CARDS
-                      LectureScheduleCard(
-                        courseName: "Cloud Computing",
-                        credits: "3 Credits",
-                        lectureDay: "Sun",
-                        lectureDoctor: "Dr. Youssef Senousy",
-                        lectureTime: "08:00 - 09:30",
-                        lectureRoom: "Room B3",
-                        sectionDay: "Tue",
-                        sectionDoctor: "Mr. Ahmed Mohamed",
-                        sectionTime: "11:00 - 12:30",
-                        sectionRoom: "Lab 01",
-                        borderColor: AppColors.accentProgramming1,
-                        creditBackgroundColor: AppColors.bluegroundicon,
-                        creditsTextColor: AppColors.accentProgramming1,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      LectureScheduleCard(
-                        courseName: "Digital Marketing",
-                        credits: "2 Credits",
-                        lectureDay: "Sun",
-                        lectureDoctor: "Dr. Khuloud Farag",
-                        lectureTime: "08:00 - 09:30",
-                        lectureRoom: "Room B3",
-                        sectionDay: "Tue",
-                        sectionDoctor: "Mr. Ahmed Mohamed",
-                        sectionTime: "11:00 - 12:30",
-                        sectionRoom: "Lab 01",
-                        borderColor: AppColors.accentAI,
-                        creditBackgroundColor: AppColors.LightYellow,
-                        creditsTextColor: AppColors.assignmentColor,
-                      ),
+                      /// SCHEDULE CARDS — from DB
+                      Obx(() {
+                        if (c.scheduleCards.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Center(
+                              child: Text(
+                                'No schedule data yet.',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                            ),
+                          );
+                        }
+                        return Column(
+                          children: c.scheduleCards.asMap().entries.map((e) {
+                            final s = e.value;
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                  bottom: e.key < c.scheduleCards.length - 1
+                                      ? 12
+                                      : 0),
+                              child: LectureScheduleCard(
+                                courseName:            s.courseName,
+                                credits:               s.credits,
+                                lectureDay:            s.lectureDay,
+                                lectureDoctor:         s.lectureDoctor,
+                                lectureTime:           s.lectureTime,
+                                lectureRoom:           s.lectureRoom,
+                                sectionDay:            s.sectionDay,
+                                sectionDoctor:         s.sectionDoctor,
+                                sectionTime:           s.sectionTime,
+                                sectionRoom:           s.sectionRoom,
+                                borderColor:           s.borderColor,
+                                creditBackgroundColor: s.creditBackgroundColor,
+                                creditsTextColor:      s.creditsTextColor,
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      }),
 
                       const SizedBox(height: 30),
 
