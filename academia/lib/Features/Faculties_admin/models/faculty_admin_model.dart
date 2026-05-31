@@ -28,8 +28,8 @@ class FacultyAdminModel {
 
   Color get color {
     switch (code) {
-      case 'FCI': return const Color(0xFF1565C0);
-      case 'FBA': return const Color(0xFFE65100);
+      case 'FCI': return const Color(0xFF0C4D83);
+      case 'FBA': return const Color(0xFFB18334);
       case 'FLT': return const Color(0xFF2E7D32);
       default:    return const Color(0xFF546E7A);
     }

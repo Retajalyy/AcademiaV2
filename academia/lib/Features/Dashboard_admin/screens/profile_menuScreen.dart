@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import 'package:academia/Features/Dashboard_admin/widgets/pending_task.dart';
 import 'package:academia/Features/Dashboard_admin/widgets/Dashboard_headr.dart';
@@ -37,8 +38,11 @@ class ProfileMenuScreen extends StatelessWidget {
 
             /// FADED BACKGROUND
             Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.35),
+              child: GestureDetector(
+                onTap: () => Get.back(),
+                child: Container(
+                  color: Colors.black.withValues(alpha: 0.35),
+                ),
               ),
             ),
 

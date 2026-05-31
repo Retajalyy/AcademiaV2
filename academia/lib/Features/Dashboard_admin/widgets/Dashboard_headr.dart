@@ -17,15 +17,14 @@ class DashboardHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(
-        top: 18, left: 16, right: 16, bottom: 20,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 18,
+        left: 16,
+        right: 16,
+        bottom: 20,
       ),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
       ),
       child: Column(
         children: [
@@ -48,12 +47,7 @@ class DashboardHeader extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () => Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ProfileMenuScreen(),
-                  ),
-                ),
+                onTap: () => Get.to(() => const ProfileMenuScreen()),
                 child: Container(
                   height: 40,
                   width: 40,
@@ -80,7 +74,7 @@ class DashboardHeader extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
           /// 2x2 STATS GRID — driven by controller
           Obx(() => GridView.count(
@@ -88,8 +82,9 @@ class DashboardHeader extends StatelessWidget {
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
             shrinkWrap: true,
+            padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.6,
+            childAspectRatio: 1.4,
             children: [
               GestureDetector(
                 onTap: () => Get.to(() => const AdminStudentsScreen()),

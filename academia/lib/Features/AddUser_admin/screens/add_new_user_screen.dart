@@ -24,6 +24,7 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             // ── Header ────────────────────────────────────────────────
@@ -39,7 +40,7 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
                     // SELECT TYPE
                     const Text('SELECT TYPE',
                         style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF6B7280),
                             letterSpacing: 0.5)),
@@ -95,14 +96,8 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.only(
-          bottomLeft:  Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
+      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 14, 16, 20),
+      color: AppColors.primaryBlue,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,7 +111,7 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
                 Text('Dashboard',
                     style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500)),
               ],
             ),
@@ -124,13 +119,13 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
           const SizedBox(height: 10),
           const Text('Add New User',
               style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: Colors.white)),
           const SizedBox(height: 4),
           const Text('Create accounts for all user types',
               style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 17,
                   color: Colors.white70,
                   fontWeight: FontWeight.w400)),
         ],
@@ -191,7 +186,7 @@ class _TypeCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(label,
                   style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: selected
                           ? AppColors.primaryBlue
@@ -226,7 +221,7 @@ class _StudentUpload extends StatelessWidget {
             'Upload a CSV file with the following columns:\n'
             'first_name, last_name, email, uni_id, password, faculty, major, level, phone',
             style: TextStyle(
-                fontSize: 11,
+                fontSize: 15,
                 color: AppColors.primaryBlue,
                 height: 1.6),
           ),
@@ -268,13 +263,13 @@ class _StudentUpload extends StatelessWidget {
                 const SizedBox(height: 12),
                 const Text('Tap to select CSV file',
                     style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primaryBlue)),
                 const SizedBox(height: 4),
                 const Text('Supports .csv files',
                     style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: Color(0xFF9CA3AF))),
               ],
             ),
@@ -301,7 +296,7 @@ class _StudentUpload extends StatelessWidget {
                 Expanded(
                   child: Text(c.csvFileName.value,
                       style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
                           color: Color(0xFF065F46)),
                       overflow: TextOverflow.ellipsis),
@@ -338,7 +333,7 @@ class _StudentUpload extends StatelessWidget {
             ),
             child: Text(c.csvResultMsg.value,
                 style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: isSuccess
                         ? Colors.green.shade800
@@ -406,14 +401,14 @@ class _ProfessorForm extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 14),
                 child: Text('Select faculty...',
                     style: TextStyle(
-                        color: Color(0xFF9CA3AF), fontSize: 14)),
+                        color: Color(0xFF9CA3AF), fontSize: 16)),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14),
               items: c.faculties
                   .map((f) => DropdownMenuItem(
                         value: f['code'],
                         child: Text(f['name']!,
-                            style: const TextStyle(fontSize: 14)),
+                            style: const TextStyle(fontSize: 16)),
                       ))
                   .toList(),
               onChanged: (v) {
@@ -428,7 +423,7 @@ class _ProfessorForm extends StatelessWidget {
         // Role toggle
         const Text('Role',
             style: TextStyle(
-                fontSize: 12,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF374151))),
         const SizedBox(height: 8),
@@ -506,7 +501,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(text,
       style: const TextStyle(
-          fontSize: 12,
+          fontSize: 15,
           fontWeight: FontWeight.w700,
           color: Color(0xFF6B7280),
           letterSpacing: 0.5));
@@ -525,11 +520,11 @@ class _Field extends StatelessWidget {
   Widget build(BuildContext context) => TextField(
         controller:  ctrl,
         keyboardType: keyboard,
-        style: const TextStyle(fontSize: 14),
+        style: const TextStyle(fontSize: 16),
         decoration: InputDecoration(
           hintText:     hint,
           hintStyle:    const TextStyle(
-              color: Color(0xFF9CA3AF), fontSize: 14),
+              color: Color(0xFF9CA3AF), fontSize: 16),
           filled:       true,
           fillColor:    Colors.white,
           contentPadding:
@@ -561,10 +556,10 @@ class _PasswordField extends StatelessWidget {
     return Obx(() => TextField(
           controller:   ctrl,
           obscureText:  c.obscurePassword.value,
-          style:        const TextStyle(fontSize: 14),
+          style:        const TextStyle(fontSize: 16),
           decoration: InputDecoration(
             hintText:  'Password',
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+            hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
             filled:    true,
             fillColor: Colors.white,
             contentPadding:
@@ -620,7 +615,7 @@ class _RoleChip extends StatelessWidget {
           ),
           child: Text(label,
               style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color:
                       selected ? Colors.white : const Color(0xFF374151))),
@@ -655,7 +650,7 @@ class _SubmitButton extends StatelessWidget {
                       color: Colors.white, strokeWidth: 2.5))
               : Text(label,
                   style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700)),
+                      fontSize: 17, fontWeight: FontWeight.w700)),
         ),
       );
 }

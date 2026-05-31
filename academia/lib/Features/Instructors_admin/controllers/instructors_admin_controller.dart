@@ -11,7 +11,7 @@ class InstructorsAdminController extends GetxController {
 
   final RxString selectedDept  = ''.obs;
   final RxString searchQuery   = ''.obs;
-  final RxBool   sortByRole    = false.obs;
+  final RxString sortBy        = ''.obs; // '', 'name', 'role', 'department'
   final RxBool   isLoading     = true.obs;
 
   @override
@@ -20,7 +20,6 @@ class InstructorsAdminController extends GetxController {
     _load();
     ever(selectedDept, (_) => _applyFilter());
     ever(searchQuery,  (_) => _applyFilter());
-    ever(sortByRole,   (_) => _applyFilter());
   }
 
   Future<void> _load() async {
@@ -57,8 +56,10 @@ class InstructorsAdminController extends GetxController {
       ).toList();
     }
 
-    if (sortByRole.value) {
-      list.sort((a, b) => a.role.compareTo(b.role)); // Professor before T.A.
+    switch (sortBy.value) {
+      case 'name':       list.sort((a, b) => a.name.compareTo(b.name)); break;
+      case 'role':       list.sort((a, b) => a.role.compareTo(b.role)); break;
+      case 'department': list.sort((a, b) => a.department.compareTo(b.department)); break;
     }
 
     filtered.assignAll(list);
@@ -69,7 +70,11 @@ class InstructorsAdminController extends GetxController {
   }
 
   void onSearch(String q) => searchQuery.value = q;
-  void toggleSort()       => sortByRole.toggle();
+
+  void setSortBy(String value) {
+    sortBy.value = sortBy.value == value ? '' : value;
+    _applyFilter();
+  }
 
   @override
   Future<void> refresh() => _load();

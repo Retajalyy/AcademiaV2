@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../Core/utilities/colors.dart';
+import '../../../Core/widgets/side_menu.dart';
 
 // ── Model ─────────────────────────────────────────────────────────────────────
 
@@ -12,6 +13,7 @@ class AdminAnnouncement {
   final String type;
   final String targetRole;
   final String timeAgo;
+  final int    seenCount;
 
   const AdminAnnouncement({
     required this.id,
@@ -20,6 +22,7 @@ class AdminAnnouncement {
     required this.type,
     required this.targetRole,
     required this.timeAgo,
+    this.seenCount = 0,
   });
 
   factory AdminAnnouncement.fromMap(Map<String, dynamic> m) {
@@ -47,6 +50,7 @@ class AdminAnnouncement {
       type:       (m['type']       as String? ?? 'general').toLowerCase(),
       targetRole: m['target_role'] as String? ?? 'all',
       timeAgo:    timeAgo,
+      seenCount:  (m['seen_count'] as int?) ?? 0,
     );
   }
 }
@@ -57,11 +61,23 @@ class AdminAnnouncementsController extends GetxController {
   final _db = Supabase.instance.client;
 
   final announcements = <AdminAnnouncement>[].obs;
-  final filtered      = <AdminAnnouncement>[].obs;
   final isLoading     = true.obs;
   final activeTab     = 'All'.obs;
+  final searchQuery   = ''.obs;
 
-  final tabs = ['All', 'Urgent', 'Warning', 'Info', 'General'];
+  final tabs = ['All', 'Urgent', 'Info', 'Warning', 'General'];
+
+  List<AdminAnnouncement> get filtered {
+    final tab = activeTab.value;
+    final q   = searchQuery.value.toLowerCase();
+    return announcements.where((a) {
+      final matchTab    = tab == 'All' || a.type == tab.toLowerCase();
+      final matchSearch = q.isEmpty ||
+          a.title.toLowerCase().contains(q) ||
+          a.body.toLowerCase().contains(q);
+      return matchTab && matchSearch;
+    }).toList();
+  }
 
   @override
   void onInit() {
@@ -79,7 +95,6 @@ class AdminAnnouncementsController extends GetxController {
       announcements.value = (data as List)
           .map((m) => AdminAnnouncement.fromMap(m))
           .toList();
-      _applyFilter();
     } catch (e) {
       Get.snackbar('Error', 'Failed to load: $e',
           snackPosition: SnackPosition.BOTTOM);
@@ -88,19 +103,7 @@ class AdminAnnouncementsController extends GetxController {
     }
   }
 
-  void setTab(String t) {
-    activeTab.value = t;
-    _applyFilter();
-  }
-
-  void _applyFilter() {
-    final tab = activeTab.value;
-    filtered.value = tab == 'All'
-        ? announcements.toList()
-        : announcements
-            .where((a) => a.type == tab.toLowerCase())
-            .toList();
-  }
+  void setTab(String t) => activeTab.value = t;
 
   @override
   Future<void> refresh() => _load();
@@ -135,14 +138,13 @@ class _AdminAnnouncementsScreenState
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: const Color(0xFFF0F4FA),
+      drawer: const SideMenu(activeItem: 'Announcements'),
       body: SafeArea(
         child: Column(
           children: [
             _Header(),
-            _SearchAndTabs(c: c),
             Expanded(child: _Body(c: c)),
           ],
         ),
@@ -151,163 +153,109 @@ class _AdminAnnouncementsScreenState
   }
 }
 
+// ── Header ────────────────────────────────────────────────────────────────────
+
 class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.primaryBlue,
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Menu + title row
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: Get.back,
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Announcements',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold)),
-                    Text('Manage and broadcast university announcements.',
-                        style:
-                            TextStyle(color: Colors.white60, fontSize: 11)),
-                  ],
+              Builder(
+                builder: (ctx) => GestureDetector(
+                  onTap: () => Scaffold.of(ctx).openDrawer(),
+                  child: const Padding(
+                    padding: EdgeInsets.only(top: 4, right: 14),
+                    child: Icon(Icons.menu, color: Colors.white, size: 28),
+                  ),
                 ),
+              ),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Announcements',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Manage and broadcast university\nannouncements',
+                    style: TextStyle(color: Colors.white60, fontSize: 13),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           // Write Announcement card
           GestureDetector(
             onTap: () => Get.toNamed('/createAnnouncement'),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: const Color(0xFFF5A623).withValues(alpha: 0.6)),
+                color: const Color(0xFF0C4D83),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5A623).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(Icons.edit_outlined,
-                        color: Color(0xFFF5A623), size: 18),
+                        color: Color(0xFFFFC258), size: 22),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Write an Announcement',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700)),
-                        Text('Compose and send to selecting groups',
-                            style: TextStyle(
-                                color: Colors.white54, fontSize: 11)),
+                        Text(
+                          'Write an Announcement',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Compose and deliver to selected groups',
+                          style: TextStyle(
+                              color: Colors.white54, fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
                   const Icon(Icons.arrow_forward_ios_rounded,
-                      color: Colors.white38, size: 14),
+                      color: Colors.white38, size: 15),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 14),
         ],
       ),
     );
   }
 }
 
-class _SearchAndTabs extends StatelessWidget {
-  final AdminAnnouncementsController c;
-  const _SearchAndTabs({required this.c});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.primaryBlue,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-      child: Column(
-        children: [
-          // Search
-          TextField(
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            decoration: InputDecoration(
-              hintText: 'Search announcements...',
-              hintStyle:
-                  TextStyle(color: Colors.white.withValues(alpha: 0.45)),
-              prefixIcon: Icon(Icons.search,
-                  color: Colors.white.withValues(alpha: 0.5), size: 20),
-              filled: true,
-              fillColor: Colors.white.withValues(alpha: 0.1),
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Tabs
-          Obx(() => SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: c.tabs.map((t) {
-                    final active = c.activeTab.value == t;
-                    return GestureDetector(
-                      onTap: () => c.setTab(t),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: active
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(t,
-                            style: TextStyle(
-                              color: active
-                                  ? AppColors.primaryBlue
-                                  : Colors.white,
-                              fontSize: 12,
-                              fontWeight: active
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            )),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-}
+// ── Body ─────────────────────────────────────────────────────────────────────
 
 class _Body extends StatelessWidget {
   final AdminAnnouncementsController c;
@@ -315,56 +263,134 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (c.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      final list = c.filtered;
-      if (list.isEmpty) {
-        return const Center(
-          child: Text('No announcements yet',
-              style: TextStyle(color: Colors.grey)),
-        );
-      }
-      return RefreshIndicator(
-        onRefresh: c.refresh,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Row(
-                children: [
-                  Text(
+    return Column(
+      children: [
+        // Search bar
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+          child: TextField(
+            onChanged: (v) => c.searchQuery.value = v,
+            style: const TextStyle(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Search announcements...',
+              hintStyle:
+                  const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+              prefixIcon: const Icon(Icons.search,
+                  color: Color(0xFF9CA3AF), size: 20),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ),
+
+        // Filter chips
+        Obx(() => SizedBox(
+              height: 38,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: c.tabs.map((t) {
+                  final active = c.activeTab.value == t;
+                  return GestureDetector(
+                    onTap: () => c.setTab(t),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: active
+                            ? AppColors.primaryBlue
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: active
+                              ? AppColors.primaryBlue
+                              : const Color(0xFFE5E7EB),
+                        ),
+                      ),
+                      child: Text(
+                        t,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: active
+                              ? Colors.white
+                              : const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            )),
+
+        const SizedBox(height: 4),
+
+        // List
+        Expanded(
+          child: Obx(() {
+            if (c.isLoading.value) {
+              return const Center(
+                  child: CircularProgressIndicator(
+                      color: AppColors.primaryBlue));
+            }
+            final list = c.filtered;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Text(
                     '${list.length} ANNOUNCEMENT${list.length == 1 ? '' : 'S'}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: Colors.grey.shade500,
+                      color: Color(0xFF6B7280),
                       letterSpacing: 0.8,
                     ),
                   ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                itemCount: list.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 10),
-                itemBuilder: (_, i) => _AdminAnnouncementCard(ann: list[i]),
-              ),
-            ),
-          ],
+                ),
+                Expanded(
+                  child: list.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No announcements found',
+                            style: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 14),
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: c.refresh,
+                          child: ListView.separated(
+                            padding:
+                                const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                            itemCount: list.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (_, i) =>
+                                _AnnouncementCard(ann: list[i]),
+                          ),
+                        ),
+                ),
+              ],
+            );
+          }),
         ),
-      );
-    });
+      ],
+    );
   }
 }
 
-class _AdminAnnouncementCard extends StatelessWidget {
+// ── Announcement Card ─────────────────────────────────────────────────────────
+
+class _AnnouncementCard extends StatelessWidget {
   final AdminAnnouncement ann;
-  const _AdminAnnouncementCard({required this.ann});
+  const _AnnouncementCard({required this.ann});
 
   Color get _typeColor {
     switch (ann.type) {
@@ -375,19 +401,30 @@ class _AdminAnnouncementCard extends StatelessWidget {
     }
   }
 
+  IconData get _typeIcon {
+    switch (ann.type) {
+      case 'urgent':  return Icons.notification_important_outlined;
+      case 'warning': return Icons.error_outline_rounded;
+      case 'info':    return Icons.info_outline_rounded;
+      default:        return Icons.notifications_outlined;
+    }
+  }
+
   String get _typeLabel =>
       ann.type[0].toUpperCase() + ann.type.substring(1);
+
+  String get _audienceLabel =>
+      ann.targetRole == 'all' ? 'All Students' : ann.targetRole;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -396,62 +433,114 @@ class _AdminAnnouncementCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 9, vertical: 3),
-                decoration: BoxDecoration(
-                  color: _typeColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(_typeLabel,
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: _typeColor)),
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F0FE),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      ann.targetRole == 'all'
-                          ? 'All Students'
-                          : ann.targetRole,
-                      style: const TextStyle(
-                          fontSize: 10,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Type badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _typeColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_typeIcon, color: _typeColor, size: 14),
+                      const SizedBox(width: 5),
+                      Text(
+                        _typeLabel,
+                        style: TextStyle(
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primaryBlue),
+                          color: _typeColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Title
+                Text(
+                  ann.title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A2B4A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+
+                // Body
+                Text(
+                  ann.body,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 13, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+
+          Divider(height: 1, color: Colors.grey.shade100),
+
+          // Bottom row
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                if (ann.seenCount > 0) ...[
+                  Icon(Icons.visibility_outlined,
+                      size: 14, color: Colors.grey.shade400),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${_fmt(ann.seenCount)} seen',
+                    style: TextStyle(
+                        fontSize: 12, color: Colors.grey.shade500),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Icon(Icons.access_time_outlined,
+                    size: 14, color: Colors.grey.shade400),
+                const SizedBox(width: 4),
+                Text(
+                  ann.timeAgo,
+                  style: TextStyle(
+                      fontSize: 12, color: Colors.grey.shade500),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F0FE),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _audienceLabel,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryBlue,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(ann.timeAgo,
-                      style: TextStyle(
-                          fontSize: 11, color: Colors.grey.shade400)),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(ann.title,
-              style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A2B4A))),
-          const SizedBox(height: 4),
-          Text(ann.body,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
         ],
       ),
     );
+  }
+
+  static String _fmt(int n) {
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
+    return '$n';
   }
 }

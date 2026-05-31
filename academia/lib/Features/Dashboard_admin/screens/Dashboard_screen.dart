@@ -16,9 +16,10 @@ class DashboardScreen extends StatelessWidget {
     final controller = Get.put(DashboardController());
 
     return Scaffold(
-      backgroundColor: AppColors.primaryBlue,
+      backgroundColor: AppColors.babyblue,
       drawer: const SideMenu(activeItem: "Dashboard"),
       body: SafeArea(
+        top: false,
         child: Obx(() {
           if (controller.isLoading.value) {
             return const Center(
@@ -35,7 +36,7 @@ class DashboardScreen extends StatelessWidget {
                     style: const TextStyle(color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 6),
                   ElevatedButton(
                     onPressed: controller.refresh,
                     child: const Text('Retry'),
@@ -59,7 +60,7 @@ class DashboardScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         QuickActionsSection(),
-                        SizedBox(height: 18),
+                        SizedBox(height: 15),
                         PendingTasksSection(),
                       ],
                     ),

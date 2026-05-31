@@ -14,13 +14,13 @@ class PendingTasksSection extends StatelessWidget {
     final controller = Get.find<DashboardController>();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'General Overview',
-            style: TextStyles.title.copyWith(color: Colors.black),
+            style: TextStyles.title.copyWith(color: Colors.black, fontSize: 26),
           ),
           const SizedBox(height: 14),
 

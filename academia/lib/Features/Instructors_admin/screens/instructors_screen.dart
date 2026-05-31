@@ -32,6 +32,7 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -43,10 +44,11 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
               child: TextField(
                 onChanged: c.onSearch,
+                style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
                   hintText: 'Search Professors...',
                   hintStyle: const TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 14),
+                      color: Color(0xFF9CA3AF), fontSize: 16),
                   prefixIcon:
                       const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                   filled: true,
@@ -80,34 +82,80 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
               child: Row(
                 children: [
                   Text(
-                    '${c.filtered.length} INSTRUCTOR',
+                    '${c.filtered.length} INSTRUCTORS',
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF6B7280),
                       letterSpacing: 0.5,
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: c.toggleSort,
-                    child: Row(
-                      children: [
-                        Icon(Icons.sort, size: 16,
-                            color: c.sortByRole.value
-                                ? AppColors.primaryBlue
-                                : const Color(0xFF6B7280)),
-                        const SizedBox(width: 4),
-                        Text('Sort by Role',
+                  Obx(() {
+                    final active = c.sortBy.value;
+                    final label = active.isEmpty
+                        ? 'Sort'
+                        : 'Sort: ${active[0].toUpperCase()}${active.substring(1)}';
+                    return PopupMenuButton<String>(
+                      onSelected: c.setSortBy,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.sort, size: 18,
+                              color: active.isNotEmpty
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
+                          Text(
+                            label,
                             style: TextStyle(
-                                fontSize: 12,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: active.isNotEmpty
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(Icons.arrow_drop_down, size: 18,
+                              color: active.isNotEmpty
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280)),
+                        ],
+                      ),
+                      itemBuilder: (_) => [
+                        'name', 'role', 'department',
+                      ].map((opt) => PopupMenuItem<String>(
+                        value: opt,
+                        child: Row(
+                          children: [
+                            Icon(
+                              active == opt
+                                  ? Icons.check_rounded
+                                  : Icons.sort,
+                              size: 16,
+                              color: active == opt
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${opt[0].toUpperCase()}${opt.substring(1)}',
+                              style: TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: c.sortByRole.value
+                                color: active == opt
                                     ? AppColors.primaryBlue
-                                    : const Color(0xFF6B7280))),
-                      ],
-                    ),
-                  ),
+                                    : const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )).toList(),
+                    );
+                  }),
                 ],
               ),
             )),
@@ -147,14 +195,8 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.only(
-          bottomLeft:  Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
+      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 14, 16, 20),
+      color: AppColors.primaryBlue,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -168,7 +210,7 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
                 Text('Dashboard',
                     style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500)),
               ],
             ),
@@ -176,14 +218,14 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
           const SizedBox(height: 10),
           const Text('Instructors',
               style: TextStyle(
-                  fontSize: 26,
+                  fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: Colors.white)),
           const SizedBox(height: 4),
           Text(
             '${c.allInstructors.length} Instructors',
             style: const TextStyle(
-                fontSize: 13,
+                fontSize: 15,
                 color: Colors.white70,
                 fontWeight: FontWeight.w400),
           ),
@@ -209,8 +251,7 @@ class _Chip extends StatelessWidget {
         onTap: () => c.selectDept(code),
         child: Container(
           margin: const EdgeInsets.only(right: 8),
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
             color: selected ? AppColors.primaryBlue : Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -222,7 +263,7 @@ class _Chip extends StatelessWidget {
           ),
           child: Text(label,
               style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: selected ? Colors.white : const Color(0xFF374151))),
         ),
@@ -239,11 +280,17 @@ class _InstructorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasBottom = instructor.courses.isNotEmpty || instructor.groups.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.09),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -252,15 +299,14 @@ class _InstructorCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          children: [
-            // ── Top row: avatar + name + badges ───────────────────────
-            Row(
+      child: Column(
+        children: [
+          // ── Top row: avatar + name + badges ───────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: instructor.avatarColor,
@@ -268,73 +314,93 @@ class _InstructorCard extends StatelessWidget {
                       style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14)),
+                          fontSize: 16)),
                 ),
                 const SizedBox(width: 12),
-                // Name + ID
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(instructor.name,
                           style: const TextStyle(
-                              fontSize: 15,
+                              fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF1A1A2E))),
                       const SizedBox(height: 3),
                       Text('ID: ${instructor.uniId}',
                           style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               color: Color(0xFF9CA3AF))),
                     ],
                   ),
                 ),
-                // Role + Dept badges
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _badge(instructor.role,   instructor.roleColor),
+                    _badge(instructor.role,       instructor.roleColor),
                     const SizedBox(height: 4),
                     _badge(instructor.department, instructor.deptColor),
                   ],
                 ),
               ],
             ),
+          ),
 
-            const SizedBox(height: 12),
-
-            // ── Info rows ─────────────────────────────────────────────
-            if (instructor.courses.isNotEmpty)
-              _InfoRow(
-                label: 'COURSE',
-                chips: instructor.courses,
-                color: instructor.deptColor,
+          // ── F3F3F3 bottom: courses + groups ───────────────────────
+          if (hasBottom)
+            Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFF3F3F3),
+                borderRadius: BorderRadius.only(
+                  bottomLeft:  Radius.circular(14),
+                  bottomRight: Radius.circular(14),
+                ),
               ),
-
-            if (instructor.groups.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _InfoRow(
-                label: 'GROUPS',
-                chips: instructor.groups,
-                color: instructor.deptColor,
+              child: Column(
+                children: [
+                  Container(
+                    height: 1,
+                    color: Colors.black.withValues(alpha: 0.09),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+                    child: Column(
+                      children: [
+                        if (instructor.courses.isNotEmpty)
+                          _InfoRow(
+                            label: 'COURSE',
+                            chips: instructor.courses,
+                            color: instructor.deptColor,
+                          ),
+                        if (instructor.courses.isNotEmpty && instructor.groups.isNotEmpty)
+                          const SizedBox(height: 8),
+                        if (instructor.groups.isNotEmpty)
+                          _InfoRow(
+                            label: 'GROUPS',
+                            chips: instructor.groups,
+                            color: instructor.deptColor,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _badge(String label, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color:        color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(20),
           border:       Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Text(label,
             style: TextStyle(
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: color)),
       );
@@ -355,10 +421,10 @@ class _InfoRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 58,
+          width: 64,
           child: Text(label,
               style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF9CA3AF),
                   letterSpacing: 0.4)),
@@ -377,7 +443,7 @@ class _InfoRow extends StatelessWidget {
                       ),
                       child: Text(chip,
                           style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: color)),
                     ))

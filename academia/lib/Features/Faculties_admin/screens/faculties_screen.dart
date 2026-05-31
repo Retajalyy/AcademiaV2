@@ -32,21 +32,23 @@ class _AdminFacultiesScreenState extends State<AdminFacultiesScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Header ────────────────────────────────────────────────
-            Obx(() => _buildHeader()),
+            _buildHeader(),
 
             // ── Search ────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
               child: TextField(
                 onChanged: c.onSearch,
+                style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
                   hintText: 'Search Faculty...',
                   hintStyle: const TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 14),
+                      color: Color(0xFF9CA3AF), fontSize: 16),
                   prefixIcon:
                       const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                   filled: true,
@@ -66,7 +68,7 @@ class _AdminFacultiesScreenState extends State<AdminFacultiesScreen> {
               child: Text(
                 '${c.filtered.length} FACULTIES',
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF6B7280),
                   letterSpacing: 0.5,
@@ -106,18 +108,11 @@ class _AdminFacultiesScreenState extends State<AdminFacultiesScreen> {
     );
   }
 
-  // Built inside Obx so reactive reads are properly tracked
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.only(
-          bottomLeft:  Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
+      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 14, 16, 20),
+      color: AppColors.primaryBlue,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,7 +126,7 @@ class _AdminFacultiesScreenState extends State<AdminFacultiesScreen> {
                 Text('Dashboard',
                     style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 14,
+                        fontSize: 17,
                         fontWeight: FontWeight.w500)),
               ],
             ),
@@ -139,7 +134,7 @@ class _AdminFacultiesScreenState extends State<AdminFacultiesScreen> {
           const SizedBox(height: 10),
           const Text('Faculties',
               style: TextStyle(
-                  fontSize: 26,
+                  fontSize: 32,
                   fontWeight: FontWeight.w800,
                   color: Colors.white)),
           const SizedBox(height: 4),
@@ -149,7 +144,7 @@ class _AdminFacultiesScreenState extends State<AdminFacultiesScreen> {
             return Text(
               year.isNotEmpty ? '$year · $count' : count,
               style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 16,
                   color: Colors.white70,
                   fontWeight: FontWeight.w400),
             );
@@ -202,7 +197,7 @@ class _FacultyCard extends StatelessWidget {
                 Expanded(
                   child: Text(faculty.name,
                       style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1A1A2E))),
                 ),
@@ -268,15 +263,15 @@ class _MajorChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color:        color.withValues(alpha: 0.08),
+          color:        const Color(0xFFF1F4FC),
           borderRadius: BorderRadius.circular(20),
-          border:       Border.all(color: color.withValues(alpha: 0.2)),
+          border:       Border.all(color: const Color(0xFFF1F4FC)),
         ),
         child: Text(label,
-            style: TextStyle(
-                fontSize: 11,
+            style: const TextStyle(
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: color)),
+                color: Color(0xFF3E6584))),
       );
 }
 
@@ -295,13 +290,13 @@ class _Stat extends StatelessWidget {
           children: [
             Text(value,
                 style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 26,
                     fontWeight: FontWeight.w800,
                     color: color)),
             const SizedBox(height: 2),
             Text(label,
                 style: const TextStyle(
-                    fontSize: 11,
+                    fontSize: 15,
                     color: Color(0xFF9CA3AF),
                     fontWeight: FontWeight.w500)),
           ],

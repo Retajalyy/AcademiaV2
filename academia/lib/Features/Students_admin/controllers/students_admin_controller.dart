@@ -13,7 +13,7 @@ class StudentsAdminController extends GetxController {
 
   final RxString selectedFaculty = ''.obs;
   final RxString searchQuery     = ''.obs;
-  final RxBool   sortByLevel     = false.obs;
+  final RxString sortBy          = ''.obs; // '', 'level', 'name', 'faculty', 'major'
   final RxBool   isLoading       = true.obs;
   final RxString semesterLabel   = ''.obs;
 
@@ -23,7 +23,6 @@ class StudentsAdminController extends GetxController {
     _load();
     ever(selectedFaculty, (_) => _applyFilter());
     ever(searchQuery,     (_) => _applyFilter());
-    ever(sortByLevel,     (_) => _applyFilter());
   }
 
   Future<void> _load() async {
@@ -74,8 +73,11 @@ class StudentsAdminController extends GetxController {
     }
 
     // Sort
-    if (sortByLevel.value) {
-      list.sort((a, b) => a.level.compareTo(b.level));
+    switch (sortBy.value) {
+      case 'level':   list.sort((a, b) => a.level.compareTo(b.level)); break;
+      case 'name':    list.sort((a, b) => a.name.compareTo(b.name)); break;
+      case 'faculty': list.sort((a, b) => a.faculty.compareTo(b.faculty)); break;
+      case 'major':   list.sort((a, b) => a.major.compareTo(b.major)); break;
     }
 
     filtered.assignAll(list);
@@ -87,7 +89,10 @@ class StudentsAdminController extends GetxController {
 
   void onSearch(String q) => searchQuery.value = q;
 
-  void toggleSort() => sortByLevel.toggle();
+  void setSortBy(String value) {
+    sortBy.value = sortBy.value == value ? '' : value;
+    _applyFilter();
+  }
 
   @override
   Future<void> refresh() => _load();

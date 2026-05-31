@@ -65,7 +65,7 @@ class _SideMenuState extends State<SideMenu> {
                         height: 24,
                         width: 24,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(.18),
+                          color: Colors.white.withValues(alpha:.18),
                           shape: BoxShape.circle,
                         ),
                         child: InkWell(
@@ -248,7 +248,8 @@ class _SideMenuState extends State<SideMenu> {
                         title: "Announcements",
                         active: widget.activeItem == "Announcements",
                         onTap: () {
-                          // _navigate(context, const AnnouncementsScreen());
+                          Navigator.pop(context);
+                          Get.offNamed('/adminAnnouncements');
                         },
                       ),
 
@@ -257,7 +258,7 @@ class _SideMenuState extends State<SideMenu> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Divider(
-                          color: Colors.white.withOpacity(.08),
+                          color: Colors.white.withValues(alpha:.08),
                           thickness: 1,
                         ),
                       ),
@@ -267,7 +268,31 @@ class _SideMenuState extends State<SideMenu> {
                         title: "Sign Out",
                         onTap: () async {
                           Navigator.pop(context);
-                          await AuthService().logout();
+                          final confirmed = await Get.dialog<bool>(
+                            AlertDialog(
+                              title: const Text('Sign Out'),
+                              content: const Text(
+                                  'Are you sure you want to sign out?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Get.back(result: false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Get.back(result: true),
+                                  child: Text(
+                                    'Sign Out',
+                                    style: TextStyle(
+                                        color: Colors.red.shade600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true) return;
+                          try {
+                            await AuthService().logout();
+                          } catch (_) {}
                           Get.offAllNamed('/login');
                         },
                       ),
@@ -310,7 +335,7 @@ class MenuItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: Container(
           decoration: BoxDecoration(
-            color: active ? Colors.white.withOpacity(0.12) : Colors.transparent,
+            color: active ? Colors.white.withValues(alpha:0.12) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: active
                 ? Border(
@@ -329,7 +354,7 @@ class MenuItem extends StatelessWidget {
                   height: 40,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(.14),
+                    color: Colors.white.withValues(alpha:.14),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -390,7 +415,7 @@ class SubMenuItem extends StatelessWidget {
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: active ? Colors.white.withOpacity(0.12) : Colors.transparent,
+            color: active ? Colors.white.withValues(alpha:0.12) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: active
                 ? Border(

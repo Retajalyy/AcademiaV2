@@ -267,10 +267,21 @@ class PlanAdminController extends GetxController {
   Future<void> publishPlan() async {
     isLoading.value = true;
     try {
-      Get.snackbar('Published', 'Semester plan published successfully.',
-          snackPosition: SnackPosition.BOTTOM);
-    } finally {
+      // Data is already persisted by saveAssignments().
+      // Navigate back to the registration screen so it reloads and shows the plan.
+      Get.delete<PlanAdminController>(force: true);
+      Get.offAllNamed('/NoregistirationAdmin');
+      Get.snackbar(
+        'Published',
+        'Semester plan published successfully.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF22C55E),
+        colorText: Colors.white,
+      );
+    } catch (e) {
       isLoading.value = false;
+      Get.snackbar('Error', 'Failed to publish: $e',
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 }

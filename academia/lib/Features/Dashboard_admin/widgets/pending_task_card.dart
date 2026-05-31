@@ -86,7 +86,7 @@ class PendingTaskCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize:   13,
+                        fontSize:   18,
                         fontWeight: FontWeight.w700,
                         color:      Color(0xFF1A1A2E),
                         height:     1.3,
@@ -98,7 +98,7 @@ class PendingTaskCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize:   11,
+                        fontSize:   15,
                         color:      AppColors.smalltext,
                         fontWeight: FontWeight.w400,
                         height:     1.4,

@@ -9,7 +9,6 @@ import '../widgets/upload_bottom_sheet.dart';
 class ExamResultsAdminScreen extends StatelessWidget {
   const ExamResultsAdminScreen({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

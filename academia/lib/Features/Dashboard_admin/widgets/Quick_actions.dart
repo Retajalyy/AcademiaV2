@@ -1,5 +1,8 @@
 import 'package:academia/Core/utilities/colors.dart';
 import 'package:academia/Features/AddUser_admin/screens/add_new_user_screen.dart';
+import 'package:academia/Features/Exam_schedule_admin/screens/exam_schedule_admin_screen.dart';
+import 'package:academia/Features/exam_results_admin/screens/exam_results_screen.dart';
+import 'package:academia/Features/exam_results_admin/widgets/upload_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/text_style.dart';
@@ -11,7 +14,7 @@ class QuickActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -19,6 +22,7 @@ class QuickActionsSection extends StatelessWidget {
             'Quick Actions',
             style: TextStyles.title.copyWith(
               color: Colors.black,
+              fontSize: 26,
             ),
           ),
 
@@ -27,25 +31,35 @@ class QuickActionsSection extends StatelessWidget {
           Row(
             children: [
 
-              const Expanded(
-                child: QuickActionItem(
-                  icon: Icons.file_upload_outlined,
-                  title: 'Upload Schedule',
-                  borderColor: Color(0xFFDDEDFA),
-                  iconColor: AppColors.accentProgramming1,
-                  backgroundColor: Color(0xFFDDEDFA),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Get.to(() => const ExamScheduleAdminScreen(openUpload: true)),
+                  child: const QuickActionItem(
+                    icon: Icons.file_upload_outlined,
+                    title: 'Upload Schedule',
+                    borderColor: Color(0xFFDDEDFA),
+                    iconColor: AppColors.accentProgramming1,
+                    backgroundColor: Color(0xFFDDEDFA),
+                  ),
                 ),
               ),
 
               const SizedBox(width: 8),
 
-              const Expanded(
-                child: QuickActionItem(
-                  icon: Icons.trending_up_rounded,
-                  title: 'Upload Results',
-                  borderColor: Color(0xFFDDEDFA),
-                  iconColor: AppColors.accentProgramming1,
-                  backgroundColor: Color(0xFFDDEDFA),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    Get.to(() => const ExamResultsAdminScreen());
+                    Future.delayed(const Duration(milliseconds: 400),
+                        UploadBottomSheet.show);
+                  },
+                  child: const QuickActionItem(
+                    icon: Icons.trending_up_rounded,
+                    title: 'Upload Results',
+                    borderColor: Color(0xFFDDEDFA),
+                    iconColor: AppColors.accentProgramming1,
+                    backgroundColor: Color(0xFFDDEDFA),
+                  ),
                 ),
               ),
 
@@ -57,9 +71,9 @@ class QuickActionsSection extends StatelessWidget {
                   child: const QuickActionItem(
                     icon: Icons.person_add_outlined,
                     title: 'Add New User',
-                    borderColor: Color(0xFFEDE7F6),
-                    iconColor: Color(0xFF7B1FA2),
-                    backgroundColor: Color(0xFFEDE7F6),
+                    borderColor: Color(0xFFFFF3DF),
+                    iconColor: Color(0xFFB18334),
+                    backgroundColor: Color(0xFFFFF3DF),
                   ),
                 ),
               ),

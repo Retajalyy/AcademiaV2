@@ -23,23 +23,32 @@ class FacultiesAdminController extends GetxController {
   }
 
   Future<void> _load() async {
+    if (isClosed) return;
     isLoading.value = true;
     try {
-      final list = await _service.fetchFaculties();
-      final window = await _db
-          .from('registration_windows')
-          .select('next_year_label')
-          .order('id', ascending: false)
-          .limit(1)
-          .maybeSingle();
-      allFaculties.assignAll(list);
-      yearLabel.value = window?['next_year_label'] as String? ?? '';
+      final results = await Future.wait([
+        _service.fetchFaculties(),
+        _db
+            .from('registration_windows')
+            .select('next_semester_label')
+            .order('id', ascending: false)
+            .limit(1)
+            .maybeSingle()
+            .catchError((_) => null),
+      ]);
+
+      if (isClosed) return;
+
+      allFaculties.assignAll(results[0] as List<FacultyAdminModel>);
+      final window = results[1] as Map<String, dynamic>?;
+      yearLabel.value = window?['next_semester_label'] as String? ?? '';
       _applyFilter();
     } catch (e) {
+      if (isClosed) return;
       Get.snackbar('Error', 'Failed to load faculties: $e',
           snackPosition: SnackPosition.BOTTOM);
     } finally {
-      isLoading.value = false;
+      if (!isClosed) isLoading.value = false;
     }
   }
 

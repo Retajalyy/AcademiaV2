@@ -89,7 +89,7 @@ class CreateAnnouncementController extends GetxController {
         'target_role': targetAudience.value,
         'created_by':  _db.auth.currentUser?.id,
       });
-      Get.until((r) => r.settings.name == '/adminAnnouncements');
+      Get.offNamed('/adminAnnouncements');
       Get.snackbar('Sent!', 'Announcement published successfully',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green.shade700,

@@ -33,6 +33,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -46,7 +47,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                 onChanged: c.onSearch,
                 decoration: InputDecoration(
                   hintText: 'Search Students...',
-                  hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                  hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
                   prefixIcon: const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                   filled: true,
                   fillColor: Colors.white,
@@ -82,35 +83,78 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   Text(
                     '${c.filtered.length} STUDENTS',
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF6B7280),
                       letterSpacing: 0.5,
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: c.toggleSort,
-                    child: Row(
-                      children: [
-                        Icon(Icons.sort, size: 16,
-                            color: c.sortByLevel.value
-                                ? AppColors.primaryBlue
-                                : const Color(0xFF6B7280)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Sort by Level',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: c.sortByLevel.value
-                                ? AppColors.primaryBlue
-                                : const Color(0xFF6B7280),
+                  Obx(() {
+                    final active = c.sortBy.value;
+                    final label = active.isEmpty
+                        ? 'Sort'
+                        : 'Sort: ${active[0].toUpperCase()}${active.substring(1)}';
+                    return PopupMenuButton<String>(
+                      onSelected: c.setSortBy,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.sort, size: 18,
+                              color: active.isNotEmpty
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: active.isNotEmpty
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280),
+                            ),
                           ),
+                          const SizedBox(width: 2),
+                          Icon(Icons.arrow_drop_down, size: 18,
+                              color: active.isNotEmpty
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280)),
+                        ],
+                      ),
+                      itemBuilder: (_) => [
+                        'level', 'name', 'faculty', 'major',
+                      ].map((opt) => PopupMenuItem<String>(
+                        value: opt,
+                        child: Row(
+                          children: [
+                            Icon(
+                              active == opt
+                                  ? Icons.check_rounded
+                                  : Icons.sort,
+                              size: 16,
+                              color: active == opt
+                                  ? AppColors.primaryBlue
+                                  : const Color(0xFF6B7280),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${opt[0].toUpperCase()}${opt.substring(1)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: active == opt
+                                    ? AppColors.primaryBlue
+                                    : const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      )).toList(),
+                    );
+                  }),
                 ],
               ),
             )),
@@ -156,14 +200,8 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.only(
-          bottomLeft:  Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-      ),
+      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 14, 16, 20),
+      color: AppColors.primaryBlue,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -178,7 +216,7 @@ class _Header extends StatelessWidget {
                 Text('Dashboard',
                     style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500)),
               ],
             ),
@@ -186,7 +224,7 @@ class _Header extends StatelessWidget {
           const SizedBox(height: 10),
           const Text('Total Students',
               style: TextStyle(
-                  fontSize: 26,
+                  fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: Colors.white)),
           const SizedBox(height: 4),
@@ -199,7 +237,7 @@ class _Header extends StatelessWidget {
             return Text(
               subtitle,
               style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 15,
                   color: Colors.white70,
                   fontWeight: FontWeight.w400),
             );
@@ -236,7 +274,7 @@ class _FacultyChip extends StatelessWidget {
           ),
           child: Text(label,
               style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: selected ? Colors.white : const Color(0xFF374151))),
         ),
@@ -258,6 +296,10 @@ class _StudentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.09),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -286,7 +328,7 @@ class _StudentCard extends StatelessWidget {
                           style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
-                              fontSize: 14))
+                              fontSize: 16))
                       : null,
                 ),
                 const SizedBox(width: 12),
@@ -298,7 +340,7 @@ class _StudentCard extends StatelessWidget {
                     children: [
                       Text(student.name,
                           style: const TextStyle(
-                              fontSize: 15,
+                              fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF1A1A2E))),
                       const SizedBox(height: 4),
@@ -306,7 +348,7 @@ class _StudentCard extends StatelessWidget {
                         children: [
                           Text('ID: ${student.uniId}',
                               style: const TextStyle(
-                                  fontSize: 12, color: Color(0xFF6B7280))),
+                                  fontSize: 14, color: Color(0xFF6B7280))),
                           const SizedBox(width: 8),
                           _Badge(
                               label: student.facultyBadge,
@@ -321,7 +363,7 @@ class _StudentCard extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(student.groupLabel,
                             style: const TextStyle(
-                                fontSize: 11,
+                                fontSize: 13,
                                 color: Color(0xFF9CA3AF),
                                 fontWeight: FontWeight.w400)),
                       ],
@@ -336,20 +378,34 @@ class _StudentCard extends StatelessWidget {
           const Divider(height: 1, color: Color(0xFFF3F4F6)),
 
           // ── Bottom row: phone + GPA ────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-            child: Row(
+          Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFFF3F3F3),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(14),
+                bottomRight: Radius.circular(14),
+              ),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  height: 1,
+                  color: Colors.black.withValues(alpha: 0.09),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+                  child: Row(
               children: [
                 const Icon(Icons.phone_outlined,
                     size: 14, color: Color(0xFF9CA3AF)),
                 const SizedBox(width: 6),
                 Text(student.phone.isNotEmpty ? student.phone : '—',
                     style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF6B7280))),
+                        fontSize: 14, color: Color(0xFF6B7280))),
                 const Spacer(),
                 const Text('GPA ',
                     style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: Color(0xFF6B7280),
                         fontWeight: FontWeight.w500)),
                 Container(
@@ -362,9 +418,12 @@ class _StudentCard extends StatelessWidget {
                 ),
                 Text(student.gpaStr,
                     style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: student.gpaColor)),
+              ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -391,7 +450,7 @@ class _Badge extends StatelessWidget {
       ),
       child: Text(label,
           style: TextStyle(
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
               color: color)),
     );

@@ -48,10 +48,10 @@ class AccountSettingsController extends GetxController {
     final phone = phoneController.text.trim();
     final email = emailController.text.trim();
 
-    if (phone.isEmpty || email.isEmpty) {
+    if (phone.isEmpty) {
       Get.snackbar(
         'Validation',
-        'Phone and email cannot be empty.',
+        'Phone cannot be empty.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade800,

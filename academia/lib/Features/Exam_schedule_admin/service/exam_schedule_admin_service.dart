@@ -1,113 +1,92 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../model/exam_schedule_admin_model.dart';
 
 class ExamScheduleAdminService {
   final _db = Supabase.instance.client;
 
-  Future<List<SectionOption>> fetchSections() async {
-    final data = await _db
-        .from('sections')
-        .select('id, type, courses(name, code)')
-        .order('id');
-
-    return (data as List).map((row) {
-      final course = row['courses'] as Map<String, dynamic>? ?? {};
-      return SectionOption(
-        sectionId:  row['id'] as int,
-        courseName: course['name'] as String? ?? '',
-        courseCode: course['code'] as String? ?? '',
-        type:       row['type']   as String? ?? '',
-      );
-    }).toList();
-  }
-
-  Future<List<ExamScheduleEntry>> fetchPublishedExams() async {
-    final data = await _db
-        .from('exam_schedules')
-        .select('course_name, exam_type, exam_date, start_time, end_time, room')
-        .order('exam_date', ascending: true);
-
-    final list = data as List;
-
-    // Deduplicate by (course_name, exam_type, exam_date, start_time)
-    final seen = <String, ExamScheduleEntry>{};
-    final counts = <String, int>{};
-
-    for (final row in list) {
-      final key =
-          '${row['course_name']}_${row['exam_type']}_${row['exam_date']}_${row['start_time']}';
-      seen.putIfAbsent(
-        key,
-        () => ExamScheduleEntry(
-          courseName:   row['course_name']  as String? ?? '',
-          examType:     row['exam_type']    as String? ?? '',
-          examDate:     row['exam_date']    as String? ?? '',
-          startTime:    _fmt(row['start_time'] as String?),
-          endTime:      _fmt(row['end_time']   as String?),
-          room:         row['room']         as String? ?? '',
-          studentCount: 0,
-        ),
-      );
-      counts[key] = (counts[key] ?? 0) + 1;
-    }
-
-    return seen.entries.map((e) {
-      final entry = e.value;
-      return ExamScheduleEntry(
-        courseName:   entry.courseName,
-        examType:     entry.examType,
-        examDate:     entry.examDate,
-        startTime:    entry.startTime,
-        endTime:      entry.endTime,
-        room:         entry.room,
-        studentCount: counts[e.key] ?? 0,
-      );
-    }).toList();
-  }
-
-  Future<int> publishExamSchedule({
-    required int sectionId,
-    required String courseName,
-    required String examDate,
-    required String startTime,
-    required String endTime,
-    required String room,
-    required String examType,
-  }) async {
-    // Find all students enrolled in this section
-    final enrollments = await _db
-        .from('enrollments')
-        .select('student_id')
-        .eq('section_id', sectionId);
-
-    final studentIds = (enrollments as List)
-        .map((e) => e['student_id'] as int?)
-        .whereType<int>()
+  Future<List<Map<String, String>>> fetchFaculties() async {
+    final data = await _db.from('faculties').select('code, name').order('name');
+    return (data as List)
+        .map((r) => {'code': r['code'] as String, 'name': r['name'] as String})
         .toList();
+  }
 
-    if (studentIds.isEmpty) {
-      throw Exception('No students enrolled in this section.');
-    }
-
-    final rows = studentIds
-        .map((id) => {
-              'student_id':  id,
-              'section_id':  sectionId,
-              'course_name': courseName,
-              'exam_date':   examDate,
-              'start_time':  startTime,
-              'end_time':    endTime,
-              'room':        room,
-              'exam_type':   examType,
+  Future<List<Map<String, String>>> fetchMajors() async {
+    final data = await _db
+        .from('majors')
+        .select('code, name, faculty_code')
+        .order('name');
+    return (data as List)
+        .map((r) => {
+              'code':         r['code']         as String,
+              'name':         r['name']         as String,
+              'faculty_code': r['faculty_code'] as String,
             })
         .toList();
-
-    await _db.from('exam_schedules').insert(rows);
-    return studentIds.length;
   }
 
-  static String _fmt(String? raw) {
-    if (raw == null || raw.length < 5) return '';
-    return raw.substring(0, 5);
+  Future<List<ExamScheduleUpload>> fetchUploads() async {
+    final data = await _db
+        .from('exam_schedule_uploads')
+        .select('*')
+        .order('created_at', ascending: false);
+    return (data as List)
+        .map((r) => ExamScheduleUpload.fromMap(r as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> publishUpload({
+    required String facultyCode,
+    required String facultyName,
+    required String examType,
+    String? level,
+    String? majorCode,
+    String? majorName,
+    String? semester,
+    String? academicYear,
+    String? periodFrom,
+    String? periodTo,
+    PlatformFile? file,
+  }) async {
+    String? fileUrl;
+    String? fileName;
+
+    if (file != null) {
+      final bytes = file.bytes ?? await File(file.path!).readAsBytes();
+      final date  = periodFrom ?? DateTime.now().toIso8601String().substring(0, 10);
+      final storagePath = '$facultyCode/${examType}_$date${_ext(file.name)}';
+      await _db.storage.from('exam-schedules').uploadBinary(
+        storagePath,
+        bytes,
+        fileOptions: const FileOptions(upsert: true),
+      );
+      fileUrl  = _db.storage.from('exam-schedules').getPublicUrl(storagePath);
+      fileName = file.name;
+    }
+
+    final examDate = periodFrom ?? DateTime.now().toIso8601String().substring(0, 10);
+
+    await _db.from('exam_schedule_uploads').insert({
+      'faculty_code':  facultyCode,
+      'faculty_name':  facultyName,
+      'exam_type':     examType,
+      'exam_date':     examDate,
+      'level':         level,
+      'major_code':    majorCode,
+      'major_name':    majorName,
+      'semester':      semester,
+      'academic_year': academicYear,
+      'period_from':   periodFrom,
+      'period_to':     periodTo,
+      'file_url':      fileUrl,
+      'file_name':     fileName,
+    });
+  }
+
+  static String _ext(String name) {
+    final dot = name.lastIndexOf('.');
+    return dot >= 0 ? name.substring(dot) : '';
   }
 }

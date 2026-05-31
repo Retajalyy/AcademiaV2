@@ -49,7 +49,7 @@ class StatCard extends StatelessWidget {
                   title,
                   style: TextStyle(
                     color:      Colors.white.withValues(alpha: 0.85),
-                    fontSize:   w * 0.03,
+                    fontSize:   w * 0.046,
                     fontWeight: FontWeight.w500,
                     height:     1.2,
                   ),
@@ -69,7 +69,7 @@ class StatCard extends StatelessWidget {
                   value,
                   style: TextStyle(
                     color:      Colors.white,
-                    fontSize:   w * 0.068,
+                    fontSize:   w * 0.056,
                     fontWeight: FontWeight.w700,
                     height:     1,
                   ),
@@ -79,7 +79,7 @@ class StatCard extends StatelessWidget {
                 subtitle,
                 style: TextStyle(
                   color:      Colors.white.withValues(alpha: 0.75),
-                  fontSize:   w * 0.027,
+                  fontSize:   w * 0.039,
                   fontWeight: FontWeight.w400,
                 ),
                 overflow: TextOverflow.ellipsis,

@@ -1,5 +1,7 @@
 import 'package:academia/Features/AccountSettings_admin/screens/AccountSettingScreen.dart';
+import 'package:academia/Features/Auth/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 
 class ProfilePopup extends StatelessWidget {
@@ -23,6 +25,7 @@ class ProfilePopup extends StatelessWidget {
         children: [
 
           ListTile(
+            onTap: () => Get.to(() => const AccountSettingsScreen()),
             leading: Container(
               padding: const EdgeInsets.all(8),
 
@@ -41,7 +44,7 @@ class ProfilePopup extends StatelessWidget {
             title: const Text(
               'Account Settings',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 17,
                 color: AppColors.accentProgramming1,
                 fontWeight: FontWeight.bold,
               ),
@@ -50,25 +53,16 @@ class ProfilePopup extends StatelessWidget {
             subtitle: const Text(
               'Manage your preferences',
               style: TextStyle(
-               fontSize: 10,
+               fontSize: 15,
                 color: AppColors.smalltext,
                 fontWeight: FontWeight.w500,
                 ),
             ),
 
-            trailing:  GestureDetector(
-           onTap: () {Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AccountSettingsScreen(),
-                    ),
-                  );
-                 },
-              child: const Icon(
+            trailing: const Icon(
               Icons.arrow_forward_ios,
-            size: 14,
+              size: 14,
             ),
-          ),
           ),
 
           const Divider(),
@@ -92,7 +86,7 @@ class ProfilePopup extends StatelessWidget {
             title: const Text(
               'Sign Out',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 17,
                 color: AppColors.accentProgramming1,
                 fontWeight: FontWeight.bold,
               ),
@@ -101,13 +95,38 @@ class ProfilePopup extends StatelessWidget {
             subtitle: const Text(
               'Log out of your account',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 15,
                 color: AppColors.smalltext,
                 fontWeight: FontWeight.w500,
               ),
             ),
 
-         
+            onTap: () async {
+              final confirmed = await Get.dialog<bool>(
+                AlertDialog(
+                  title: const Text('Sign Out'),
+                  content: const Text('Are you sure you want to sign out?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Get.back(result: false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Get.back(result: true),
+                      child: Text(
+                        'Sign Out',
+                        style: TextStyle(color: Colors.red.shade600),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed != true) return;
+              try {
+                await AuthService().logout();
+              } catch (_) {}
+              Get.offAllNamed('/login');
+            },
           ),
 
         ],

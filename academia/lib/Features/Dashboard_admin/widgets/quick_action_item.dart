@@ -55,7 +55,7 @@ class QuickActionItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 9.2, // 👈 was 10
+                fontSize: 13,
                 color: AppColors.primaryBlue,
                 fontWeight: FontWeight.w800,
                 
