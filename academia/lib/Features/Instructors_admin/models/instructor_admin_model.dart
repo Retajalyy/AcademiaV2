@@ -1,3 +1,4 @@
+import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
 
 class InstructorAdminModel {
@@ -8,6 +9,7 @@ class InstructorAdminModel {
   final String       role;       // 'Professor' | 'T.A.'
   final List<String> courses;
   final List<String> groups;
+  final List<String> majors;
 
   const InstructorAdminModel({
     required this.id,
@@ -17,6 +19,7 @@ class InstructorAdminModel {
     required this.role,
     required this.courses,
     required this.groups,
+    required this.majors,
   });
 
   factory InstructorAdminModel.fromMap(Map<String, dynamic> row) {
@@ -67,6 +70,7 @@ class InstructorAdminModel {
       role:       role,
       courses:    courses,
       groups:     groups.toList(),
+      majors:     [],
     );
   }
 
@@ -79,7 +83,7 @@ class InstructorAdminModel {
 
   Color get avatarColor {
     final colors = [
-      const Color(0xFF1565C0), const Color(0xFF6A1B9A),
+      AppColors.accentProgramming1, const Color(0xFF6A1B9A),
       const Color(0xFF2E7D32), const Color(0xFF00695C),
       const Color(0xFFAD1457), const Color(0xFF37474F),
     ];
@@ -87,13 +91,13 @@ class InstructorAdminModel {
   }
 
   Color get roleColor =>
-      role == 'Professor' ? const Color(0xFF1565C0) : const Color(0xFFE65100);
+      role == 'Professor' ? AppColors.accentProgramming1 : const Color(0xFFE65100);
 
   Color get deptColor {
     switch (department) {
-      case 'FCI': return const Color(0xFF1565C0);
+      case 'FCI': return AppColors.accentProgramming1;
       case 'FBA': return const Color(0xFFE65100);
-      case 'FLT': return const Color(0xFF2E7D32);
+      case 'FLT': return AppColors.assignmentColor;
       default:    return const Color(0xFF546E7A);
     }
   }

@@ -1,3 +1,4 @@
+import 'package:academia/Features/Dashboard_admin/controller/dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -46,7 +47,7 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
                 decoration: InputDecoration(
                   hintText: 'Search Professors...',
                   hintStyle: const TextStyle(
-                      color: Color(0xFF9CA3AF), fontSize: 14),
+                      color: Color(0xFF9CA3AF), fontSize: 16),
                   prefixIcon:
                       const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                   filled: true,
@@ -82,9 +83,9 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
                   Text(
                     '${c.filtered.length} INSTRUCTOR',
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF6B7280),
+                      color: AppColors.smalltext,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -93,18 +94,18 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
                     onTap: c.toggleSort,
                     child: Row(
                       children: [
-                        Icon(Icons.sort, size: 16,
+                        Icon(Icons.sort, size: 20,
                             color: c.sortByRole.value
                                 ? AppColors.primaryBlue
                                 : const Color(0xFF6B7280)),
                         const SizedBox(width: 4),
                         Text('Sort by Role',
                             style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: c.sortByRole.value
                                     ? AppColors.primaryBlue
-                                    : const Color(0xFF6B7280))),
+                                    : AppColors.smalltext)),
                       ],
                     ),
                   ),
@@ -145,15 +146,13 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
   }
 
   Widget _buildHeader() {
+    final dashboard = Get.find<DashboardController>();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.only(
-          bottomLeft:  Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+       
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,11 +163,11 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.chevron_left_rounded,
-                    color: Colors.white70, size: 22),
+                    color: AppColors.greytext, size: 30),
                 Text('Dashboard',
                     style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
+                        color: AppColors.greytext,
+                        fontSize: 18,
                         fontWeight: FontWeight.w500)),
               ],
             ),
@@ -176,14 +175,14 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
           const SizedBox(height: 10),
           const Text('Instructors',
               style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
                   color: Colors.white)),
           const SizedBox(height: 4),
           Text(
-            '${c.allInstructors.length} Instructors',
+            '${dashboard.semester} . ${c.allInstructors.length} Instructors',
             style: const TextStyle(
-                fontSize: 13,
+                fontSize: 15,
                 color: Colors.white70,
                 fontWeight: FontWeight.w400),
           ),
@@ -224,7 +223,7 @@ class _Chip extends StatelessWidget {
               style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : const Color(0xFF374151))),
+                  color: selected ? Colors.white : AppColors.smalltext)),
         ),
       );
     });
@@ -243,14 +242,9 @@ class _InstructorCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all( color: Color(0xFFE5E7EB)),
+     
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -280,12 +274,12 @@ class _InstructorCard extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF1A1A2E))),
+                              color: Colors.black)),
                       const SizedBox(height: 3),
                       Text('ID: ${instructor.uniId}',
                           style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF9CA3AF))),
+                              fontSize: 14,
+                              color: AppColors.smalltext)),
                     ],
                   ),
                 ),
@@ -301,18 +295,30 @@ class _InstructorCard extends StatelessWidget {
               ],
             ),
 
+            const SizedBox(height: 3),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFE5E7EB)),
             const SizedBox(height: 12),
 
             // ── Info rows ─────────────────────────────────────────────
-            if (instructor.courses.isNotEmpty)
+            if (instructor.majors.isNotEmpty)
+              _InfoRow(
+                label: 'MAJOR',
+                chips: instructor.majors,
+                color: instructor.deptColor,
+              ),
+
+            if (instructor.courses.isNotEmpty) ...[
+              const SizedBox(height: 8),
               _InfoRow(
                 label: 'COURSE',
                 chips: instructor.courses,
                 color: instructor.deptColor,
               ),
+            ],
 
             if (instructor.groups.isNotEmpty) ...[
               const SizedBox(height: 8),
+
               _InfoRow(
                 label: 'GROUPS',
                 chips: instructor.groups,
@@ -329,12 +335,12 @@ class _InstructorCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
           color:        color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
-          border:       Border.all(color: color.withValues(alpha: 0.3)),
+          borderRadius: BorderRadius.circular(14),
+          
         ),
         child: Text(label,
             style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: color)),
       );
@@ -358,7 +364,7 @@ class _InfoRow extends StatelessWidget {
           width: 58,
           child: Text(label,
               style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF9CA3AF),
                   letterSpacing: 0.4)),
@@ -373,7 +379,7 @@ class _InfoRow extends StatelessWidget {
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color:        color.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(9),
                       ),
                       child: Text(chip,
                           style: TextStyle(

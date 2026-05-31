@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../Core/utilities/colors.dart';
+import '../../../Core/widgets/Architecture_progress.dart';
 
 // ── Controller ────────────────────────────────────────────────────────────────
 
@@ -117,6 +118,17 @@ class CreateAnnouncementController extends GetxController {
 class CreateAnnouncementScreen extends StatefulWidget {
   const CreateAnnouncementScreen({super.key});
 
+  static void show(BuildContext context) {
+    Get.delete<CreateAnnouncementController>(force: true);
+    final c = Get.put(CreateAnnouncementController());
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CreateAnnouncementSheet(c: c),
+    ).whenComplete(() => Get.delete<CreateAnnouncementController>(force: true));
+  }
+
   @override
   State<CreateAnnouncementScreen> createState() =>
       _CreateAnnouncementScreenState();
@@ -162,6 +174,54 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   }
 }
 
+// ── Bottom Sheet wrapper ──────────────────────────────────────────────────────
+
+class _CreateAnnouncementSheet extends StatelessWidget {
+  final CreateAnnouncementController c;
+  const _CreateAnnouncementSheet({required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.78,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (_, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 4),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            _WizardHeader(c: c),
+            Expanded(
+              child: Obx(() {
+                switch (c.step.value) {
+                  case 1:  return _StepAudience(c: c);
+                  case 2:  return _StepReview(c: c);
+                  default: return _StepContent(c: c);
+                }
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ── Wizard Header (step indicator) ────────────────────────────────────────────
 
 class _WizardHeader extends StatelessWidget {
@@ -170,55 +230,20 @@ class _WizardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-      color: Colors.white,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: c.back,
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 20, color: Color(0xFF1A2B4A)),
-              ),
-              const SizedBox(width: 12),
-              const Text('New Announcement',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A2B4A),
-                  )),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Step dots
-          Obx(() => Row(
-                children: List.generate(3, (i) {
-                  final done   = i < c.step.value;
-                  final active = i == c.step.value;
-                  return Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: done || active
-                                  ? AppColors.primaryBlue
-                                  : Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-                        if (i < 2) const SizedBox(width: 6),
-                      ],
-                    ),
-                  );
-                }),
+          const Text('New Announcement',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.accentProgramming1,
               )),
+          const SizedBox(height: 20),
+
+          Obx(() => ArchitectureProgress(currentStep: c.step.value + 1)),
         ],
       ),
     );
@@ -257,15 +282,15 @@ class _StepContent extends StatelessWidget {
                     isActive: sel == 'general',
                     onTap: () => c.selectType('general')),
                 _TypeChip(label: 'Urgent', icon: Icons.warning_amber_rounded,
-                    color: const Color(0xFFEF4444),
+                    color: AppColors.fail,
                     isActive: sel == 'urgent',
                     onTap: () => c.selectType('urgent')),
                 _TypeChip(label: 'Warning', icon: Icons.error_outline_rounded,
-                    color: const Color(0xFFF59E0B),
+                    color: const Color(0xFFB18334),
                     isActive: sel == 'warning',
                     onTap: () => c.selectType('warning')),
                 _TypeChip(label: 'Info', icon: Icons.info_outline_rounded,
-                    color: const Color(0xFF3B82F6),
+                    color: AppColors.accentProgramming1,
                     isActive: sel == 'info',
                     onTap: () => c.selectType('info')),
               ],
@@ -337,12 +362,12 @@ class _TypeChip extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon,
-                color: isActive ? color : Colors.grey.shade400, size: 18),
+                color: isActive ? color : Colors.grey.shade400, size: 20),
             const SizedBox(width: 8),
             Text(label,
                 style: TextStyle(
                   color: isActive ? color : const Color(0xFF6B7280),
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight:
                       isActive ? FontWeight.w700 : FontWeight.w500,
                 )),
@@ -359,6 +384,15 @@ class _StepAudience extends StatelessWidget {
   final CreateAnnouncementController c;
   const _StepAudience({required this.c});
 
+  IconData _facultyIcon(String code) {
+    switch (code.toUpperCase()) {
+      case 'FCI': return Icons.computer_outlined;
+      case 'FBA': return Icons.bar_chart_outlined;
+      case 'FLT': return Icons.chat_bubble_outline_rounded;
+      default:    return Icons.school_outlined;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -366,7 +400,11 @@ class _StepAudience extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _SectionLabel('Target Audience'),
+          const Text('Target Audience',
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.smalltext)),
           const SizedBox(height: 12),
 
           // All Students option
@@ -391,11 +429,11 @@ class _StepAudience extends StatelessWidget {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE8F0FE),
+                          color: AppColors.LightYellow,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.groups_outlined,
-                            color: AppColors.primaryBlue, size: 20),
+                            color: AppColors.accentAI, size: 25),
                       ),
                       const SizedBox(width: 12),
                       const Expanded(
@@ -404,18 +442,27 @@ class _StepAudience extends StatelessWidget {
                           children: [
                             Text('All Students',
                                 style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1A2B4A))),
+                                    color: Colors.black)),
                             Text('All Students from All Faculties',
                                 style: TextStyle(
-                                    fontSize: 11, color: Colors.grey)),
+                                    fontSize: 12, color: AppColors.smalltext)),
                           ],
                         ),
                       ),
-                      if (c.targetAudience.value == 'all')
-                        const Icon(Icons.check_circle_rounded,
-                            color: AppColors.primaryBlue, size: 20),
+                      c.targetAudience.value == 'all'
+                          ? const Icon(Icons.check_circle_rounded,
+                              color: AppColors.primaryBlue, size: 22)
+                          : Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.grey.shade300, width: 1.5),
+                              ),
+                            ),
                     ],
                   ),
                 ),
@@ -423,19 +470,11 @@ class _StepAudience extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Faculty divider
-          Row(
-            children: [
-              Expanded(child: Divider(color: Colors.grey.shade300)),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('Or Select Target Group',
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey.shade500)),
-              ),
-              Expanded(child: Divider(color: Colors.grey.shade300)),
-            ],
-          ),
+          Text('Or Select Target Group',
+              style: TextStyle(
+                  fontSize: 15,
+                  color: AppColors.smalltext,
+                  fontWeight: FontWeight.w500)),
 
           const SizedBox(height: 16),
 
@@ -477,32 +516,35 @@ class _StepAudience extends StatelessWidget {
                           width: 38,
                           height: 38,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF2F4F8),
-                            borderRadius: BorderRadius.circular(10),
+                            color: const Color(0xFFE8F0FE),
+                            borderRadius: BorderRadius.circular(11),
                           ),
-                          child: Center(
-                            child: Text(
-                              code.length > 2
-                                  ? code.substring(0, 2)
-                                  : code,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: AppColors.primaryBlue),
-                            ),
+                          child: Icon(
+                            _facultyIcon(code),
+                            color: AppColors.primaryBlue,
+                            size: 22,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(name,
                               style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1A2B4A))),
+                                  color: AppColors.primaryBlue)),
                         ),
-                        if (active)
-                          const Icon(Icons.check_circle_rounded,
-                              color: AppColors.primaryBlue, size: 20),
+                        active
+                            ? const Icon(Icons.check_circle_rounded,
+                                color: AppColors.primaryBlue, size: 22)
+                            : Container(
+                                width: 22,
+                                height: 22,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: Colors.grey.shade300, width: 1.5),
+                                ),
+                              ),
                       ],
                     ),
                   ),
@@ -527,15 +569,6 @@ class _StepReview extends StatelessWidget {
   final CreateAnnouncementController c;
   const _StepReview({required this.c});
 
-  Color _typeColor(String t) {
-    switch (t) {
-      case 'urgent':  return const Color(0xFFEF4444);
-      case 'warning': return const Color(0xFFF59E0B);
-      case 'info':    return const Color(0xFF3B82F6);
-      default:        return const Color(0xFF6B7280);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -543,90 +576,33 @@ class _StepReview extends StatelessWidget {
       child: Obx(() => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _SectionLabel('Review & Confirm'),
-              const SizedBox(height: 16),
-
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  color: AppColors.primaryBlue,
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _ReviewRow(
-                      label: 'Type',
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _typeColor(c.selectedType.value)
-                              .withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          c.selectedType.value[0].toUpperCase() +
-                              c.selectedType.value.substring(1),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: _typeColor(c.selectedType.value),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const _ReviewDivider(),
-                    _ReviewRow(
-                      label: 'Title',
-                      child: Flexible(
-                        child: Text(
-                          c.titleCtrl.text,
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1A2B4A)),
-                        ),
-                      ),
-                    ),
-                    const _ReviewDivider(),
-                    _ReviewRow(
-                      label: 'Message',
-                      child: Flexible(
-                        child: Text(
-                          c.messageCtrl.text,
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.grey.shade600),
-                        ),
-                      ),
-                    ),
-                    const _ReviewDivider(),
-                    _ReviewRow(
-                      label: 'Sending to',
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8F0FE),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          c.targetLabel.value,
-                          style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryBlue),
-                        ),
-                      ),
-                    ),
+                    const Text('Review & Confirm',
+                        style: TextStyle(
+                            color: AppColors.greytext,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 14),
+                    _DarkReviewRow(
+                        label: 'Type',
+                        value: c.selectedType.value[0].toUpperCase() +
+                            c.selectedType.value.substring(1)),
+                     Divider(color: Colors.white.withOpacity(0.09), height: 20),
+                    _DarkReviewRow(label: 'Title', value: c.titleCtrl.text),
+                    Divider(color: Colors.white.withOpacity(0.09), height: 20),
+                    _DarkReviewRow(label: 'Message', value: c.messageCtrl.text),
+                   Divider(color: Colors.white.withOpacity(0.09), height: 20),
+                    _DarkReviewRow(
+                        label: 'Sending to', value: c.targetLabel.value),
                   ],
                 ),
               ),
@@ -646,39 +622,32 @@ class _StepReview extends StatelessWidget {
   }
 }
 
-class _ReviewRow extends StatelessWidget {
+class _DarkReviewRow extends StatelessWidget {
   final String label;
-  final Widget child;
-  const _ReviewRow({required this.label, required this.child});
+  final String value;
+  const _DarkReviewRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text(label,
-                style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                    fontWeight: FontWeight.w500)),
-          ),
-          child,
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.greytext,
+                fontWeight: FontWeight.w500)),
+        Flexible(
+          child: Text(value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500)),
+        ),
+      ],
     );
   }
-}
-
-class _ReviewDivider extends StatelessWidget {
-  const _ReviewDivider();
-
-  @override
-  Widget build(BuildContext context) =>
-      Divider(height: 1, color: Colors.grey.shade100);
 }
 
 // ── Shared Widgets ────────────────────────────────────────────────────────────
@@ -691,9 +660,9 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) => Text(
         text,
         style: const TextStyle(
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF1A2B4A),
+          color: Color(0xFF908C8C),
         ),
       );
 }
@@ -712,7 +681,7 @@ class _InputField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
-      style: const TextStyle(fontSize: 14, color: Color(0xFF1A2B4A)),
+      style: const TextStyle(fontSize: 14, color: Colors.black),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
@@ -762,7 +731,7 @@ class _WizardButton extends StatelessWidget {
               ),
               child: Text(label,
                   style: const TextStyle(
-                      color: Color(0xFF1A2B4A),
+                      color: AppColors.primaryBlue,
                       fontWeight: FontWeight.w600)),
             )
           : ElevatedButton(

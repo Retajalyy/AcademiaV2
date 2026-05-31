@@ -48,8 +48,8 @@ class ArchitectureProgress extends StatelessWidget {
     final isCurrent = _isCurrent(number);
 
     return Container(
-      width: 22,
-      height: 22,
+      width: 24,
+      height: 24,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: (isCompleted || isCurrent)
@@ -61,13 +61,14 @@ class ArchitectureProgress extends StatelessWidget {
             ? Icon(
                 Icons.check,
                 color: AppColors.primaryBlue,
-                size: 13,
+                size: 15,
+                 fontWeight: FontWeight.bold,
               )
             : Text(
                 number.toString(),
                 style: TextStyle(
                   color: isCurrent ? AppColors.primaryBlue : Colors.white,
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../Core/utilities/colors.dart';
-
+import 'package:academia/Core/widgets/side_menu.dart';
 // ── Model ─────────────────────────────────────────────────────────────────────
 
 class AnnouncementModel {
@@ -193,6 +193,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F8),
+      drawer: const SideMenu(activeItem: 'Announcements'),
       body: SafeArea(
         child: Column(
           children: [
@@ -216,39 +217,99 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(0)),
-      ),
-      child: Row(
+      color: AppColors.primaryBlue,
+
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: Get.back,
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Announcements',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+          // Back + title
+          Row(
+            children: [
+              Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.menu_rounded, color: Colors.white),
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
                 ),
-                SizedBox(height: 2),
-                Text(
-                  'View all updates from your university',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Announcements',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
+                    Text('View all updates from your university',
+                        style: TextStyle(color: Colors.white60, fontSize: 11)),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+          const SizedBox(height: 16),
+
+          // Unread summary card
+          Obx(() {
+            final count = c.unreadCount.value;
+            return GestureDetector(
+              onTap: count > 0 ? () => c.setTab('Unread') : null,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: const Color(0xFF93C5FD).withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF93C5FD).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.notifications_outlined,
+                          color: Color(0xFF93C5FD), size: 18),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            count > 0
+                                ? '$count Unread Announcement${count == 1 ? '' : 's'}'
+                                : 'All caught up!',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            count > 0
+                                ? 'Tap to view unread messages'
+                                : 'No new announcements',
+                            style: const TextStyle(
+                                color: Colors.white54, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (count > 0)
+                      const Icon(Icons.arrow_forward_ios_rounded,
+                          color: Colors.white38, size: 14),
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 14),
         ],
       ),
     );

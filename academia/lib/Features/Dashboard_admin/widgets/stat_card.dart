@@ -23,9 +23,9 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(w * 0.033),
       decoration: BoxDecoration(
-        color:        Colors.white.withValues(alpha: 0.15),
+        color:        const Color(0xFFDDEDFA).withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(w * 0.038),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+       
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +48,7 @@ class StatCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    color:      Colors.white.withValues(alpha: 0.85),
+                    color:    Color(0XFFDEDEDE),
                     fontSize:   w * 0.03,
                     fontWeight: FontWeight.w500,
                     height:     1.2,
@@ -69,7 +69,7 @@ class StatCard extends StatelessWidget {
                   value,
                   style: TextStyle(
                     color:      Colors.white,
-                    fontSize:   w * 0.068,
+                    fontSize:   value.toLowerCase() == 'not started' ? 21 : 28,
                     fontWeight: FontWeight.w700,
                     height:     1,
                   ),
@@ -79,7 +79,7 @@ class StatCard extends StatelessWidget {
                 subtitle,
                 style: TextStyle(
                   color:      Colors.white.withValues(alpha: 0.75),
-                  fontSize:   w * 0.027,
+                  fontSize:   w * 0.031,
                   fontWeight: FontWeight.w400,
                 ),
                 overflow: TextOverflow.ellipsis,

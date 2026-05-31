@@ -19,6 +19,7 @@ class QuickActionsSection extends StatelessWidget {
             'Quick Actions',
             style: TextStyles.title.copyWith(
               color: Colors.black,
+              fontSize: 20
             ),
           ),
 
@@ -39,7 +40,9 @@ class QuickActionsSection extends StatelessWidget {
 
               const SizedBox(width: 8),
 
-              const Expanded(
+               Expanded(
+                 child: GestureDetector(
+                onTap: () => Get.toNamed('/examResultsAdmin'),
                 child: QuickActionItem(
                   icon: Icons.trending_up_rounded,
                   title: 'Upload Results',
@@ -47,6 +50,7 @@ class QuickActionsSection extends StatelessWidget {
                   iconColor: AppColors.accentProgramming1,
                   backgroundColor: Color(0xFFDDEDFA),
                 ),
+                 ),
               ),
 
               const SizedBox(width: 8),

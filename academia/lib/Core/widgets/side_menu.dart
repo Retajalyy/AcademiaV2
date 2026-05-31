@@ -8,6 +8,7 @@ import 'package:academia/Features/Fees_admin/screens/FeesAdminScreen.dart';
 import 'package:academia/Features/course_admin/screens/course_admin_screen.dart';
 import 'package:academia/Features/exam_results_admin/screens/exam_results_screen.dart';
 import 'package:academia/Features/Exam_schedule_admin/screens/exam_schedule_admin_screen.dart';
+import 'package:academia/Features/Announcements/screens/admin_announcements_screen.dart';
 class SideMenu extends StatefulWidget {
   final String activeItem;
 
@@ -205,7 +206,7 @@ class _SideMenuState extends State<SideMenu> {
                         icon: Icons.calendar_month_outlined,
                         title: "Schedules",
                         active: widget.activeItem == 'Schedules' ||
-                            widget.activeItem == 'Course Schedule' ||
+                            widget.activeItem == 'Lecture Schedule' ||
                             widget.activeItem == 'Exam Schedule',
                         trailing: _schedulesExpanded
                             ? Icons.keyboard_arrow_up_rounded
@@ -226,8 +227,8 @@ class _SideMenuState extends State<SideMenu> {
                         firstChild: Column(
                           children: [
                             SubMenuItem(
-                              title: "Course Schedule",
-                              active: widget.activeItem == "Course Schedule",
+                              title: "Lecture Schedule",
+                              active: widget.activeItem == "Lecture Schedule",
                               onTap: () {
                                 // _navigate(context, const CourseScheduleScreen());
                               },
@@ -247,9 +248,7 @@ class _SideMenuState extends State<SideMenu> {
                         icon: Icons.notifications,
                         title: "Announcements",
                         active: widget.activeItem == "Announcements",
-                        onTap: () {
-                          // _navigate(context, const AnnouncementsScreen());
-                        },
+                       onTap: () => _navigate(context, const AdminAnnouncementsScreen()),
                       ),
 
                       const SizedBox(height: 20),
