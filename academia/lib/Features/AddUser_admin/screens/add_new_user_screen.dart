@@ -48,25 +48,31 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
                     Obx(() => Row(
                       children: [
                         _TypeCard(
-                            type:     UserType.student,
-                            label:    'Student',
-                            icon:     Icons.school_outlined,
-                            selected: c.selectedType.value == UserType.student,
-                            onTap:    () => c.selectType(UserType.student)),
+                            type:      UserType.student,
+                            label:     'Student',
+                            icon:      Icons.school_outlined,
+                            iconColor: AppColors.primaryBlue,
+                            iconBg:    const Color(0xFFDDEDFA),
+                            selected:  c.selectedType.value == UserType.student,
+                            onTap:     () => c.selectType(UserType.student)),
                         const SizedBox(width: 10),
                         _TypeCard(
-                            type:     UserType.professor,
-                            label:    'Professor',
-                            icon:     Icons.cast_for_education_outlined,
-                            selected: c.selectedType.value == UserType.professor,
-                            onTap:    () => c.selectType(UserType.professor)),
+                            type:      UserType.professor,
+                            label:     'Professor',
+                            icon:      Icons.cast_for_education_outlined,
+                            iconColor: AppColors.assignmentColor,
+                            iconBg:    const Color(0xFFFFF3E0),
+                            selected:  c.selectedType.value == UserType.professor,
+                            onTap:     () => c.selectType(UserType.professor)),
                         const SizedBox(width: 10),
                         _TypeCard(
-                            type:     UserType.admin,
-                            label:    'Admin',
-                            icon:     Icons.admin_panel_settings_outlined,
-                            selected: c.selectedType.value == UserType.admin,
-                            onTap:    () => c.selectType(UserType.admin)),
+                            type:      UserType.admin,
+                            label:     'Admin',
+                            icon:      Icons.admin_panel_settings_outlined,
+                            iconColor: AppColors.darkGreen,
+                            iconBg:    AppColors.lightGreen,
+                            selected:  c.selectedType.value == UserType.admin,
+                            onTap:     () => c.selectType(UserType.admin)),
                       ],
                     )),
 
@@ -96,8 +102,10 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 14, 16, 20),
-      color: AppColors.primaryBlue,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+      decoration: const BoxDecoration(
+        color: AppColors.primaryBlue,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -107,11 +115,11 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.chevron_left_rounded,
-                    color: Colors.white70, size: 22),
+                    color: Colors.white70, size: 30),
                 Text('Dashboard',
                     style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w500)),
               ],
             ),
@@ -125,7 +133,7 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
           const SizedBox(height: 4),
           const Text('Create accounts for all user types',
               style: TextStyle(
-                  fontSize: 17,
+                  fontSize: 14,
                   color: Colors.white70,
                   fontWeight: FontWeight.w400)),
         ],
@@ -140,11 +148,14 @@ class _TypeCard extends StatelessWidget {
   final UserType     type;
   final String       label;
   final IconData     icon;
+  final Color        iconColor;
+  final Color        iconBg;
   final bool         selected;
   final VoidCallback onTap;
   const _TypeCard(
       {required this.type, required this.label,
-       required this.icon, required this.selected, required this.onTap});
+       required this.icon, required this.iconColor, required this.iconBg,
+       required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -157,40 +168,27 @@ class _TypeCard extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: selected
-                  ? AppColors.secondaryYellow
-                  : const Color(0xFFE5E7EB),
+              color: selected ? Colors.black : const Color(0xFFE5E7EB),
               width: selected ? 2 : 1,
             ),
-            boxShadow: selected
-                ? [BoxShadow(
-                    color: AppColors.secondaryYellow.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2))]
-                : [],
+            
           ),
           child: Column(
             children: [
               Container(
                 width: 44, height: 44,
                 decoration: BoxDecoration(
-                  color: selected
-                      ? AppColors.primaryBlue
-                      : const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(12),
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(9),
                 ),
-                child: Icon(icon,
-                    color: selected ? Colors.white : const Color(0xFF9CA3AF),
-                    size: 24),
+                child: Icon(icon, color: iconColor, size: 24),
               ),
               const SizedBox(height: 8),
               Text(label,
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: selected
-                          ? AppColors.primaryBlue
-                          : const Color(0xFF6B7280))),
+                      color: Colors.black)),
             ],
           ),
         ),
@@ -207,147 +205,255 @@ class _StudentUpload extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Format hint
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.lightblue,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Text(
-            'Upload a CSV file with the following columns:\n'
-            'first_name, last_name, email, uni_id, password, faculty, major, level, phone',
-            style: TextStyle(
-                fontSize: 15,
-                color: AppColors.primaryBlue,
-                height: 1.6),
-          ),
-        ),
+    return Obx(() {
+      final hasFile = c.csvFileName.value.isNotEmpty;
+      final lines   = c.csvContent.value.trim().split('\n');
+      final count   = hasFile ? (lines.length - 1).clamp(0, 999999) : 0;
+      final sizeKb  = hasFile ? (c.csvContent.value.length / 1024).round() : 0;
 
-        const SizedBox(height: 20),
-
-        // File picker button
-        GestureDetector(
-          onTap: c.pickCsvFile,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 28),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFFD1D5DB),
-                width: 1.5,
-                style: BorderStyle.solid,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.lightblue,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.upload_file_rounded,
-                    color: AppColors.primaryBlue,
-                    size: 30,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Text('Tap to select CSV file',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryBlue)),
-                const SizedBox(height: 4),
-                const Text('Supports .csv files',
-                    style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF9CA3AF))),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 12),
-
-        // Selected file name
-        Obx(() {
-          if (c.csvFileName.value.isEmpty) return const SizedBox.shrink();
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.green.shade200),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.check_circle_outline_rounded,
-                    color: Colors.green, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(c.csvFileName.value,
-                      style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF065F46)),
-                      overflow: TextOverflow.ellipsis),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    c.csvFileName.value = '';
-                    c.csvContent.value = '';
-                    c.csvResultMsg.value = '';
-                  },
-                  child: const Icon(Icons.close_rounded,
-                      color: Colors.green, size: 18),
-                ),
-              ],
-            ),
-          );
-        }),
-
-        const SizedBox(height: 12),
-
-        // Result message
-        Obx(() {
-          if (c.csvResultMsg.value.isEmpty) return const SizedBox.shrink();
-          final isSuccess = c.csvResultMsg.value.startsWith('✅');
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Format hint
+          Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isSuccess ? Colors.green.shade50 : Colors.red.shade50,
+              color: AppColors.lightblue,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isSuccess ? Colors.green.shade200 : Colors.red.shade200,
+            ),
+            child: const Text(
+              'Upload a CSV file with the following columns:\n'
+              'first_name, last_name, email, uni_id, password, faculty, major, level, phone',
+              style: TextStyle(
+                  fontSize: 11, color: AppColors.primaryBlue, height: 1.6),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+          const _SectionLabel('UPLOAD FILE'),
+          const SizedBox(height: 12),
+
+          if (!hasFile)
+            // ── No file: upload area with Choose File button ───────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: const Color(0xFFD1D5DB), width: 1.5),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: c.pickCsvFile,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 56, height: 56,
+                          decoration: BoxDecoration(
+                            color: AppColors.lightblue,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.upload_file_rounded,
+                              color: AppColors.primaryBlue, size: 30),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text('Upload CSV File',
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryBlue)),
+                        const SizedBox(height: 4),
+                        const Text('Upload a file containing student records.',
+                            style: TextStyle(
+                                fontSize: 11, color: Color(0xFF9CA3AF))),
+                        const Text('Supported formats: .csv · .xlsx',
+                            style: TextStyle(
+                                fontSize: 11, color: Color(0xFF9CA3AF))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: c.pickCsvFile,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: const BorderSide(color: Color(0xFFD1D5DB)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Choose File',
+                          style: TextStyle(
+                              color: Color(0xFF374151),
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            )
+            
+          else ...[
+            // ── File selected: card + import button ────────────────────
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Top: icon + info + close
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.insert_drive_file_outlined,
+                              color: AppColors.primaryBlue, size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(c.csvFileName.value,
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1A2B4A)),
+                                  overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 2),
+                              Text('$count records · $sizeKb KB',
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF9CA3AF))),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            c.csvFileName.value = '';
+                            c.csvContent.value  = '';
+                            c.csvResultMsg.value = '';
+                          },
+                          child: Container(
+                            width: 30, height: 30,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFEEEE),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.close_rounded,
+                                color: Colors.red, size: 18),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Bottom blue banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 11),
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryBlue,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(13),
+                        bottomRight: Radius.circular(13),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline_rounded,
+                            color: Colors.white, size: 18),
+                        const SizedBox(width: 8),
+                        Text('$count records ready to import',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Text(c.csvResultMsg.value,
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: isSuccess
-                        ? Colors.green.shade800
-                        : Colors.red.shade800)),
-          );
-        }),
 
-        Obx(() => _SubmitButton(
-          label: 'Create Students from CSV',
-          isLoading: c.isLoading.value,
-          onTap: c.submitStudentCsv,
-        )),
-      ],
-    );
+            // Result message
+            if (c.csvResultMsg.value.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Builder(builder: (_) {
+                final isSuccess = c.csvResultMsg.value.startsWith('✅');
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSuccess
+                        ? Colors.green.shade50
+                        : Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSuccess
+                          ? Colors.green.shade200
+                          : Colors.red.shade200,
+                    ),
+                  ),
+                  child: Text(c.csvResultMsg.value,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isSuccess
+                              ? Colors.green.shade800
+                              : Colors.red.shade800)),
+                );
+              }),
+            ],
+
+            const SizedBox(height: 12),
+
+            // Import button
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: c.isLoading.value ? null : c.submitStudentCsv,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryBlue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                icon: c.isLoading.value
+                    ? const SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2.5))
+                    : const Icon(Icons.person_add_outlined, size: 20),
+                label: const Text('Import Students',
+                    style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ],
+      );
+    });
   }
 }
 
@@ -365,30 +471,34 @@ class _ProfessorForm extends StatelessWidget {
         const _SectionLabel('PERSONAL INFORMATION'),
         const SizedBox(height: 12),
         Row(children: [
-          Expanded(child: _Field(ctrl: c.fname, hint: 'First Name')),
+          Expanded(child: _LabeledField(ctrl: c.fname, label: 'First Name')),
           const SizedBox(width: 10),
-          Expanded(child: _Field(ctrl: c.lname, hint: 'Last Name')),
+          Expanded(child: _LabeledField(ctrl: c.lname, label: 'Last Name')),
         ]),
-        const SizedBox(height: 10),
-        _Field(ctrl: c.uniId, hint: 'User ID'),
-        const SizedBox(height: 10),
-        _Field(ctrl: c.email, hint: 'Email Address',
+        const SizedBox(height: 12),
+        _LabeledField(ctrl: c.uniId, label: 'User ID'),
+        const SizedBox(height: 12),
+        _LabeledField(ctrl: c.email, label: 'Email Address',
             keyboard: TextInputType.emailAddress),
-        const SizedBox(height: 10),
-        _Field(ctrl: c.phone, hint: 'Phone Number',
+        const SizedBox(height: 12),
+        _LabeledField(ctrl: c.phone, label: 'Phone Number',
             keyboard: TextInputType.phone),
-        const SizedBox(height: 10),
-        _PasswordField(ctrl: c.password, c: c),
 
         const SizedBox(height: 20),
         const _SectionLabel('ACADEMIC INFORMATION'),
         const SizedBox(height: 12),
 
-        // Faculty dropdown
+        // Faculty label + dropdown
+        const Text('Faculty',
+            style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF908C8C))),
+        const SizedBox(height: 8),
         Obx(() => Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(7),
             border: Border.all(color: const Color(0xFFD1D5DB)),
           ),
           child: DropdownButtonHideUnderline(
@@ -397,12 +507,8 @@ class _ProfessorForm extends StatelessWidget {
                   ? c.selectedFaculty.value
                   : null,
               isExpanded: true,
-              hint: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14),
-                child: Text('Select faculty...',
-                    style: TextStyle(
-                        color: Color(0xFF9CA3AF), fontSize: 16)),
-              ),
+              hint: const Text('Select faculty...',
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
               padding: const EdgeInsets.symmetric(horizontal: 14),
               items: c.faculties
                   .map((f) => DropdownMenuItem(
@@ -423,9 +529,9 @@ class _ProfessorForm extends StatelessWidget {
         // Role toggle
         const Text('Role',
             style: TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF374151))),
+                color: Color(0xFF908C8C))),
         const SizedBox(height: 8),
         Obx(() => Row(
           children: [
@@ -442,10 +548,28 @@ class _ProfessorForm extends StatelessWidget {
         )),
 
         const SizedBox(height: 24),
-        Obx(() => _SubmitButton(
-          label: c.isTA.value ? 'Add Teaching Assistant' : 'Add Professor',
-          isLoading: c.isLoading.value,
-          onTap: c.submitProfessor,
+        Obx(() => SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton(
+            onPressed: c.isLoading.value ? null : c.submitProfessor,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFD1D5DB), width: 1.5),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+            ),
+            child: c.isLoading.value
+                ? const SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(
+                        color: AppColors.primaryBlue, strokeWidth: 2.5))
+                : Text(
+                    c.isTA.value ? 'Add Teaching Assistant' : 'Add Professor',
+                    style: const TextStyle(
+                        color: AppColors.accentProgramming1,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700)),
+          ),
         )),
       ],
     );
@@ -466,27 +590,42 @@ class _AdminForm extends StatelessWidget {
         const _SectionLabel('PERSONAL INFORMATION'),
         const SizedBox(height: 12),
         Row(children: [
-          Expanded(child: _Field(ctrl: c.fname, hint: 'First Name')),
+          Expanded(child: _LabeledField(ctrl: c.fname, label: 'First Name')),
           const SizedBox(width: 10),
-          Expanded(child: _Field(ctrl: c.lname, hint: 'Last Name')),
+          Expanded(child: _LabeledField(ctrl: c.lname, label: 'Last Name')),
         ]),
-        const SizedBox(height: 10),
-        _Field(ctrl: c.uniId, hint: 'User ID'),
-        const SizedBox(height: 10),
-        _Field(ctrl: c.email, hint: 'Email Address',
+        const SizedBox(height: 12),
+        _LabeledField(ctrl: c.uniId, label: 'User ID'),
+        const SizedBox(height: 12),
+        _LabeledField(ctrl: c.email, label: 'Email Address',
             keyboard: TextInputType.emailAddress),
-        const SizedBox(height: 10),
-        _Field(ctrl: c.phone, hint: 'Phone Number',
+        const SizedBox(height: 12),
+        _LabeledField(ctrl: c.phone, label: 'Phone Number',
             keyboard: TextInputType.phone),
-        const SizedBox(height: 10),
-        _Field(ctrl: c.jobTitle, hint: 'Job Title'),
-        const SizedBox(height: 10),
-        _PasswordField(ctrl: c.password, c: c),
+        const SizedBox(height: 12),
+        _LabeledField(ctrl: c.jobTitle, label: 'Job Title'),
         const SizedBox(height: 24),
-        Obx(() => _SubmitButton(
-          label: 'Add Admin',
-          isLoading: c.isLoading.value,
-          onTap: c.submitAdmin,
+        Obx(() => SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton(
+            onPressed: c.isLoading.value ? null : c.submitAdmin,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFD1D5DB), width: 1.5),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+            ),
+            child: c.isLoading.value
+                ? const SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(
+                        color: AppColors.primaryBlue, strokeWidth: 2.5))
+                : const Text('Add Admin',
+                    style: TextStyle(
+                        color: AppColors.primaryBlue,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700)),
+          ),
         )),
       ],
     );
@@ -499,97 +638,68 @@ class _SectionLabel extends StatelessWidget {
   final String text;
   const _SectionLabel(this.text);
   @override
-  Widget build(BuildContext context) => Text(text,
-      style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF6B7280),
-          letterSpacing: 0.5));
-}
-
-class _Field extends StatelessWidget {
-  final TextEditingController ctrl;
-  final String                hint;
-  final TextInputType         keyboard;
-  const _Field(
-      {required this.ctrl,
-       required this.hint,
-       this.keyboard = TextInputType.text});
-
-  @override
-  Widget build(BuildContext context) => TextField(
-        controller:  ctrl,
-        keyboardType: keyboard,
-        style: const TextStyle(fontSize: 16),
-        decoration: InputDecoration(
-          hintText:     hint,
-          hintStyle:    const TextStyle(
-              color: Color(0xFF9CA3AF), fontSize: 16),
-          filled:       true,
-          fillColor:    Colors.white,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+  Widget build(BuildContext context) => Row(
+        children: [
+          Text(text,
+              style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.smalltext,
+                  letterSpacing: 0.5)),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Divider(color: Color(0xFFD1D5DB), thickness: 1),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(
-                color: AppColors.primaryBlue, width: 1.5),
-          ),
-        ),
+        ],
       );
 }
 
-class _PasswordField extends StatelessWidget {
+class _LabeledField extends StatelessWidget {
   final TextEditingController ctrl;
-  final AddUserController      c;
-  const _PasswordField({required this.ctrl, required this.c});
+  final String label;
+  final TextInputType keyboard;
+  const _LabeledField({
+    required this.ctrl,
+    required this.label,
+    this.keyboard = TextInputType.text,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Obx(() => TextField(
-          controller:   ctrl,
-          obscureText:  c.obscurePassword.value,
-          style:        const TextStyle(fontSize: 16),
-          decoration: InputDecoration(
-            hintText:  'Password',
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 16),
-            filled:    true,
-            fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                  color: AppColors.primaryBlue, width: 1.5),
-            ),
-            suffixIcon: IconButton(
-              icon: Icon(
-                c.obscurePassword.value
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color: const Color(0xFF9CA3AF),
-                size: 20,
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF908C8C))),
+          const SizedBox(height: 6),
+          TextField(
+            controller: ctrl,
+            keyboardType: keyboard,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF1A2B4A)),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
               ),
-              onPressed: () => c.obscurePassword.toggle(),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide:
+                    const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+              ),
             ),
           ),
-        ));
-  }
+        ],
+      );
 }
 
 class _RoleChip extends StatelessWidget {
@@ -606,7 +716,7 @@ class _RoleChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: selected ? AppColors.primaryBlue : Colors.white,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected
                   ? AppColors.primaryBlue
@@ -615,42 +725,11 @@ class _RoleChip extends StatelessWidget {
           ),
           child: Text(label,
               style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color:
-                      selected ? Colors.white : const Color(0xFF374151))),
+                      selected ? Colors.white : AppColors.accentProgramming1)),
         ),
       );
 }
 
-class _SubmitButton extends StatelessWidget {
-  final String       label;
-  final bool         isLoading;
-  final VoidCallback onTap;
-  const _SubmitButton(
-      {required this.label, required this.isLoading, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-        width: double.infinity,
-        height: 50,
-        child: ElevatedButton(
-          onPressed: isLoading ? null : onTap,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryBlue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-            elevation: 0,
-          ),
-          child: isLoading
-              ? const SizedBox(
-                  width: 22, height: 22,
-                  child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2.5))
-              : Text(label,
-                  style: const TextStyle(
-                      fontSize: 17, fontWeight: FontWeight.w700)),
-        ),
-      );
-}

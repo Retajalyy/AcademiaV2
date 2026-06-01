@@ -53,7 +53,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(9),
                     borderSide: BorderSide.none,
                   ),
                 ),
@@ -212,7 +212,7 @@ class _Header extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.chevron_left_rounded,
-                    color: Colors.white70, size: 22),
+                    color: Colors.white70, size: 30),
                 Text('Dashboard',
                     style: TextStyle(
                         color: Colors.white70,
@@ -276,7 +276,7 @@ class _FacultyChip extends StatelessWidget {
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : const Color(0xFF374151))),
+                  color: selected ? Colors.white : AppColors.smalltext)),
         ),
       );
     });
@@ -333,7 +333,7 @@ class _StudentCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
 
-                // Name + ID + badges
+                // Name + ID + major info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,7 +342,7 @@ class _StudentCard extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF1A1A2E))),
+                              color: Colors.black)),
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -369,6 +369,20 @@ class _StudentCard extends StatelessWidget {
                       ],
                     ],
                   ),
+                ),
+
+                // Badges on the far right
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _Badge(
+                        label: student.facultyBadge,
+                        color: student.facultyBadgeColor),
+                    const SizedBox(height: 4),
+                    _Badge(
+                        label: student.majorBadge,
+                        color: student.majorBadgeColor),
+                  ],
                 ),
               ],
             ),
@@ -397,7 +411,7 @@ class _StudentCard extends StatelessWidget {
                   child: Row(
               children: [
                 const Icon(Icons.phone_outlined,
-                    size: 14, color: Color(0xFF9CA3AF)),
+                    size: 20, color: Color(0xFF67737D)),
                 const SizedBox(width: 6),
                 Text(student.phone.isNotEmpty ? student.phone : '—',
                     style: const TextStyle(
@@ -446,7 +460,7 @@ class _Badge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Text(label,
           style: TextStyle(

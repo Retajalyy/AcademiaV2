@@ -1,3 +1,4 @@
+import 'package:academia/Features/Dashboard_admin/controller/dashboard_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -86,7 +87,7 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF6B7280),
+                      color: AppColors.smalltext,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -193,6 +194,7 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
   }
 
   Widget _buildHeader() {
+    final dashboard = Get.find<DashboardController>();
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 14, 16, 20),
@@ -206,7 +208,7 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.chevron_left_rounded,
-                    color: Colors.white70, size: 22),
+                    color: AppColors.greytext, size: 30),
                 Text('Dashboard',
                     style: TextStyle(
                         color: Colors.white70,
@@ -223,7 +225,7 @@ class _AdminInstructorsScreenState extends State<AdminInstructorsScreen> {
                   color: Colors.white)),
           const SizedBox(height: 4),
           Text(
-            '${c.allInstructors.length} Instructors',
+            '${dashboard.semester} . ${c.allInstructors.length} Instructors',
             style: const TextStyle(
                 fontSize: 15,
                 color: Colors.white70,
@@ -265,7 +267,7 @@ class _Chip extends StatelessWidget {
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : const Color(0xFF374151))),
+                  color: selected ? Colors.white : AppColors.smalltext)),
         ),
       );
     });
@@ -325,7 +327,7 @@ class _InstructorCard extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF1A1A2E))),
+                              color: Colors.black)),
                       const SizedBox(height: 3),
                       Text('ID: ${instructor.uniId}',
                           style: const TextStyle(
@@ -439,7 +441,7 @@ class _InfoRow extends StatelessWidget {
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color:        color.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(9),
                       ),
                       child: Text(chip,
                           style: TextStyle(

@@ -30,7 +30,10 @@ class PendingTaskCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
+        border: Border(
+          left: BorderSide(color: leftBarColor, width: 5),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -39,87 +42,75 @@ class PendingTaskCard extends StatelessWidget {
           ),
         ],
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Left colour bar ───────────────────────────────────────────
-            Container(
-              width: 5,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(width: 12),
+
+          // ── Icon ──────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            child: Container(
+              height: 60,
+              width:  58,
               decoration: BoxDecoration(
-                color: leftBarColor,
-                borderRadius: const BorderRadius.only(
-                  topLeft:    Radius.circular(14),
-                  bottomLeft: Radius.circular(14),
-                ),
+                color:        iconBgColor,
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: Icon(icon, color: iconColor, size: 32),
             ),
+          ),
 
-            const SizedBox(width: 12),
+          const SizedBox(width: 12),
 
-            // ── Icon ──────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Container(
-                height: 42,
-                width:  42,
-                decoration: BoxDecoration(
-                  color:        iconBgColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 22),
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            // ── Text ──────────────────────────────────────────────────────
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment:  MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize:   18,
-                        fontWeight: FontWeight.w700,
-                        color:      Color(0xFF1A1A2E),
-                        height:     1.3,
-                      ),
+          // ── Text ──────────────────────────────────────────────────────
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment:  MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize:   17,
+                      fontWeight: FontWeight.w700,
+                      color:      Colors.black,
+                      height:     1.3,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize:   15,
-                        color:      AppColors.smalltext,
-                        fontWeight: FontWeight.w400,
-                        height:     1.4,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize:   14,
+                      color:      Colors.black54,
+                      fontWeight: FontWeight.w400,
+                      height:     1.4,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+          ),
 
-            // ── Chevron ───────────────────────────────────────────────────
-            Padding(
+          // ── Chevron ───────────────────────────────────────────────────
+          Center(
+            child: Padding(
               padding: const EdgeInsets.only(right: 12),
               child: Icon(
                 Icons.chevron_right_rounded,
-                color: Colors.grey.shade400,
-                size: 22,
+                color: AppColors.smalltext,
+                size: 25,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

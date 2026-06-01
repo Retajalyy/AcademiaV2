@@ -206,7 +206,7 @@ class _SideMenuState extends State<SideMenu> {
                         icon: Icons.calendar_month_outlined,
                         title: "Schedules",
                         active: widget.activeItem == 'Schedules' ||
-                            widget.activeItem == 'Course Schedule' ||
+                            widget.activeItem == 'Lecture Schedule' ||
                             widget.activeItem == 'Exam Schedule',
                         trailing: _schedulesExpanded
                             ? Icons.keyboard_arrow_up_rounded

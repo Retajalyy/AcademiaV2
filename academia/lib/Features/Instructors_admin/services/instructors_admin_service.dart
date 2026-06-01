@@ -22,7 +22,18 @@ class InstructorsAdminService {
     final professors = (profData as List).cast<Map<String, dynamic>>();
     if (professors.isEmpty) return [];
 
-    // ── 2. Collect all section IDs ─────────────────────────────────────
+    // ── 2. Fetch majors grouped by faculty code ───────────────────────
+    final majorsData = await _db.from('majors').select('code, name, faculty_code');
+    final facultyMajors = <String, List<String>>{};
+    for (final m in majorsData as List) {
+      final fc   = m['faculty_code'] as String? ?? '';
+      final name = m['name']         as String? ?? '';
+      if (fc.isNotEmpty && name.isNotEmpty) {
+        facultyMajors.putIfAbsent(fc, () => []).add(name);
+      }
+    }
+
+    // ── 3. Collect all section IDs ─────────────────────────────────────
     final sectionIds = professors
         .expand((p) => (p['sections'] as List? ?? []))
         .map((s) => s['id'])
@@ -79,6 +90,9 @@ class InstructorsAdminService {
           .toSet()
           .toList();
 
+      final dept   = row['department'] as String? ?? '';
+      final majors = facultyMajors[dept] ?? [];
+
       return InstructorAdminModel(
         id:         row['id']          as int,
         uniId:      profile['uni_id']  as String? ?? '',
@@ -87,6 +101,7 @@ class InstructorsAdminService {
         role:       hasLecture ? 'Professor' : 'T.A.',
         courses:    courses,
         groups:     groups,
+        majors:     majors,
       );
     }).toList();
   }

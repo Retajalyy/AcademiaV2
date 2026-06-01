@@ -32,7 +32,7 @@ class StatsCard extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.72),
+            color: Colors.white.withValues(alpha: 0.72),
             fontSize: 11,
           ),
         ),

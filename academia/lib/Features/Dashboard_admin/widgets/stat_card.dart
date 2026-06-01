@@ -23,9 +23,9 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(w * 0.033),
       decoration: BoxDecoration(
-        color:        Colors.white.withValues(alpha: 0.15),
+        color:        const Color(0xFFDDEDFA).withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(w * 0.038),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+       
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

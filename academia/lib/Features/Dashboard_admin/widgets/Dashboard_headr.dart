@@ -35,7 +35,7 @@ class DashboardHeader extends StatelessWidget {
               Builder(
                 builder: (context) => GestureDetector(
                   onTap: () => Scaffold.of(context).openDrawer(),
-                  child: const Icon(Icons.menu, color: Colors.white, size: 30),
+                  child: const Icon(Icons.menu, color: Colors.white, size: 40),
                 ),
               ),
               const Text(
@@ -49,8 +49,8 @@ class DashboardHeader extends StatelessWidget {
               GestureDetector(
                 onTap: () => Get.to(() => const ProfileMenuScreen()),
                 child: Container(
-                  height: 40,
-                  width: 40,
+                  height: 45,
+                  width: 45,
                   decoration: BoxDecoration(
                     color: AppColors.secondaryYellow,
                     shape: BoxShape.circle,

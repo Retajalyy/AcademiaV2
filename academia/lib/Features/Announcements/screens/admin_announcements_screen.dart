@@ -15,6 +15,8 @@ class AdminAnnouncement {
   final String timeAgo;
   final int    seenCount;
 
+
+
   const AdminAnnouncement({
     required this.id,
     required this.title,
@@ -43,6 +45,17 @@ class AdminAnnouncement {
         timeAgo = '${diff.inDays ~/ 7} weeks ago';
       }
     } catch (_) {}
+    final reads = m['announcement_reads'] as List? ?? [];
+    int seenCount = 0;
+    if (reads.isNotEmpty) {
+      final countVal = reads[0]['count'];
+      if (countVal is int) {
+        seenCount = countVal;
+      } else if (countVal is String) {
+        seenCount = int.tryParse(countVal) ?? 0;
+      }
+    }
+
     return AdminAnnouncement(
       id:         m['id']          as int,
       title:      m['title']       as String? ?? '',
@@ -50,7 +63,7 @@ class AdminAnnouncement {
       type:       (m['type']       as String? ?? 'general').toLowerCase(),
       targetRole: m['target_role'] as String? ?? 'all',
       timeAgo:    timeAgo,
-      seenCount:  (m['seen_count'] as int?) ?? 0,
+      seenCount:  seenCount,
     );
   }
 }
@@ -90,7 +103,7 @@ class AdminAnnouncementsController extends GetxController {
     try {
       final data = await _db
           .from('announcements')
-          .select('id, title, body, type, target_role, created_at')
+          .select('id, title, body, type, target_role, created_at, announcement_reads(count)')
           .order('created_at', ascending: false);
       announcements.value = (data as List)
           .map((m) => AdminAnnouncement.fromMap(m))
@@ -394,10 +407,10 @@ class _AnnouncementCard extends StatelessWidget {
 
   Color get _typeColor {
     switch (ann.type) {
-      case 'urgent':  return const Color(0xFFEF4444);
-      case 'warning': return const Color(0xFFF59E0B);
-      case 'info':    return const Color(0xFF3B82F6);
-      default:        return const Color(0xFF6B7280);
+      case 'urgent':  return AppColors.fail;
+      case 'warning': return AppColors.accentAI;
+      case 'info':    return AppColors.accentProgramming1;
+      default:        return const Color(0xFF757272);
     }
   }
 

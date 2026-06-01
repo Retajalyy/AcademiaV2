@@ -46,73 +46,75 @@ class AddCoursesWidget extends StatelessWidget {
             itemCount: c.availableCourses.length,
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final course    = c.availableCourses[index];
-              final isSelected = c.isCourseSelected(course.name);
+              final course      = c.availableCourses[index];
               final accentColor = course.type == 'Core'
                   ? AppColors.accentProgramming1
                   : AppColors.assignmentColor;
 
-              return Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.accentProgramming1
-                        : Colors.transparent,
-                    width: 2,
+              return Obx(() {
+                final isSelected = c.isCourseSelected(course.name);
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.accentProgramming1
+                          : Colors.transparent,
+                      width: 2,
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: course.themeColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(course.icon, color: accentColor, size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(course.name,
-                              style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                  color: accentColor)),
-                          const SizedBox(height: 4),
-                          Text('${course.type} · ${course.credits} credits',
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.smalltext)),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => c.toggleCourse(course.name, !isSelected),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.accentProgramming1
-                              : course.themeColor,
-                          shape: BoxShape.circle,
+                          color: course.themeColor,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          isSelected ? Icons.check : Icons.add,
-                          color: isSelected ? Colors.white : accentColor,
-                          size: 20,
+                        child: Icon(course.icon, color: accentColor, size: 28),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(course.name,
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                    color: accentColor)),
+                            const SizedBox(height: 4),
+                            Text('${course.type} · ${course.credits} credits',
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.smalltext)),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
+                      GestureDetector(
+                        onTap: () => c.toggleCourse(course.name, !isSelected),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.accentProgramming1
+                                : course.themeColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isSelected ? Icons.check : Icons.add,
+                            color: isSelected ? Colors.white : accentColor,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              });
             },
           );
         }),

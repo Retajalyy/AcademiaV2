@@ -83,7 +83,7 @@ class _ResultDetailSheetState extends State<ResultDetailSheet> {
                   Text(
                     r.semester.toUpperCase(),
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.8,
@@ -149,7 +149,7 @@ class _HeaderChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(label,
@@ -182,7 +182,7 @@ class _StudentCard extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -215,7 +215,7 @@ class _StudentCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: gpaColor.withOpacity(0.1),
+                    color: gpaColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -275,7 +275,7 @@ class _CourseRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 2),
             decoration: BoxDecoration(
               color: isPassing
-                  ? AppColors.primaryBlue.withOpacity(0.08)
+                  ? AppColors.primaryBlue.withValues(alpha: 0.08)
                   : Colors.red.shade50,
               borderRadius: BorderRadius.circular(4),
             ),
