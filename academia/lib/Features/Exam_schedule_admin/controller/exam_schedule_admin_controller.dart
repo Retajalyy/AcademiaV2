@@ -114,7 +114,10 @@ class ExamScheduleAdminController extends GetxController {
     }
   }
 
-  bool get isFormValid => formFacultyCode.value.isNotEmpty;
+  bool get isStep1Valid => formFacultyCode.value.isNotEmpty;
+  bool get isStep2Valid => formExamType.value.isNotEmpty;
+  bool get isStep3Valid => pickedFileName.value.isNotEmpty;
+  bool get isFormValid  => isStep1Valid;
 
   Future<void> submit() async {
     if (!isFormValid) {

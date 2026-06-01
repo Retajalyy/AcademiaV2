@@ -22,9 +22,9 @@ class UploadFilePicker extends StatelessWidget {
         Text(
           'Upload File',
           style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
           ),
         ),
         const SizedBox(height: 8),
@@ -61,16 +61,16 @@ class _PickArea extends StatelessWidget {
             Text(
               'Tap to upload results file',
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryBlue,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               'Supported formats below',
               style:
-                  TextStyle(fontSize: 11, color: Colors.grey.shade400),
+                  TextStyle(fontSize: 16, color: Colors.grey.shade500),
             ),
             const SizedBox(height: 10),
             Row(
@@ -97,17 +97,18 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(6),
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppColors.primaryBlue,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
           ),
         ),
       );
@@ -140,14 +141,15 @@ class _FilePreview extends StatelessWidget {
                 Text(
                   form.fileName ?? '',
                   style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 13),
+                      fontWeight: FontWeight.w600, fontSize: 16,
+                      color: AppColors.primaryBlue),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   '${form.fileRows ?? 0} rows · '
                   '${form.fileSizeMb?.toStringAsFixed(1) ?? '0'} MB',
                   style: TextStyle(
-                      fontSize: 11, color: Colors.grey.shade500),
+                      fontSize: 14, color: Colors.grey.shade500),
                 ),
               ],
             ),

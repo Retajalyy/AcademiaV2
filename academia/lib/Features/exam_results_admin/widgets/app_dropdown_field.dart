@@ -27,9 +27,9 @@ class AppDropdownField extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
           ),
         ),
         const SizedBox(height: 6),
@@ -62,13 +62,13 @@ class AppDropdownField extends StatelessWidget {
                 hint: Text(
                   hint,
                   style: TextStyle(
-                      color: Colors.grey.shade400, fontSize: 14),
+                      color: Colors.grey.shade400, fontSize: 17),
                 ),
                 items: items
                     .map((item) => DropdownMenuItem<String>(
                           value: item,
                           child: Text(item,
-                              style: const TextStyle(fontSize: 14)),
+                              style: const TextStyle(fontSize: 17)),
                         ))
                     .toList(),
                 onChanged: enabled ? onChanged : null,

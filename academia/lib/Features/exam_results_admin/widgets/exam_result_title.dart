@@ -28,7 +28,7 @@ class ExamResultTile extends StatelessWidget {
           Text(
             result.semester.toUpperCase(),
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade500,
               letterSpacing: 0.3,
@@ -41,7 +41,7 @@ class ExamResultTile extends StatelessWidget {
           Text(
             result.title,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
               color: AppColors.primaryBlue,
               height: 1.2,
@@ -54,7 +54,7 @@ class ExamResultTile extends StatelessWidget {
           Text(
             'Academic year ${result.academicYear}',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 15,
               color: Colors.grey.shade500,
             ),
           ),
@@ -106,7 +106,7 @@ class ExamResultTile extends StatelessWidget {
             children: [
               Icon(
                 Icons.description_outlined,
-                size: 15,
+                size: 18,
                 color: Colors.grey.shade400,
               ),
 
@@ -117,7 +117,7 @@ class ExamResultTile extends StatelessWidget {
                   result.fileName,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 15,
                     color: Colors.grey.shade500,
                   ),
                 ),
@@ -129,7 +129,7 @@ class ExamResultTile extends StatelessWidget {
                 onTap: () =>
                     Get.find<ExamResultsController>().viewResult(result),
                 child: const Icon(Icons.visibility_outlined,
-                    size: 20, color: AppColors.primaryBlue),
+                    size: 23, color: AppColors.primaryBlue),
               ),
 
               const SizedBox(width: 14),
@@ -138,7 +138,7 @@ class ExamResultTile extends StatelessWidget {
                 onTap: () =>
                     Get.find<ExamResultsController>().downloadResult(result),
                 child: const Icon(Icons.download_outlined,
-                    size: 20, color: AppColors.primaryBlue),
+                    size: 23, color: AppColors.primaryBlue),
               ),
             ],
           ),
@@ -173,7 +173,7 @@ class _StatBox extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.w700,
               color: AppColors.primaryBlue,
             ),
@@ -184,7 +184,7 @@ class _StatBox extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 15,
               color: Colors.grey.shade500,
             ),
           ),

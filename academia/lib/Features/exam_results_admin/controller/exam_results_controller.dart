@@ -248,8 +248,11 @@ class ExamResultsController extends GetxController {
     levels.assignAll(results[1] as List<String>);
 
     final meta = results[2] as List<Map<String, dynamic>>;
-    _semesterMeta.assignAll(meta);
-    semesters.assignAll(meta.map((m) => m['label'] as String).toList());
+    final filteredMeta = meta
+        .where((m) => m['label'] == 'Semester 1' || m['label'] == 'Semester 2')
+        .toList();
+    _semesterMeta.assignAll(filteredMeta);
+    semesters.assignAll(filteredMeta.map((m) => m['label'] as String).toList());
 
     _facultyCodeMap = results[3] as Map<String, String>;
   }

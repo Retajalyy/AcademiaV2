@@ -74,24 +74,53 @@ class Assessmentscreen extends StatelessWidget {
                         const SizedBox(height: 18),
 
                         // Course assessment cards
-                        ...controller.filtered.asMap().entries.map((e) {
-                          final a = e.value;
-                          final color = e.key % 2 == 0
-                              ? AppColors.primaryBlue
-                              : AppColors.secondaryYellow;
-                          return CourseCard(
-                            title: a.courseName,
-                            type: a.courseType,
-                            midterm: a.midtermStr,
-                            midtermStatus: a.midtermStatus,
-                            participation: a.participationStr,
-                            participationStatus: a.participationStatus,
-                            attendance: a.attendanceStr,
-                            attendanceStatus: a.attendanceStatus,
-                            progress: a.progress,
-                            progressColor: color,
-                          );
-                        }),
+                        if (controller.filtered.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 60),
+                            child: Column(
+                              children: [
+                                Icon(Icons.search_off_rounded,
+                                    size: 52,
+                                    color: Colors.grey.shade400),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No assessments found',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Try a different search term',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          ...controller.filtered.asMap().entries.map((e) {
+                            final a = e.value;
+                            final color = e.key % 2 == 0
+                                ? AppColors.primaryBlue
+                                : AppColors.secondaryYellow;
+                            return CourseCard(
+                              title: a.courseName,
+                              type: a.courseType,
+                              midterm: a.midtermStr,
+                              midtermStatus: a.midtermStatus,
+                              participation: a.participationStr,
+                              participationStatus: a.participationStatus,
+                              attendance: a.attendanceStr,
+                              attendanceStatus: a.attendanceStatus,
+                              progress: a.progress,
+                              progressColor: color,
+                            );
+                          }),
 
                         const SizedBox(height: 20),
                       ],

@@ -2,7 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utilities/colors.dart';
-import '../../../core/widgets/architecture_progress.dart';
+import '../../../Core/widgets/Architecture_progress.dart';
 import '../controller/exam_results_controller.dart';
 import 'app_dropdown_field.dart';
 import 'upload_file_picker.dart';
@@ -94,18 +94,25 @@ class _SheetHeader extends StatelessWidget {
         children: [
           const Text(
             'Upload exam results',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryBlue,
+            ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 8),
           Text(
             'Select the target group and upload the results file.\n'
             'Students will be notified once published.',
-            style:
-                TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: 17, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 16),
           // c is a param — safe to use inside Obx (no Get.find here)
-          Obx(() => ArchitectureProgress(currentStep: c.uploadStep.value)),
+          Obx(() => ArchitectureProgress(
+                currentStep: c.uploadStep.value,
+                circleSize: 32,
+                fontSize: 18,
+              )),
           const SizedBox(height: 8),
         ],
       ),
@@ -191,9 +198,9 @@ class _Step2 extends StatelessWidget {
           Text(
             'Results Title',
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
             ),
           ),
           const SizedBox(height: 6),
@@ -202,7 +209,7 @@ class _Step2 extends StatelessWidget {
             decoration: InputDecoration(
               hintText: 'e.g. FCI · Year 4 · Software Engineering',
               hintStyle: TextStyle(
-                  color: Colors.grey.shade400, fontSize: 13),
+                  color: Colors.grey.shade400, fontSize: 17),
               contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
@@ -305,9 +312,9 @@ class _ReadOnlyField extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade700,
+            fontSize: 17,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
           ),
         ),
         const SizedBox(height: 6),
@@ -321,7 +328,7 @@ class _ReadOnlyField extends StatelessWidget {
           ),
           child: Text(
             value,
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+            style: TextStyle(fontSize: 17, color: Colors.grey.shade700),
           ),
         ),
       ],
@@ -353,47 +360,62 @@ class _BottomButtons extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: (canProceed && !isLoading)
-                    ? (isLast ? c.publish : c.goNextStep)
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: (canProceed && !isLoading)
+                      ? (isLast ? c.publish : c.goNextStep)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryBlue,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
                   ),
-                  elevation: 0,
-                ),
-                child: isLoading
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2.5),
-                      )
-                    : Text(
-                        isLast ? 'Publish' : 'Next',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5),
+                        )
+                      : Text(
+                          isLast ? 'Publish' : 'Next',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
+                ),
               ),
             ),
-            const SizedBox(height: 6),
-            TextButton(
-              onPressed: step > 1
-                  ? c.goPrevStep
-                  : Get.back,
-              child: Text(
-                step > 1 ? 'Back' : 'Cancel',
-                style: const TextStyle(
-                    color: AppColors.primaryBlue, fontSize: 15),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton(
+                  onPressed: step > 1 ? c.goPrevStep : Get.back,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primaryBlue,
+                    side: BorderSide(
+                        color: Colors.black.withValues(alpha: 0.11)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text(
+                    step > 1 ? 'Back' : 'Cancel',
+                    style: const TextStyle(
+                        fontSize: 19, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ),
           ],

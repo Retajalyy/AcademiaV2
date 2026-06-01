@@ -711,17 +711,10 @@ class _Step1Content extends StatelessWidget {
               )),
           const SizedBox(height: 28),
 
-          _NavButton(
+          Obx(() => _NavButton(
             label: 'Next',
-            onPressed: () {
-              if (c.formFacultyCode.value.isEmpty) {
-                Get.snackbar('Required', 'Please select a faculty',
-                    snackPosition: SnackPosition.BOTTOM);
-                return;
-              }
-              c.formStep.value = 2;
-            },
-          ),
+            onPressed: c.isStep1Valid ? () => c.formStep.value = 2 : null,
+          )),
           const SizedBox(height: 10),
           _CancelButton(c: c),
         ],
@@ -906,17 +899,10 @@ class _Step2Content extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
-          _NavButton(
+          Obx(() => _NavButton(
             label: 'Next',
-            onPressed: () {
-              if (c.formExamType.value.isEmpty) {
-                Get.snackbar('Required', 'Please select an exam type',
-                    snackPosition: SnackPosition.BOTTOM);
-                return;
-              }
-              c.formStep.value = 3;
-            },
-          ),
+            onPressed: c.isStep2Valid ? () => c.formStep.value = 3 : null,
+          )),
           const SizedBox(height: 10),
           _BackButton(c: c),
         ],
@@ -1258,9 +1244,10 @@ class _PublishButton extends StatelessWidget {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: c.isSubmitting.value ? null : c.submit,
+              onPressed: (c.isStep3Valid && !c.isSubmitting.value) ? c.submit : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryBlue,
+                disabledBackgroundColor: Colors.grey.shade300,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
@@ -1311,7 +1298,7 @@ class _DialogHeader extends StatelessWidget {
 
 class _NavButton extends StatelessWidget {
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   const _NavButton({required this.label, required this.onPressed});
 
   @override
@@ -1322,17 +1309,18 @@ class _NavButton extends StatelessWidget {
         width: double.infinity,
         height: 50,
         child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBlue,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
-        ),
-        child: Text(label,
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold)),
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryBlue,
+            disabledBackgroundColor: Colors.grey.shade300,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+          ),
+          child: Text(label,
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold)),
         ),
       ),
     );

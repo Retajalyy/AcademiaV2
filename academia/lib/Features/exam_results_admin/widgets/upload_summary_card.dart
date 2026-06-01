@@ -22,9 +22,9 @@ class UploadSummaryCard extends StatelessWidget {
             child: Text(
               'UPLOAD SUMMARY',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.65),
-                fontSize: 10,
-                letterSpacing: 1.0,
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 13,
+                letterSpacing: 0.8,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -60,8 +60,8 @@ class _Row extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.70),
-                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 16,
               ),
             ),
           ),
@@ -72,7 +72,7 @@ class _Row extends StatelessWidget {
               textAlign: TextAlign.end,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 13,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),

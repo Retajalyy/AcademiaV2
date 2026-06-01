@@ -48,9 +48,6 @@ class _BlueHeader extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16, top + 14, 16, 20),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(24),
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +79,7 @@ class _BlueHeader extends StatelessWidget {
                     'Exam Results',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -93,7 +90,7 @@ class _BlueHeader extends StatelessWidget {
                     'Upload and browse academic results',
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 12,
+                      fontSize: 15,
                     ),
                   ),
                 ],
@@ -170,7 +167,7 @@ class _StatBox extends StatelessWidget {
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -182,7 +179,7 @@ class _StatBox extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white.withOpacity(0.8),
-              fontSize: 11,
+              fontSize: 13,
             ),
           ),
         ],
@@ -203,7 +200,7 @@ class _UploadCtaCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       child: Material(
-        color: Colors.white,
+        color: const Color(0xFF0C4D83),
         borderRadius: BorderRadius.circular(14),
         elevation: 2,
         shadowColor: Colors.black12,
@@ -212,26 +209,26 @@ class _UploadCtaCard extends StatelessWidget {
           onTap: UploadBottomSheet.show,
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 14,
+              horizontal: 16,
+              vertical: 20,
             ),
             child: Row(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
-                    color: AppColors.secondaryYellow,
-                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.cloud_upload_outlined,
-                    color: Colors.white,
-                    size: 22,
+                    color: Color(0xFFFFC258),
+                    size: 28,
                   ),
                 ),
 
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
 
                 const Expanded(
                   child: Column(
@@ -240,19 +237,19 @@ class _UploadCtaCard extends StatelessWidget {
                       Text(
                         'Upload new results',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A2A4A),
+                          color: Colors.white,
                         ),
                       ),
 
-                      SizedBox(height: 2),
+                      SizedBox(height: 4),
 
                       Text(
                         'Publish grades directly to students',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+                          fontSize: 15,
+                          color: Colors.white70,
                         ),
                       ),
                     ],
@@ -261,8 +258,8 @@ class _UploadCtaCard extends StatelessWidget {
 
                 const Icon(
                   Icons.chevron_right,
-                  color: Colors.grey,
-                  size: 20,
+                  color: Colors.white70,
+                  size: 24,
                 ),
               ],
             ),
@@ -292,7 +289,7 @@ class _SearchBar extends StatelessWidget {
           hintText: 'Search results...',
           hintStyle: TextStyle(
             color: Colors.grey.shade400,
-            fontSize: 14,
+            fontSize: 16,
           ),
           prefixIcon: Icon(
             Icons.search,
@@ -376,7 +373,7 @@ class _FilterChips extends StatelessWidget {
                   child: Text(
                     tabs[i],
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: isSelected
                           ? FontWeight.w600
                           : FontWeight.normal,
@@ -409,7 +406,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         'UPLOADED RESULTS',
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 16,
           fontWeight: FontWeight.w700,
           color: Colors.grey.shade500,
           letterSpacing: 0.7,
