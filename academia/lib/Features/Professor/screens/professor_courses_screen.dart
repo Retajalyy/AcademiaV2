@@ -12,7 +12,7 @@ class ProfessorCoursesScreen extends StatelessWidget {
     final c = Get.put(ProfessorCoursesController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: const Color(0xFFF1F4FC),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -32,26 +32,33 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 26),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 26),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        borderRadius:
+            BorderRadius.vertical(bottom: Radius.circular(24)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: const Icon(Icons.arrow_back_rounded,
+                color: Colors.white, size: 24),
+          ),
+          const SizedBox(height: 14),
+          const Text(
             'Courses',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 24,
+              fontSize: 30,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 4),
-          Text(
+          const SizedBox(height: 4),
+          const Text(
             'View and manage this semester courses',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(color: Colors.white70, fontSize: 14),
           ),
         ],
       ),
@@ -65,11 +72,32 @@ class _Body extends StatelessWidget {
   final ProfessorCoursesController c;
   const _Body({required this.c});
 
+  // Colour palette for left bar + badges — cycles per card index
+  static const _palette = [
+    _CourseColor(
+      bar:      Color(0xFF1A4F8A),
+      badgeBg:  Color(0xFFDDEDFA),
+      badgeText: Color(0xFF1A4F8A),
+    ),
+    _CourseColor(
+      bar:      Color(0xFFB18334),
+      badgeBg:  Color(0xFFFFF3DF),
+      badgeText: Color(0xFFB18334),
+    ),
+    _CourseColor(
+      bar:      Color(0xFF5A7FA8),
+      badgeBg:  Color(0xFFE8EEF5),
+      badgeText: Color(0xFF5A7FA8),
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       if (c.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(
+            child: CircularProgressIndicator(
+                color: AppColors.primaryBlue));
       }
 
       if (c.courses.isEmpty) {
@@ -77,12 +105,12 @@ class _Body extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.book_outlined, size: 56, color: Colors.grey.shade300),
+              Icon(Icons.book_outlined,
+                  size: 56, color: Colors.grey.shade300),
               const SizedBox(height: 12),
-              Text(
-                'No courses assigned',
-                style: TextStyle(fontSize: 15, color: Colors.grey.shade500),
-              ),
+              Text('No courses assigned',
+                  style: TextStyle(
+                      fontSize: 15, color: Colors.grey.shade500)),
             ],
           ),
         );
@@ -91,22 +119,32 @@ class _Body extends StatelessWidget {
       return RefreshIndicator(
         onRefresh: c.refresh,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
           children: [
-            // Section label: "THIS SEMESTER • N COURSES"
+            // Section label
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 16),
               child: Text(
-                'THIS SEMESTER • ${c.courses.length} COURSES',
-                style: TextStyle(
-                  fontSize: 11,
+                'THIS SEMESTER – ${c.courses.length} COURSE${c.courses.length == 1 ? '' : 'S'}',
+                style: const TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade500,
+                  color: Color(0xFF9CA3AF),
                   letterSpacing: 0.8,
                 ),
               ),
             ),
-            ...c.courses.map((course) => _CourseCard(course: course)),
+
+            // Course cards
+            ...c.courses.asMap().entries.map((entry) {
+              final color = _palette[entry.key % _palette.length];
+              return _CourseCard(
+                course:      entry.value,
+                color:       color,
+                professorId: c.professorId,
+                isTA:        c.isTA.value,
+              );
+            }),
           ],
         ),
       );
@@ -118,97 +156,138 @@ class _Body extends StatelessWidget {
 
 class _CourseCard extends StatelessWidget {
   final ProfessorCourseModel course;
-  const _CourseCard({required this.course});
+  final _CourseColor         color;
+  final int                  professorId;
+  final bool                 isTA;
+  const _CourseCard({
+    required this.course,
+    required this.color,
+    required this.professorId,
+    required this.isTA,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () => Get.toNamed(
+        '/professorCourseDetail',
+        arguments: {
+          'course':      course,
+          'professorId': professorId,
+          'isTA':        isTA,
+        },
       ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => Get.toNamed(
-            '/professorCourseDetail',
-            arguments: {
-              'course': course,
-              'professorId': Get.find<ProfessorCoursesController>().professorId,
-            },
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Colored left bar
+              Container(
+                width: 5,
+                decoration: BoxDecoration(
+                  color: color.bar,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                ),
+              ),
+
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 10, 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Course name
-                      Text(
-                        course.courseName,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A2A4A),
-                        ),
+                      // Course name + chevron
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              course.courseName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A2B4A),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0F4FA),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              color: Colors.grey.shade500,
+                              size: 20,
+                            ),
+                          ),
+                        ],
                       ),
 
-                      const SizedBox(height: 6),
-
-                      // TA row
+                      // TA / Instructor row
                       if (course.taName.isNotEmpty) ...[
+                        const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.person_outline,
-                                size: 14, color: Colors.grey.shade500),
-                            const SizedBox(width: 4),
+                            Icon(Icons.person_outline_rounded,
+                                size: 15,
+                                color: Colors.grey.shade400),
+                            const SizedBox(width: 5),
                             Text(
-                              'TA ${course.taName}',
+                              '${isTA ? 'Dr.' : 'TA'}  ${course.taName}',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                              ),
+                                  fontSize: 13,
+                                  color: Colors.grey.shade500),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                      ] else ...[
-                        const SizedBox(height: 2),
                       ],
 
-                      // Section badges
-                      if (course.sectionLabels.isNotEmpty)
-                        Wrap(
-                          spacing: 6,
-                          children: course.sectionLabels
-                              .map((label) => _SectionBadge(label: label))
-                              .toList(),
+                      // Groups row
+                      if (course.sectionLabels.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Icon(Icons.people_alt_outlined,
+                                size: 15,
+                                color: Colors.grey.shade400),
+                            const SizedBox(width: 8),
+                            Wrap(
+                              spacing: 6,
+                              children: course.sectionLabels
+                                  .map((label) => _GroupBadge(
+                                        label: label,
+                                        bg: color.badgeBg,
+                                        textColor: color.badgeText,
+                                      ))
+                                  .toList(),
+                            ),
+                          ],
                         ),
+                      ],
                     ],
                   ),
                 ),
-
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.grey.shade400,
-                  size: 22,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -216,28 +295,41 @@ class _CourseCard extends StatelessWidget {
   }
 }
 
-// ── Section Badge ─────────────────────────────────────────────────────────────
+// ── Group Badge ───────────────────────────────────────────────────────────────
 
-class _SectionBadge extends StatelessWidget {
+class _GroupBadge extends StatelessWidget {
   final String label;
-  const _SectionBadge({required this.label});
+  final Color  bg;
+  final Color  textColor;
+  const _GroupBadge(
+      {required this.label,
+       required this.bg,
+       required this.textColor});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F0FE),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF2468A0),
+  Widget build(BuildContext context) => Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
         ),
-      ),
-    );
-  }
+        child: Text(label,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: textColor)),
+      );
+}
+
+// ── Colour data ───────────────────────────────────────────────────────────────
+
+class _CourseColor {
+  final Color bar;
+  final Color badgeBg;
+  final Color badgeText;
+  const _CourseColor(
+      {required this.bar,
+       required this.badgeBg,
+       required this.badgeText});
 }

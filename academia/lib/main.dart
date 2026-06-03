@@ -27,6 +27,12 @@ import 'Features/Professor/screens/professor_course_detail_screen.dart';
 import 'Features/Navigation/screens/navigation_screen.dart';
 import 'Features/Auth/screens/forgot_password_screen.dart';
 import 'Features/Dashboard_admin/screens/password_reset_screen.dart';
+import 'Features/OutstandingFees_admin/screens/outstanding_fees_screen.dart';
+import 'Features/Professor/screens/upload_material_screen.dart';
+import 'Features/Professor/screens/take_attendance_screen.dart';
+import 'Features/Professor/screens/attendance_records_screen.dart';
+import 'Features/Professor/screens/attendance_session_detail_screen.dart';
+import 'Features/Professor/screens/students_at_risk_screen.dart';
 import 'Features/Announcements/screens/announcements_screen.dart';
 import 'Features/Announcements/screens/admin_announcements_screen.dart';
 import 'Features/Announcements/screens/create_announcement_screen.dart';
@@ -210,6 +216,30 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/passwordResetRequests',
           page: () => const PasswordResetScreen(),
+        ),
+        GetPage(
+          name: '/outstandingFees',
+          page: () => const OutstandingFeesScreen(),
+        ),
+        GetPage(
+          name: '/uploadMaterial',
+          page: () => const UploadMaterialScreen(),
+        ),
+        GetPage(
+          name: '/takeAttendance',
+          page: () => const TakeAttendanceScreen(),
+        ),
+        GetPage(
+          name: '/attendanceRecords',
+          page: () => const AttendanceRecordsScreen(),
+        ),
+        GetPage(
+          name: '/attendanceSessionDetail',
+          page: () => const AttendanceSessionDetailScreen(),
+        ),
+        GetPage(
+          name: '/studentsAtRisk',
+          page: () => const StudentsAtRiskScreen(),
         ),
         GetPage(
           name: '/announcements',

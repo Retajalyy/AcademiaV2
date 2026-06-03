@@ -6,11 +6,12 @@ import '../services/professor_service.dart';
 class ProfessorScheduleController extends GetxController {
   final ProfessorService _service = ProfessorService();
 
-  var classes = <ProfessorScheduleItem>[].obs;
-  var isLoading = true.obs;
-  var selectedDayIndex = 0.obs; // 0 = Sunday … 6 = Saturday
+  var classes          = <ProfessorScheduleItem>[].obs;
+  var isLoading        = true.obs;
+  var selectedDayIndex = 0.obs;
 
-  int _professorId = 0;
+  int  _professorId = 0;
+  bool _isTA        = false;
 
   static const _fullDays = [
     'Sunday', 'Monday', 'Tuesday', 'Wednesday',
@@ -20,7 +21,6 @@ class ProfessorScheduleController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Map DateTime.weekday (1=Mon…7=Sun) → our 0=Sun…6=Sat index
     selectedDayIndex.value = DateTime.now().weekday % 7;
     _init();
   }
@@ -28,8 +28,10 @@ class ProfessorScheduleController extends GetxController {
   Future<void> _init() async {
     isLoading.value = true;
     try {
-      final userId = Supabase.instance.client.auth.currentUser!.id;
-      _professorId = await _service.getProfessorId(userId);
+      final userId   = Supabase.instance.client.auth.currentUser!.id;
+      final info     = await _service.getProfessorInfo(userId);
+      _professorId   = info.id;
+      _isTA          = info.isTA;
       await _loadForDay(selectedDayIndex.value);
     } catch (e) {
       Get.snackbar('Error', 'Failed to load schedule: $e');
@@ -50,7 +52,8 @@ class ProfessorScheduleController extends GetxController {
   }
 
   Future<void> _loadForDay(int index) async {
-    classes.value =
-        await _service.getScheduleForDay(_professorId, _fullDays[index]);
+    classes.value = await _service.getScheduleForDay(
+        _professorId, _fullDays[index],
+        isTA: _isTA);
   }
 }

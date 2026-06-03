@@ -30,16 +30,22 @@ class StudentAdminModel {
     final name    = profile['full_name'] as String?
         ?? '${profile['fname']} ${profile['lname']}';
 
-    // Latest registration group
-    final regs = row['student_registrations'] as List? ?? [];
+    // Latest registration group — handle Map or List return from PostgREST
+    final regsRaw = row['student_registrations'];
+    final regs = regsRaw is List
+        ? regsRaw
+        : (regsRaw is Map ? [regsRaw] : <dynamic>[]);
     String groupLabel = '';
     if (regs.isNotEmpty) {
       final grp = regs.last['registration_groups'];
       if (grp is Map) groupLabel = grp['label'] as String? ?? '';
     }
 
-    // Average GPA across all semesters
-    final sems = row['semester_results'] as List? ?? [];
+    // Average GPA — handle Map or List return
+    final semsRaw = row['semester_results'];
+    final sems = semsRaw is List
+        ? semsRaw
+        : (semsRaw is Map ? [semsRaw] : <dynamic>[]);
     double gpa = 0;
     final gpas = sems
         .map((s) => (s['gpa'] as num?)?.toDouble())

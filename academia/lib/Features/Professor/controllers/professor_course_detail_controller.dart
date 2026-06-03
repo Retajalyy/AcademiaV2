@@ -8,26 +8,29 @@ class ProfessorCourseDetailController extends GetxController {
   final _service = ProfessorService();
 
   late final ProfessorCourseModel course;
-  late final int professorId;
+  late final int  professorId;
+  late final bool isTA;
 
-  final isLoading = true.obs;
+  final isLoading   = true.obs;
   final isUploading = false.obs;
-  final detail = Rxn<ProfessorCourseDetailModel>();
+  final detail      = Rxn<ProfessorCourseDetailModel>();
 
   @override
   void onInit() {
     super.onInit();
-    final args = Get.arguments as Map<String, dynamic>;
-    course = args['course'] as ProfessorCourseModel;
+    final args  = Get.arguments as Map<String, dynamic>;
+    course      = args['course']      as ProfessorCourseModel;
     professorId = args['professorId'] as int;
+    isTA        = args['isTA']        as bool? ?? false;
     _load();
   }
 
   Future<void> _load() async {
     isLoading.value = true;
     try {
-      detail.value =
-          await _service.getCourseDetail(professorId, course.courseId);
+      detail.value = await _service.getCourseDetail(
+          professorId, course.courseId,
+          isTA: isTA);
     } catch (e) {
       Get.snackbar('Error', 'Failed to load course details: $e');
     } finally {

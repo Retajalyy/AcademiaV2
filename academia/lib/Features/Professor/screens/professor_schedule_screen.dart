@@ -12,7 +12,7 @@ class ProfessorScheduleScreen extends StatelessWidget {
     final c = Get.put(ProfessorScheduleController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: const Color(0xFFF1F4FC),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

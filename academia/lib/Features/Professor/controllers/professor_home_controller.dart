@@ -6,11 +6,18 @@ import '../services/professor_service.dart';
 class ProfessorHomeController extends GetxController {
   final ProfessorService _service = ProfessorService();
 
-  var professorName = ''.obs;
-  var todaySchedule = <ProfessorScheduleItem>[].obs;
-  var nextClass = Rxn<ProfessorScheduleItem>();
-  var overviewStats = <String, int>{}.obs;
-  var isLoading = true.obs;
+  final professorName    = ''.obs;
+  final professorTitle   = 'Dr'.obs;
+  final isTA             = false.obs;
+  int   professorId      = 0;
+  final todaySchedule    = <ProfessorScheduleItem>[].obs;
+  final nextClass        = Rxn<ProfessorScheduleItem>();
+  final overviewStats    = <String, int>{}.obs;
+  final isLoading        = true.obs;
+
+  final studentsAtRisk   = 0.obs;
+  final latestAssignment = Rxn<Map<String, dynamic>>();
+  final nextExamInfo     = Rxn<Map<String, dynamic>>();
 
   @override
   void onInit() {
@@ -25,23 +32,32 @@ class ProfessorHomeController extends GetxController {
 
       final results = await Future.wait([
         _service.getProfessorName(userId),
-        _service.getProfessorId(userId),
+        _service.getProfessorInfo(userId),
       ]);
 
       final name = results[0] as String;
-      final professorId = results[1] as int;
+      final info = results[1] as ({int id, bool isTA, String title});
 
-      professorName.value = name;
+      professorName.value  = name;
+      isTA.value           = info.isTA;
+      professorTitle.value = info.title;
+      professorId          = info.id;
 
       final data = await Future.wait([
-        _service.getTodaySchedule(professorId),
-        _service.getNextClass(professorId),
-        _service.getOverviewStats(professorId),
+        _service.getTodaySchedule(info.id, isTA: info.isTA),
+        _service.getNextClass(info.id, isTA: info.isTA),
+        _service.getOverviewStats(info.id, isTA: info.isTA),
+        _service.getStudentsAtRiskCount(info.id, isTA: info.isTA),
+        _service.getLatestAssignmentInfo(info.id, isTA: info.isTA),
+        _service.getNextExamInfo(info.id, isTA: info.isTA),
       ]);
 
-      todaySchedule.value = data[0] as List<ProfessorScheduleItem>;
-      nextClass.value = data[1] as ProfessorScheduleItem?;
-      overviewStats.value = data[2] as Map<String, int>;
+      todaySchedule.value    = data[0] as List<ProfessorScheduleItem>;
+      nextClass.value        = data[1] as ProfessorScheduleItem?;
+      overviewStats.value    = data[2] as Map<String, int>;
+      studentsAtRisk.value   = data[3] as int;
+      latestAssignment.value = data[4] as Map<String, dynamic>?;
+      nextExamInfo.value     = data[5] as Map<String, dynamic>?;
     } catch (e) {
       Get.snackbar('Error', 'Failed to load data: $e');
     } finally {

@@ -12,22 +12,22 @@ class ProfessorCourseDetailScreen extends StatelessWidget {
     final c = Get.put(ProfessorCourseDetailController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
-      body: SafeArea(
-        child: Obx(() => Column(
-              children: [
-                _Header(c: c),
-                Expanded(
-                  child: c.isLoading.value
-                      ? const Center(child: CircularProgressIndicator())
-                      : RefreshIndicator(
-                          onRefresh: c.refresh,
-                          child: _Body(c: c),
-                        ),
-                ),
-              ],
-            )),
-      ),
+      backgroundColor: const Color(0xFFF1F4FC),
+      body: Obx(() => Column(
+            children: [
+              _Header(c: c),
+              Expanded(
+                child: c.isLoading.value
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                            color: AppColors.primaryBlue))
+                    : RefreshIndicator(
+                        onRefresh: c.refresh,
+                        child: _Body(c: c),
+                      ),
+              ),
+            ],
+          )),
     );
   }
 }
@@ -42,99 +42,170 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final detail = c.detail.value;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
+      color: AppColors.primaryBlue,
+      padding: const EdgeInsets.fromLTRB(16, 54, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Back row
-          Row(
-            children: [
-              GestureDetector(
-                onTap: Get.back,
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'Courses',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          // Back button
+          GestureDetector(
+            onTap: Get.back,
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.chevron_left_rounded,
+                    color: Colors.white70, size: 28),
+                Text('Courses',
+                    style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500)),
+              ],
+            ),
           ),
+
           const SizedBox(height: 16),
-          // Course name + year badge
+
+          // Course icon + name + badges
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Course icon
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.calculate_outlined,
+                    color: Colors.white, size: 28),
+              ),
+              const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  c.course.courseName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      c.course.courseName,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        if (detail != null && detail.level > 0)
+                          _HeaderBadge('Year ${detail.level}'),
+                        if (detail != null && detail.major.isNotEmpty)
+                          _HeaderBadge(detail.major),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              if (detail != null && detail.level > 0)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Year ${detail.level}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
             ],
           ),
-          const SizedBox(height: 6),
-          // Course code + major
-          Row(
-            children: [
-              Text(
-                c.course.courseCode,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75),
-                  fontSize: 13,
-                ),
+
+          const SizedBox(height: 20),
+
+          // Stats row inside header
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.2)),
               ),
-              if (detail != null && detail.major.isNotEmpty) ...[
-                Text(
-                  '  •  ',
-                  style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
-                ),
-                Text(
-                  detail.major,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontSize: 13,
+            ),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  _HeaderStat(
+                    value: detail != null
+                        ? '${detail.totalStudents}'
+                        : '—',
+                    label: 'Students',
                   ),
-                ),
-              ],
-            ],
+                  _VerticalDivider(),
+                  _HeaderStat(
+                    value: detail != null
+                        ? '${detail.groupCount}'
+                        : '—',
+                    label: 'Groups',
+                  ),
+                  _VerticalDivider(),
+                  _HeaderStat(
+                    value: detail != null && detail.major.isNotEmpty
+                        ? detail.major
+                        : '—',
+                    label: 'Major',
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+}
+
+class _HeaderBadge extends StatelessWidget {
+  final String label;
+  const _HeaderBadge(this.label);
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(label,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w600)),
+      );
+}
+
+class _HeaderStat extends StatelessWidget {
+  final String value;
+  final String label;
+  const _HeaderStat({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            children: [
+              Text(value,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 2),
+              Text(label,
+                  style: const TextStyle(
+                      color: Colors.white70, fontSize: 12)),
+            ],
+          ),
+        ),
+      );
+}
+
+class _VerticalDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 1,
+        margin: const EdgeInsets.symmetric(vertical: 12),
+        color: Colors.white.withValues(alpha: 0.2),
+      );
 }
 
 // ── Body ──────────────────────────────────────────────────────────────────────
@@ -149,116 +220,41 @@ class _Body extends StatelessWidget {
     if (detail == null) return const SizedBox.shrink();
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
       children: [
-        _StatsRow(detail: detail),
-        const SizedBox(height: 20),
-        _MaterialsSection(detail: detail, courseId: c.course.courseId, ctrl: c),
-        const SizedBox(height: 20),
+        _SectionLabel('COURSE MATERIAL'),
+        const SizedBox(height: 12),
+        _MaterialsSection(
+            detail: detail, courseId: c.course.courseId, ctrl: c),
+        const SizedBox(height: 24),
+        _SectionLabel('ACTIONS'),
+        const SizedBox(height: 12),
         _ActionsGrid(c: c),
-        const SizedBox(height: 20),
-        _GroupsSection(detail: detail),
       ],
     );
   }
 }
 
-// ── Stats Row ─────────────────────────────────────────────────────────────────
+// ── Section Label ─────────────────────────────────────────────────────────────
 
-class _StatsRow extends StatelessWidget {
-  final ProfessorCourseDetailModel detail;
-  const _StatsRow({required this.detail});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            icon: Icons.people_alt_outlined,
-            value: '${detail.totalStudents}',
-            label: 'Students',
-            color: AppColors.primaryBlue,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.grid_view_rounded,
-            value: '${detail.groupCount}',
-            label: 'Groups',
-            color: const Color(0xFF7C3AED),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.school_outlined,
-            value: detail.major.isEmpty ? '—' : detail.major,
-            label: 'Major',
-            color: const Color(0xFFF59E0B),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color color;
-  const _StatCard(
-      {required this.icon,
-      required this.value,
-      required this.label,
-      required this.color});
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
+  Widget build(BuildContext context) => Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-          ),
+          Text(text,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF9CA3AF),
+                  letterSpacing: 0.8)),
+          const SizedBox(width: 10),
+          const Expanded(
+              child: Divider(color: Color(0xFFD1D5DB), thickness: 1)),
         ],
-      ),
-    );
-  }
+      );
 }
 
 // ── Materials Section ─────────────────────────────────────────────────────────
@@ -267,104 +263,98 @@ class _MaterialsSection extends StatelessWidget {
   final ProfessorCourseDetailModel detail;
   final int courseId;
   final ProfessorCourseDetailController ctrl;
-  const _MaterialsSection({required this.detail, required this.courseId, required this.ctrl});
+  const _MaterialsSection(
+      {required this.detail,
+       required this.courseId,
+       required this.ctrl});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                'Course Material',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A2B4A),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F0FE),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${detail.materials.length} Files',
+          // Top bar: file count + upload button
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            child: Row(
+              children: [
+                Text(
+                  '${detail.materials.length} file${detail.materials.length == 1 ? '' : 's'} uploaded',
                   style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryBlue,
-                  ),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A2B4A)),
                 ),
-              ),
-              const Spacer(),
-              Obx(() => GestureDetector(
-                onTap: ctrl.isUploading.value ? null : ctrl.uploadFile,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ctrl.isUploading.value
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add, color: Colors.white, size: 14),
-                            SizedBox(width: 4),
-                            Text(
-                              'New File',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                const Spacer(),
+                Obx(() => GestureDetector(
+                      onTap: ctrl.isUploading.value
+                          ? null
+                          : () async {
+                              final uploaded = await Get.toNamed(
+                                '/uploadMaterial',
+                                arguments: {'course': ctrl.course},
+                              );
+                              if (uploaded == true) ctrl.refresh();
+                            },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                ),
-              )),
-            ],
-          ),
-          if (detail.materials.isEmpty) ...[
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                'No materials uploaded yet',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-              ),
+                        child: ctrl.isUploading.value
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white))
+                            : const Text('+ New File',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700)),
+                      ),
+                    )),
+              ],
             ),
-            const SizedBox(height: 4),
-          ] else ...[
-            const SizedBox(height: 12),
-            ...detail.materials.map((m) => _MaterialRow(material: m)),
-          ],
+          ),
+
+          const Divider(height: 1, color: Color(0xFFF3F4F6)),
+
+          // File list
+          if (detail.materials.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: Text('No materials uploaded yet',
+                    style: TextStyle(
+                        fontSize: 13, color: Colors.grey.shade400)),
+              ),
+            )
+          else
+            Column(
+              children: detail.materials
+                  .asMap()
+                  .entries
+                  .map((e) => _MaterialRow(
+                        material: e.value,
+                        isLast: e.key == detail.materials.length - 1,
+                      ))
+                  .toList(),
+            ),
         ],
       ),
     );
@@ -373,75 +363,82 @@ class _MaterialsSection extends StatelessWidget {
 
 class _MaterialRow extends StatelessWidget {
   final CourseMaterialModel material;
-  const _MaterialRow({required this.material});
+  final bool isLast;
+  const _MaterialRow(
+      {required this.material, required this.isLast});
 
-  Color get _typeColor {
-    switch (material.fileType) {
-      case 'PDF':
-        return const Color(0xFFEF4444);
-      case 'DOCX':
-      case 'DOC':
-        return const Color(0xFF2563EB);
-      case 'PPTX':
-      case 'PPT':
-        return const Color(0xFFF97316);
-      default:
-        return Colors.grey;
-    }
+  bool get _isAssignment =>
+      material.fileType == 'DOCX' || material.fileType == 'DOC';
+
+  Color get _iconBg => _isAssignment
+      ? const Color(0xFFFFF3DF)
+      : const Color(0xFFDDEDFA);
+
+  Color get _iconColor =>
+      _isAssignment ? AppColors.assignmentColor : AppColors.primaryBlue;
+
+  IconData get _icon => _isAssignment
+      ? Icons.edit_document
+      : Icons.insert_drive_file_outlined;
+
+  String get _subtitle {
+    final parts = <String>[material.fileType];
+    if (material.sizeLabel.isNotEmpty) parts.add(material.sizeLabel);
+    return parts.join(' . ');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: _typeColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Text(
-                material.fileType.length > 4
-                    ? material.fileType.substring(0, 4)
-                    : material.fileType,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: _typeColor,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              // File icon
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: _iconBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(_icon, color: _iconColor, size: 22),
+              ),
+              const SizedBox(width: 12),
+
+              // Name + subtitle
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(material.name,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A2B4A))),
+                    const SizedBox(height: 2),
+                    Text(_subtitle,
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF9CA3AF))),
+                  ],
                 ),
               ),
-            ),
+
+              // Eye icon
+              Icon(Icons.visibility_outlined,
+                  size: 20, color: Colors.grey.shade400),
+              const SizedBox(width: 12),
+
+              // Three dots
+              Icon(Icons.more_vert_rounded,
+                  size: 20, color: Colors.grey.shade400),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  material.name,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A2B4A),
-                  ),
-                ),
-                if (material.sizeLabel.isNotEmpty)
-                  Text(
-                    material.sizeLabel,
-                    style:
-                        TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                  ),
-              ],
-            ),
-          ),
-          Icon(Icons.download_outlined,
-              size: 20, color: Colors.grey.shade400),
-        ],
-      ),
+        ),
+        if (!isLast)
+          const Divider(height: 1, color: Color(0xFFF3F4F6), indent: 14, endIndent: 14),
+      ],
     );
   }
 }
@@ -457,73 +454,77 @@ class _ActionsGrid extends StatelessWidget {
     final actions = [
       _ActionItem(
         icon: Icons.fact_check_outlined,
-        label: 'Take Attendance',
-        color: AppColors.primaryBlue,
-        onTap: () => Get.snackbar('Attendance',
-            'Attendance tracking coming soon',
+        label: 'Take\nAttendance',
+        iconColor: AppColors.primaryBlue,
+        iconBg: AppColors.lightblue,
+        onTap: () => Get.toNamed('/takeAttendance', arguments: {
+          'courseId':    c.course.courseId,
+          'courseName':  c.course.courseName,
+          'professorId': c.professorId,
+          'isTA':        c.isTA,
+        }),
+      ),
+      _ActionItem(
+        icon: Icons.edit_note_outlined,
+        label: c.isTA
+            ? 'Grade Quizzes\n& Assignments'
+            : 'Assign\nGrades',
+        iconColor: AppColors.primaryBlue,
+        iconBg: AppColors.lightblue,
+        onTap: () => Get.snackbar(
+            c.isTA ? 'TA Access' : 'Coming soon',
+            c.isTA
+                ? 'You can grade quizzes & assignments only'
+                : 'Assign Grades',
             snackPosition: SnackPosition.BOTTOM),
       ),
       _ActionItem(
-        icon: Icons.grade_outlined,
-        label: 'Assign Grades',
-        color: const Color(0xFF7C3AED),
-        onTap: () => Get.snackbar('Grades', 'Grade assignment coming soon',
+        icon: Icons.file_copy_outlined,
+        label: 'View\nSubmissions',
+        iconColor: AppColors.assignmentColor,
+        iconBg: AppColors.LightYellow,
+        onTap: () => Get.snackbar('Coming soon', 'View Submissions',
             snackPosition: SnackPosition.BOTTOM),
       ),
       _ActionItem(
-        icon: Icons.bar_chart_rounded,
-        label: 'View Results',
-        color: const Color(0xFFF59E0B),
-        onTap: () => Get.snackbar('Results', 'Results view coming soon',
-            snackPosition: SnackPosition.BOTTOM),
-      ),
-      _ActionItem(
-        icon: Icons.history_edu_outlined,
-        label: 'Attendance Records',
-        color: const Color(0xFF10B981),
-        onTap: () => Get.snackbar('Records', 'Attendance records coming soon',
-            snackPosition: SnackPosition.BOTTOM),
+        icon: Icons.calendar_month_outlined,
+        label: 'Attendance\nRecords',
+        iconColor: AppColors.assignmentColor,
+        iconBg: AppColors.LightYellow,
+        onTap: () => Get.toNamed('/attendanceRecords', arguments: {
+          'courseId':    c.course.courseId,
+          'courseName':  c.course.courseName,
+          'professorId': c.professorId,
+          'isTA':        c.isTA,
+        }),
       ),
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Actions',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1A2B4A),
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 2.2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          children: actions
-              .map((a) => _ActionCard(item: a))
-              .toList(),
-        ),
-      ],
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: actions.map((a) => _ActionCard(item: a)).toList(),
     );
   }
 }
 
 class _ActionItem {
-  final IconData icon;
-  final String label;
-  final Color color;
+  final IconData     icon;
+  final String       label;
+  final Color        iconColor;
+  final Color        iconBg;
   final VoidCallback onTap;
-  const _ActionItem(
-      {required this.icon,
-      required this.label,
-      required this.color,
-      required this.onTap});
+  const _ActionItem({
+    required this.icon,
+    required this.label,
+    required this.iconColor,
+    required this.iconBg,
+    required this.onTap,
+  });
 }
 
 class _ActionCard extends StatelessWidget {
@@ -531,170 +532,45 @@ class _ActionCard extends StatelessWidget {
   const _ActionCard({required this.item});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: item.onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: item.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(9),
-              ),
-              child: Icon(item.icon, color: item.color, size: 17),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                item.label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A2B4A),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Groups Section ─────────────────────────────────────────────────────────────
-
-class _GroupsSection extends StatelessWidget {
-  final ProfessorCourseDetailModel detail;
-  const _GroupsSection({required this.detail});
-
-  @override
-  Widget build(BuildContext context) {
-    if (detail.groups.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Groups',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1A2B4A),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: item.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: Column(
-            children: detail.groups
-                .asMap()
-                .entries
-                .map((entry) => _GroupRow(
-                      group: entry.value,
-                      isLast: entry.key == detail.groups.length - 1,
-                    ))
-                .toList(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _GroupRow extends StatelessWidget {
-  final CourseGroupInfo group;
-  final bool isLast;
-  const _GroupRow({required this.group, required this.isLast});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Container(
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F0FE),
+                  color: item.iconBg,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Center(
-                  child: Text(
-                    group.label.length > 3
-                        ? group.label.substring(0, 3)
-                        : group.label,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryBlue,
-                    ),
-                  ),
-                ),
+                child: Icon(item.icon, color: item.iconColor, size: 20),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  group.label,
+                  item.label,
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A2B4A),
-                  ),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A2B4A),
+                      height: 1.3),
                 ),
-              ),
-              Row(
-                children: [
-                  Icon(Icons.people_outline,
-                      size: 14, color: Colors.grey.shade500),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${group.studentCount} students',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
         ),
-        if (!isLast)
-          Divider(
-            height: 1,
-            color: Colors.grey.shade100,
-            indent: 16,
-            endIndent: 16,
-          ),
-      ],
-    );
-  }
+      );
 }

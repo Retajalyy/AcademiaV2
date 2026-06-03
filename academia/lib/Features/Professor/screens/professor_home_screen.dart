@@ -13,112 +13,119 @@ class ProfessorHomeScreen extends StatelessWidget {
     final c = Get.put(ProfessorHomeController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
-      body: SafeArea(
-        child: Obx(() {
-          if (c.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return RefreshIndicator(
-            onRefresh: c.refresh,
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _Header(c: c)),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(child: _NextClassCard(c: c)),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(child: _TodayScheduleSection(c: c)),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverToBoxAdapter(child: _AcademicOverviewSection(c: c)),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
-            ),
-          );
-        }),
-      ),
+      backgroundColor: const Color(0xFFF1F4FC),
+      body: Obx(() {
+        if (c.isLoading.value) {
+          return const Center(child: CircularProgressIndicator(
+              color: AppColors.primaryBlue));
+        }
+        return RefreshIndicator(
+          onRefresh: c.refresh,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader(c)),
+              const SliverToBoxAdapter(child: SizedBox(height: 22)),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverToBoxAdapter(
+                    child: _TodayScheduleSection(c: c)),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 22)),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverToBoxAdapter(
+                    child: _AcademicOverviewSection(c: c)),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            ],
+          ),
+        );
+      }),
     );
   }
-}
 
-// ── Header ───────────────────────────────────────────────────────────────────
+  // ── Header (greeting + next class embedded) ──────────────────────────────────
 
-class _Header extends StatelessWidget {
-  final ProfessorHomeController c;
-  const _Header({required this.c});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildHeader(ProfessorHomeController c) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
-      child: Obx(() => Row(
+      color: AppColors.primaryBlue,
+      padding: const EdgeInsets.fromLTRB(20, 54, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Greeting row
+          Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
+                child: Obx(() => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       c.greeting,
                       style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                          color: Colors.white70, fontSize: 16),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Dr. ${c.professorName.value}',
+                      '${c.professorTitle.value}. ${c.professorName.value}',
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
-                ),
+                )),
               ),
-              _Avatar(initials: c.avatarInitials),
+              // Yellow avatar
+              Obx(() => Container(
+                    width: 50,
+                    height: 50,
+                    decoration: const BoxDecoration(
+                      color: AppColors.accentAI,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        c.avatarInitials,
+                        style: const TextStyle(
+                            color: AppColors.primaryBlue,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  )),
             ],
-          )),
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  final String initials;
-  const _Avatar({required this.initials});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 46,
-      height: 46,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white38, width: 1.5),
-      ),
-      child: Center(
-        child: Text(
-          initials,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
           ),
-        ),
+
+          const SizedBox(height: 18),
+
+          // Next class card — embedded in header
+          Obx(() {
+            final item = c.nextClass.value;
+            if (item == null) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.check_circle_outline,
+                        color: Colors.white60, size: 20),
+                    SizedBox(width: 10),
+                    Text('No more classes today',
+                        style: TextStyle(
+                            color: Colors.white60, fontSize: 14)),
+                  ],
+                ),
+              );
+            }
+            return _NextClassCard(item: item);
+          }),
+        ],
       ),
     );
   }
@@ -127,112 +134,82 @@ class _Avatar extends StatelessWidget {
 // ── Next Class Card ───────────────────────────────────────────────────────────
 
 class _NextClassCard extends StatelessWidget {
-  final ProfessorHomeController c;
-  const _NextClassCard({required this.c});
+  final ProfessorScheduleItem item;
+  const _NextClassCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final item = c.nextClass.value;
-
-      if (item == null) {
-        return Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.primaryBlue,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: const Row(
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // NEXT CLASS label + time badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.check_circle_outline, color: Colors.white70, size: 22),
-              SizedBox(width: 10),
-              Text(
-                'No more classes today',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+              const Text(
+                'NEXT CLASS',
+                style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.4,
+                ),
               ),
+              _TimeBadge(item: item),
             ],
           ),
-        );
-      }
+          const SizedBox(height: 10),
 
-      return Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.primaryBlue,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryBlue.withValues(alpha: 0.35),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+          // Course name
+          Text(
+            item.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'NEXT CLASS',
-                  style: TextStyle(
-                    color: Colors.white60,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                _TimeBadge(item: item),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              item.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                const Icon(Icons.access_time, color: Colors.white70, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  item.time,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
+          ),
+          const SizedBox(height: 10),
+
+          // Time + room + group in one row
+          Row(
+            children: [
+              const Icon(Icons.access_time_outlined,
+                  color: Colors.white70, size: 15),
+              const SizedBox(width: 5),
+              Text('${item.startTime} - ${item.endTime}',
+                  style: const TextStyle(
+                      color: Colors.white70, fontSize: 13)),
+              if (item.location.isNotEmpty) ...[
+                const SizedBox(width: 14),
                 const Icon(Icons.location_on_outlined,
-                    color: Colors.white70, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  item.location.isNotEmpty ? item.location : '—',
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                if (item.groups.isNotEmpty) ...[
-                  const SizedBox(width: 10),
-                  const Icon(Icons.group_outlined,
-                      color: Colors.white70, size: 14),
-                  const SizedBox(width: 4),
-                  Text(
-                    item.groups.join(' · '),
-                    style:
-                        const TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                ],
+                    color: Colors.white70, size: 15),
+                const SizedBox(width: 5),
+                Text(item.location,
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 13)),
               ],
-            ),
-          ],
-        ),
-      );
-    });
+              if (item.groups.isNotEmpty) ...[
+                const SizedBox(width: 14),
+                const Icon(Icons.group_outlined,
+                    color: Colors.white70, size: 15),
+                const SizedBox(width: 5),
+                Text(item.groups.join(' · '),
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 13)),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -240,27 +217,7 @@ class _TimeBadge extends StatelessWidget {
   final ProfessorScheduleItem item;
   const _TimeBadge({required this.item});
 
-  @override
-  Widget build(BuildContext context) {
-    final label = _label();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  String _label() {
+  String get _label {
     final parts = item.startTime.split(':');
     if (parts.length < 2) return item.startTime;
     final now = TimeOfDay.now();
@@ -268,9 +225,27 @@ class _TimeBadge extends StatelessWidget {
     final nowMins = now.hour * 60 + now.minute;
     final diff = classMins - nowMins;
     if (diff <= 0) return 'Starting now';
-    if (diff < 60) return 'in $diff min';
-    return 'in ${diff ~/ 60}h ${diff % 60}min';
+    if (diff < 60) return 'In $diff min';
+    return 'In ${diff ~/ 60}h ${diff % 60}m';
   }
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.accentAI,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          _label,
+          style: const TextStyle(
+            color: AppColors.primaryBlue,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
 }
 
 // ── Today's Schedule ──────────────────────────────────────────────────────────
@@ -292,64 +267,44 @@ class _TodayScheduleSection extends StatelessWidget {
               const Text(
                 "Today's Schedule",
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A2A4A),
-                ),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A2A4A)),
               ),
               GestureDetector(
-                onTap: () => Get.find<ProfessorNavController>().goTo(1),
+                onTap: () =>
+                    Get.find<ProfessorNavController>().goTo(1),
                 child: const Text(
                   'Full Schedule >',
                   style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w500,
-                  ),
+                      fontSize: 14,
+                      color: AppColors.primaryBlue,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           if (items.isEmpty)
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Center(
-                child: Text(
-                  'No classes scheduled for today',
-                  style: TextStyle(color: Colors.grey),
-                ),
+                child: Text('No classes scheduled for today',
+                    style: TextStyle(color: Colors.grey)),
               ),
             )
           else
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: items.length,
-                separatorBuilder: (_, _) => const Divider(
-                  height: 1,
-                  indent: 16,
-                  endIndent: 16,
-                  color: Color(0xFFEEEEEE),
-                ),
-                itemBuilder: (_, i) => _ScheduleItem(item: items[i]),
-              ),
+            Column(
+              children: items
+                  .map((item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _ScheduleItem(item: item),
+                      ))
+                  .toList(),
             ),
         ],
       );
@@ -361,43 +316,67 @@ class _ScheduleItem extends StatelessWidget {
   final ProfessorScheduleItem item;
   const _ScheduleItem({required this.item});
 
+  Color get _barColor {
+    switch (item.type.toLowerCase()) {
+      case 'lecture':  return AppColors.primaryBlue;
+      case 'section':  return AppColors.accentAI;
+      default:         return AppColors.primaryBlue;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Time column
           SizedBox(
-            width: 44,
+            width: 42,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.startTime,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A2A4A),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  item.endTime,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
-                ),
+                Text(item.startTime,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1A2A4A))),
+                const SizedBox(height: 3),
+                Text(item.endTime,
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF9CA3AF))),
               ],
             ),
           ),
+
+          const SizedBox(width: 10),
+
+          // Colored left bar
           Container(
-            width: 1,
-            height: 44,
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-            color: const Color(0xFFEEEEEE),
+            width: 3,
+            height: 46,
+            decoration: BoxDecoration(
+              color: _barColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
+
+          const SizedBox(width: 12),
+
+          // Course info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,41 +387,22 @@ class _ScheduleItem extends StatelessWidget {
                       child: Text(
                         item.title,
                         style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A2A4A),
-                        ),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primaryBlue),
                       ),
                     ),
                     _TypeBadge(type: item.type),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    if (item.location.isNotEmpty)
-                      Text(
-                        item.location,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    if (item.location.isNotEmpty && item.groups.isNotEmpty)
-                      Text(
-                        ' · ',
-                        style:
-                            TextStyle(fontSize: 12, color: Colors.grey.shade400),
-                      ),
-                    if (item.groups.isNotEmpty)
-                      Text(
-                        item.groups.join(' · '),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                  ],
+                Text(
+                  [
+                    if (item.location.isNotEmpty) item.location,
+                    if (item.groups.isNotEmpty) item.groups.join(' · '),
+                  ].join(' . '),
+                  style: const TextStyle(
+                      fontSize: 12, color: Color(0xFF9CA3AF)),
                 ),
               ],
             ),
@@ -461,21 +421,22 @@ class _TypeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLecture = type.toLowerCase() == 'lecture';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isLecture
             ? const Color(0xFFE8F0FE)
-            : const Color(0xFFE6F4EA),
+            : const Color(0xFFFFF3DF),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         type,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
           color: isLecture
-              ? const Color(0xFF1A73E8)
-              : const Color(0xFF137333),
+              ? AppColors.primaryBlue
+              : AppColors.assignmentColor,
         ),
       ),
     );
@@ -490,93 +451,118 @@ class _AcademicOverviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final stats = c.overviewStats;
-      final sections = stats['sections'] ?? 0;
-      final courses = stats['courses'] ?? 0;
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Academic Overview',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A2A4A),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  'See All >',
+    return Obx(() => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Academic Overview',
                   style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w500,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A2A4A)),
+                ),
+                GestureDetector(
+                  onTap: () =>
+                      Get.find<ProfessorNavController>().goTo(2),
+                  child: const Text(
+                    'See All >',
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Assignment card
+            if (c.latestAssignment.value != null)
+              _OverviewCard(
+                iconData: Icons.assignment_outlined,
+                iconBg: const Color(0xFFE8F0FE),
+                iconColor: AppColors.primaryBlue,
+                title: c.latestAssignment.value!['title'] as String,
+                subtitle: c.latestAssignment.value!['course'] as String,
+                badge: c.latestAssignment.value!['badge'] as String,
+                badgeColor: const Color(0xFFE6F4EA),
+                badgeTextColor: const Color(0xFF137333),
+              ),
+
+            if (c.latestAssignment.value != null)
+              const SizedBox(height: 10),
+
+            // Students at risk card
+            GestureDetector(
+              onTap: () => Get.toNamed('/studentsAtRisk', arguments: {
+                'professorId': c.professorId,
+                'isTA':        c.isTA.value,
+              }),
+              child: _OverviewCard(
+                iconData: Icons.person_off_outlined,
+                iconBg: const Color(0xFFFFEEEE),
+                iconColor: AppColors.fail,
+                title: 'Students at risk',
+                subtitle: 'Approaching absence limit',
+                badge: '${c.studentsAtRisk.value} student${c.studentsAtRisk.value == 1 ? '' : 's'}',
+                badgeColor: const Color(0xFFFFEEEE),
+                badgeTextColor: AppColors.fail,
+              ),
+            ),
+
+            if (c.nextExamInfo.value != null) ...[
+              const SizedBox(height: 10),
+              // Next exam card
+              _OverviewCard(
+                iconData: Icons.calendar_today_outlined,
+                iconBg: const Color(0xFFFFF3DF),
+                iconColor: AppColors.assignmentColor,
+                title: 'Next exam',
+                subtitle: c.nextExamInfo.value!['subtitle'] as String,
+                badge: c.nextExamInfo.value!['badge'] as String,
+                badgeColor: const Color(0xFFFFF3DF),
+                badgeTextColor: AppColors.assignmentColor,
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.book_outlined,
-                  value: '$courses',
-                  label: 'Courses',
-                  iconColor: AppColors.primaryBlue,
-                  bgColor: const Color(0xFFE8F0FE),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _StatCard(
-                  icon: Icons.class_outlined,
-                  value: '$sections',
-                  label: 'Sections',
-                  iconColor: const Color(0xFF137333),
-                  bgColor: const Color(0xFFE6F4EA),
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
-    });
+          ],
+        ));
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color iconColor;
-  final Color bgColor;
+class _OverviewCard extends StatelessWidget {
+  final IconData iconData;
+  final Color    iconBg;
+  final Color    iconColor;
+  final String   title;
+  final String   subtitle;
+  final String   badge;
+  final Color    badgeColor;
+  final Color    badgeTextColor;
 
-  const _StatCard({
-    required this.icon,
-    required this.value,
-    required this.label,
+  const _OverviewCard({
+    required this.iconData,
+    required this.iconBg,
     required this.iconColor,
-    required this.bgColor,
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.badgeColor,
+    required this.badgeTextColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -584,36 +570,57 @@ class _StatCard extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Icon
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: bgColor,
-              borderRadius: BorderRadius.circular(10),
+              color: iconBg,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(iconData, color: iconColor, size: 22),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A2A4A),
-                ),
-              ),
-              Text(
-                label,
+          const SizedBox(width: 14),
+
+          // Title + subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A2A4A))),
+                const SizedBox(height: 3),
+                Text(subtitle,
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF9CA3AF))),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          // Badge
+          Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: badgeColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(badge,
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: badgeTextColor)),
           ),
+
+          const SizedBox(width: 6),
+          Icon(Icons.chevron_right_rounded,
+              color: Colors.grey.shade400, size: 20),
         ],
       ),
     );

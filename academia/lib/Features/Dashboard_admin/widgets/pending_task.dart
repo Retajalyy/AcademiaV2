@@ -79,16 +79,19 @@ class PendingTasksSection extends StatelessWidget {
           ),
         );
       default: // 'notify'
-        return PendingTaskCard(
-          icon: Icons.credit_card_outlined,
-          title: task.title,
-          subtitle: task.subtitle,
-          buttonText: 'Notify',
-          leftBarColor: AppColors.accentAI,
-          iconBgColor: const Color(0xFFFFF3DF),
-          iconColor: const Color(0xFFB18334),
-          buttonColor: AppColors.accentAI,
-          buttonTextColor: AppColors.accentProgramming1,
+        return GestureDetector(
+          onTap: () => Get.toNamed('/outstandingFees'),
+          child: PendingTaskCard(
+            icon: Icons.credit_card_outlined,
+            title: task.title,
+            subtitle: task.subtitle,
+            buttonText: 'Notify',
+            leftBarColor: AppColors.accentAI,
+            iconBgColor: const Color(0xFFFFF3DF),
+            iconColor: const Color(0xFFB18334),
+            buttonColor: AppColors.accentAI,
+            buttonTextColor: AppColors.accentProgramming1,
+          ),
         );
     }
   }

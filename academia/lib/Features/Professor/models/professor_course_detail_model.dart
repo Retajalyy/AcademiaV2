@@ -29,12 +29,14 @@ class CourseGroupInfo {
 }
 
 class CourseMaterialModel {
-  final int     id;
-  final String  name;
-  final String  fileType;
-  final int?    fileSizeKb;
+  final int      id;
+  final String   name;
+  final String   fileType;
+  final int?     fileSizeKb;
   final DateTime uploadedAt;
-  final String? fileUrl;
+  final String?  fileUrl;
+  final String?  materialType;
+  final DateTime? dueDate;
 
   const CourseMaterialModel({
     required this.id,
@@ -43,6 +45,8 @@ class CourseMaterialModel {
     this.fileSizeKb,
     required this.uploadedAt,
     this.fileUrl,
+    this.materialType,
+    this.dueDate,
   });
 
   String get sizeLabel {
@@ -51,5 +55,12 @@ class CourseMaterialModel {
       return '${(fileSizeKb! / 1024).toStringAsFixed(1)} MB';
     }
     return '$fileSizeKb KB';
+  }
+
+  String get dueDateLabel {
+    if (dueDate == null) return '';
+    const m = ['','Jan','Feb','Mar','Apr','May','Jun',
+                   'Jul','Aug','Sep','Oct','Nov','Dec'];
+    return 'Due ${m[dueDate!.month]} ${dueDate!.day}';
   }
 }

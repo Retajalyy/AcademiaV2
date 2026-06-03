@@ -6,8 +6,9 @@ import '../services/professor_service.dart';
 class ProfessorCoursesController extends GetxController {
   final ProfessorService _service = ProfessorService();
 
-  var courses = <ProfessorCourseModel>[].obs;
-  var isLoading = true.obs;
+  var courses     = <ProfessorCourseModel>[].obs;
+  var isLoading   = true.obs;
+  var isTA        = false.obs;
   int professorId = 0;
 
   @override
@@ -20,8 +21,11 @@ class ProfessorCoursesController extends GetxController {
     isLoading.value = true;
     try {
       final userId = Supabase.instance.client.auth.currentUser!.id;
-      professorId = await _service.getProfessorId(userId);
-      courses.value = await _service.getCourses(professorId);
+      final info   = await _service.getProfessorInfo(userId);
+      professorId  = info.id;
+      isTA.value   = info.isTA;
+      courses.value =
+          await _service.getCourses(professorId, isTA: info.isTA);
     } catch (e) {
       Get.snackbar('Error', 'Failed to load courses: $e');
     } finally {
