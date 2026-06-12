@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 import 'package:academia/Core/utilities/colors.dart';
 import '../controllers/fees_controller.dart';
 
@@ -35,7 +36,7 @@ class FeesHeader extends StatelessWidget {
                 onTap: () => Navigator.pop(context),
                 child: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
               ),
-              const Icon(Icons.notifications, color: Colors.white, size: 28),
+              const NotificationBell(),
             ],
           ),
 

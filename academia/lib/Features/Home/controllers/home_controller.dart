@@ -25,29 +25,19 @@ class HomeController extends GetxController {
     try {
       final userId = Supabase.instance.client.auth.currentUser!.id;
 
+      final info = await _service.getStudentInfo(userId);
+      userName.value = info.name;
+
+      // Schedule + assignments in parallel
       final results = await Future.wait([
-        _service.getStudentName(userId),
-        _service.getStudentId(userId),
+        _service.getTodaySchedule(info.id),
+        _service.getUpcomingAssignments(info.id).catchError((_) => <Assignment>[]),
       ]);
 
-      final name      = results[0] as String;
-      final studentId = results[1] as int;
-      userName.value  = name;
-
-      // Schedule & next class — critical path, run together
-      final scheduleData = await Future.wait([
-        _service.getTodaySchedule(studentId),
-        _service.getNextClass(studentId),
-      ]);
-      dailySchedule.value = scheduleData[0] as List<ScheduleItem>;
-      nextClass.value     = scheduleData[1] as ScheduleItem?;
-
-      // Assignments — optional; failure must not wipe the schedule
-      try {
-        assignments.value = await _service.getUpcomingAssignments(studentId);
-      } catch (_) {
-        assignments.value = [];
-      }
+      final schedule = results[0] as List<ScheduleItem>;
+      dailySchedule.value = schedule;
+      nextClass.value     = _service.getNextClass(schedule);
+      assignments.value   = results[1] as List<Assignment>;
     } catch (e) {
       Get.snackbar('Error', 'Failed to load home data: ${e.toString()}');
     } finally {

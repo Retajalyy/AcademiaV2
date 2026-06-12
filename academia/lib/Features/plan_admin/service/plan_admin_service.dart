@@ -124,7 +124,8 @@ class PlanAdminService {
     required int    level,
     required int    groupCapacity,
     required Map<String, CourseAssignment> assignments,
-    required Map<int, String> professorNames, // id → name, pre-built in controller
+    required Map<int, String> professorNames,
+    String? groupLabel,
   }) async {
     // 1. Find the active registration window
     final windowRow = await _db
@@ -138,36 +139,20 @@ class PlanAdminService {
     if (windowRow == null) throw Exception('No active registration window found.');
     final windowId = windowRow['id'] as int;
 
-    // 2. Find or create the group — use limit(1) in case multiple groups exist
-    final existingGroup = await _db
+    // 2. Always create a new group with the given label (SE1, SE2, LG1, etc.)
+    final newGroup = await _db
         .from('registration_groups')
+        .insert({
+          'label':         groupLabel ?? 'Group $faculty-$major-$level',
+          'total_credits': 0,
+          'faculty':       faculty,
+          'major':         major,
+          'level':         level,
+          'window_id':     windowId,
+        })
         .select('id')
-        .eq('window_id', windowId)
-        .eq('faculty', faculty)
-        .eq('major', major)
-        .eq('level', level)
-        .order('id')
-        .limit(1)
-        .maybeSingle();
-
-    final int groupId;
-    if (existingGroup != null) {
-      groupId = existingGroup['id'] as int;
-    } else {
-      final newGroup = await _db
-          .from('registration_groups')
-          .insert({
-            'label':         'Group $faculty-$major-$level-A',
-            'total_credits': 0,
-            'faculty':       faculty,
-            'major':         major,
-            'level':         level,
-            'window_id':     windowId,
-          })
-          .select('id')
-          .single();
-      groupId = newGroup['id'] as int;
-    }
+        .single();
+    final int groupId = newGroup['id'] as int;
 
     // 3. For each course assignment, create section + schedule + rgs
     for (final entry in assignments.entries) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:academia/Core/widgets/notification_bell.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
 
@@ -26,11 +26,7 @@ class AcademicHeader extends StatelessWidget {
           children: [
             const Align(
               alignment: Alignment.centerRight,
-              child: Icon(
-                Icons.notifications,
-                color: Colors.white,
-                size: 28,
-              ),
+              child: NotificationBell(),
             ),
 
             SizedBox(height: screenHeight * 0.015),

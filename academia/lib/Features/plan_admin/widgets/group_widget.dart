@@ -53,8 +53,51 @@ class GroupFormWidget extends StatelessWidget {
         );
       }
 
+      final activeIdx   = c.activeGroupIndex.value;
+      final groupCount  = c.groupAssignments.length;
+
       return Column(
         children: [
+          // ── Group tabs ───────────────────────────────────────────────
+          if (groupCount > 1)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (int i = 0; i < groupCount; i++)
+                    GestureDetector(
+                      onTap: () => c.switchGroup(i),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8, bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: i == activeIdx
+                              ? AppColors.primaryBlue
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: i == activeIdx
+                                ? AppColors.primaryBlue
+                                : Colors.grey.shade300,
+                          ),
+                        ),
+                        child: Text(
+                          c.groupLabel(i),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: i == activeIdx
+                                ? Colors.white
+                                : AppColors.primaryBlue,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
           // ── Group header ─────────────────────────────────────────────
           Container(
             width: double.infinity,
@@ -67,7 +110,7 @@ class GroupFormWidget extends StatelessWidget {
               ),
             ),
             child: Text(
-              'Group – ${c.selectedMajor.value.isNotEmpty ? c.selectedMajor.value : "SE"}1',
+              'Group – ${c.groupLabel(activeIdx)}',
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -117,7 +160,7 @@ class GroupFormWidget extends StatelessWidget {
                                   ),
                                   child: Center(
                                     child: Text(
-                                      '${c.groupCapacity.value}',
+                                      '${c.groupCapacity}',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w600),
                                     ),
@@ -211,7 +254,7 @@ class _CourseCardState extends State<_CourseCard> {
   void initState() {
     super.initState();
     _c = Get.find<PlanAdminController>();
-    // Restore any previously saved state
+    // Restore from the current group's saved state
     final a = _c.assignments[widget.courseName];
     if (a != null) {
       _hasSection      = a.hasSection;
@@ -230,13 +273,13 @@ class _CourseCardState extends State<_CourseCard> {
 
   void _update(VoidCallback update) {
     setState(update);
-    // Push state into the controller so saveAssignments() can read it
     _c.setLectureProfessor(widget.courseName, _lectureProfId);
     _c.setLectureDay(widget.courseName, _lectureDay);
     _c.setLectureHall(widget.courseName, _lectureHall);
     _c.setLectureFrom(widget.courseName, _lectureFrom);
     _c.setLectureTo(widget.courseName, _lectureTo);
-    _c.toggleSection(widget.courseName, _hasSection);
+    // Section is active if a section professor is assigned
+    _c.toggleSection(widget.courseName, _sectionProfId != null);
     _c.setSectionProfessor(widget.courseName, _sectionProfId);
     _c.setSectionDay(widget.courseName, _sectionDay);
     _c.setSectionHall(widget.courseName, _sectionHall);
@@ -274,170 +317,146 @@ class _CourseCardState extends State<_CourseCard> {
 
           const Divider(height: 20, color: Color(0xffE6E6E6)),
 
-          // LECTURE / + SECTION toggle
+          // ── LECTURE / SECTION exclusive tabs ─────────────────────────
           Row(
             children: [
               Expanded(child: _toggleBtn('LECTURE', !_hasSection, () {
                 _update(() => _hasSection = false);
               })),
               const SizedBox(width: 10),
-              Expanded(child: _toggleBtn('+ SECTION', _hasSection, () {
-                _update(() => _hasSection = !_hasSection);
+              Expanded(child: _toggleBtn('SECTION', _hasSection, () {
+                _update(() => _hasSection = true);
               })),
             ],
           ),
 
           const SizedBox(height: 14),
 
-          // ── LECTURE fields ────────────────────────────────────────────
-          _label('PROFESSOR'),
-          const SizedBox(height: 6),
-          // Use Obx only for professor dropdown (needs reactive professors list)
-          Obx(() {
-            final profs = _c.professors.toList();
-            return _dropdown<int>(
-              value: profs.any((p) => p.id == _lectureProfId)
-                  ? _lectureProfId
-                  : null,
-              hint: profs.isEmpty ? 'Loading professors...' : 'Select professor',
-              items: profs
-                  .map((p) => DropdownMenuItem(
-                        value: p.id,
-                        child: Text(p.name,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13)),
-                      ))
-                  .toList(),
-              onChanged: profs.isEmpty
-                  ? null
-                  : (v) => _update(() => _lectureProfId = v),
-            );
-          }),
+          // ── Show ONLY the active tab's fields ─────────────────────────
+          if (!_hasSection) ...[
+            // ── LECTURE fields ──────────────────────────────────────────
+            _label('PROFESSOR'),
+            const SizedBox(height: 6),
+            Obx(() {
+              final profs = _c.professors.toList();
+              return _dropdown<int>(
+                value: profs.any((p) => p.id == _lectureProfId)
+                    ? _lectureProfId
+                    : null,
+                hint: profs.isEmpty ? 'Loading professors...' : 'Select professor',
+                items: profs
+                    .map((p) => DropdownMenuItem(
+                          value: p.id,
+                          child: Text(p.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 13)),
+                        ))
+                    .toList(),
+                onChanged: profs.isEmpty
+                    ? null
+                    : (v) => _update(() => _lectureProfId = v),
+              );
+            }),
 
-          const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: _label('DAY')),
-            const SizedBox(width: 10),
-            Expanded(child: _label('HALL')),
-          ]),
-          const SizedBox(height: 6),
-          Row(children: [
-            Expanded(child: _strDropdown(
-              value: _lectureDay, items: _days, hint: 'Day',
-              onChanged: (v) => _update(() => _lectureDay = v),
-            )),
-            const SizedBox(width: 10),
-            Expanded(child: _strDropdown(
-              value: _lectureHall, items: _halls, hint: 'Hall',
-              onChanged: (v) => _update(() => _lectureHall = v),
-            )),
-          ]),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: _label('DAY')),
+              const SizedBox(width: 10),
+              Expanded(child: _label('HALL')),
+            ]),
+            const SizedBox(height: 6),
+            Row(children: [
+              Expanded(child: _strDropdown(
+                value: _lectureDay, items: _days, hint: 'Day',
+                onChanged: (v) => _update(() => _lectureDay = v),
+              )),
+              const SizedBox(width: 10),
+              Expanded(child: _strDropdown(
+                value: _lectureHall, items: _halls, hint: 'Hall',
+                onChanged: (v) => _update(() => _lectureHall = v),
+              )),
+            ]),
 
-          const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: _label('FROM')),
-            const SizedBox(width: 10),
-            Expanded(child: _label('TO')),
-          ]),
-          const SizedBox(height: 6),
-          Row(children: [
-            Expanded(child: _strDropdown(
-              value: _lectureFrom, items: _times, hint: 'Time',
-              onChanged: (v) => _update(() => _lectureFrom = v),
-            )),
-            const SizedBox(width: 10),
-            Expanded(child: _strDropdown(
-              value: _lectureTo, items: _times, hint: 'Time',
-              onChanged: (v) => _update(() => _lectureTo = v),
-            )),
-          ]),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: _label('FROM')),
+              const SizedBox(width: 10),
+              Expanded(child: _label('TO')),
+            ]),
+            const SizedBox(height: 6),
+            Row(children: [
+              Expanded(child: _strDropdown(
+                value: _lectureFrom, items: _times, hint: 'Time',
+                onChanged: (v) => _update(() => _lectureFrom = v),
+              )),
+              const SizedBox(width: 10),
+              Expanded(child: _strDropdown(
+                value: _lectureTo, items: _times, hint: 'Time',
+                onChanged: (v) => _update(() => _lectureTo = v),
+              )),
+            ]),
+          ] else ...[
+            // ── SECTION fields ──────────────────────────────────────────
+            _label('TEACHING ASSISTANT'),
+            const SizedBox(height: 6),
+            Obx(() {
+              final profs = _c.professors.toList();
+              return _dropdown<int>(
+                value: profs.any((p) => p.id == _sectionProfId)
+                    ? _sectionProfId
+                    : null,
+                hint: profs.isEmpty ? 'Loading...' : 'Select teaching assistant',
+                items: profs
+                    .map((p) => DropdownMenuItem(
+                          value: p.id,
+                          child: Text(p.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 13)),
+                        ))
+                    .toList(),
+                onChanged: profs.isEmpty
+                    ? null
+                    : (v) => _update(() => _sectionProfId = v),
+              );
+            }),
 
-          // ── SECTION fields ────────────────────────────────────────────
-          if (_hasSection) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFBF0),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFFE082)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('SECTION',
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFB18334),
-                          letterSpacing: 0.5)),
-                  const SizedBox(height: 10),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: _label('DAY')),
+              const SizedBox(width: 10),
+              Expanded(child: _label('HALL')),
+            ]),
+            const SizedBox(height: 6),
+            Row(children: [
+              Expanded(child: _strDropdown(
+                value: _sectionDay, items: _days, hint: 'Day',
+                onChanged: (v) => _update(() => _sectionDay = v),
+              )),
+              const SizedBox(width: 10),
+              Expanded(child: _strDropdown(
+                value: _sectionHall, items: _halls, hint: 'Hall',
+                onChanged: (v) => _update(() => _sectionHall = v),
+              )),
+            ]),
 
-                  _label('TEACHING ASSISTANT'),
-                  const SizedBox(height: 6),
-                  Obx(() {
-                    final profs = _c.professors.toList();
-                    return _dropdown<int>(
-                      value: profs.any((p) => p.id == _sectionProfId)
-                          ? _sectionProfId
-                          : null,
-                      hint: profs.isEmpty
-                          ? 'Loading...'
-                          : 'Select teaching assistant',
-                      items: profs
-                          .map((p) => DropdownMenuItem(
-                                value: p.id,
-                                child: Text(p.name,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 13)),
-                              ))
-                          .toList(),
-                      onChanged: profs.isEmpty
-                          ? null
-                          : (v) => _update(() => _sectionProfId = v),
-                    );
-                  }),
-
-                  const SizedBox(height: 12),
-                  Row(children: [
-                    Expanded(child: _label('DAY')),
-                    const SizedBox(width: 10),
-                    Expanded(child: _label('HALL')),
-                  ]),
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    Expanded(child: _strDropdown(
-                      value: _sectionDay, items: _days, hint: 'Day',
-                      onChanged: (v) => _update(() => _sectionDay = v),
-                    )),
-                    const SizedBox(width: 10),
-                    Expanded(child: _strDropdown(
-                      value: _sectionHall, items: _halls, hint: 'Hall',
-                      onChanged: (v) => _update(() => _sectionHall = v),
-                    )),
-                  ]),
-
-                  const SizedBox(height: 12),
-                  Row(children: [
-                    Expanded(child: _label('FROM')),
-                    const SizedBox(width: 10),
-                    Expanded(child: _label('TO')),
-                  ]),
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    Expanded(child: _strDropdown(
-                      value: _sectionFrom, items: _times, hint: 'Time',
-                      onChanged: (v) => _update(() => _sectionFrom = v),
-                    )),
-                    const SizedBox(width: 10),
-                    Expanded(child: _strDropdown(
-                      value: _sectionTo, items: _times, hint: 'Time',
-                      onChanged: (v) => _update(() => _sectionTo = v),
-                    )),
-                  ]),
-                ],
-              ),
-            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: _label('FROM')),
+              const SizedBox(width: 10),
+              Expanded(child: _label('TO')),
+            ]),
+            const SizedBox(height: 6),
+            Row(children: [
+              Expanded(child: _strDropdown(
+                value: _sectionFrom, items: _times, hint: 'Time',
+                onChanged: (v) => _update(() => _sectionFrom = v),
+              )),
+              const SizedBox(width: 10),
+              Expanded(child: _strDropdown(
+                value: _sectionTo, items: _times, hint: 'Time',
+                onChanged: (v) => _update(() => _sectionTo = v),
+              )),
+            ]),
           ],
         ],
       ),

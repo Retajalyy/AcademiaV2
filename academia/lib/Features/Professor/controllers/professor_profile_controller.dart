@@ -10,6 +10,7 @@ class ProfessorProfileController extends GetxController {
   var instructorId    = ''.obs;
   var department      = ''.obs;
   var universityEmail = ''.obs;
+  var academicRole    = ''.obs;   // 'Professor' or 'Teaching Assistant'
   var avatarUrl       = Rxn<String>();
 
   // Editable personal info
@@ -64,22 +65,28 @@ class ProfessorProfileController extends GetxController {
       try {
         final prof = await _db
             .from('professors')
-            .select('department, phone, personal_email')
+            .select('department, is_ta, phone, personal_email')
             .eq('profile_id', userId)
             .single();
 
         department.value       = prof['department']     as String? ?? '';
+        academicRole.value     = (prof['is_ta'] as bool? ?? false)
+            ? 'Teaching Assistant'
+            : 'Professor';
         phoneCtrl.text         = prof['phone']          as String? ?? '';
         personalEmailCtrl.text = prof['personal_email'] as String? ?? '';
       } catch (_) {
-        // Columns phone / personal_email may not exist — fetch only department
+        // Columns phone / personal_email may not exist — fetch only department + is_ta
         try {
           final prof = await _db
               .from('professors')
-              .select('department')
+              .select('department, is_ta')
               .eq('profile_id', userId)
               .single();
-          department.value = prof['department'] as String? ?? '';
+          department.value   = prof['department'] as String? ?? '';
+          academicRole.value = (prof['is_ta'] as bool? ?? false)
+              ? 'Teaching Assistant'
+              : 'Professor';
         } catch (_) {}
       }
     } catch (e) {

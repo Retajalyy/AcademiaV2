@@ -13,14 +13,12 @@ class ProfessorCoursesScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F4FC),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _Header(),
-            Expanded(child: _Body(c: c)),
-          ],
-        ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Header(),
+          Expanded(child: _Body(c: c)),
+        ],
       ),
     );
   }
@@ -32,21 +30,13 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 26),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius:
-            BorderRadius.vertical(bottom: Radius.circular(24)),
-      ),
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(
+          20, MediaQuery.of(context).padding.top + 12, 20, 26),
+      color: AppColors.primaryBlue,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: () => Get.back(),
-            child: const Icon(Icons.arrow_back_rounded,
-                color: Colors.white, size: 24),
-          ),
-          const SizedBox(height: 14),
           const Text(
             'Courses',
             style: TextStyle(

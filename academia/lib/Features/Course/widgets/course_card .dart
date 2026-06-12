@@ -4,6 +4,7 @@ import 'package:academia/Core/utilities/colors.dart';
 
 class CourseCard extends StatelessWidget {
   final int courseId;
+  final int sectionId;
   final String title;
   final String doctor;
   final String type;
@@ -14,7 +15,8 @@ class CourseCard extends StatelessWidget {
 
   const CourseCard({
     super.key,
-    this.courseId = 0,
+    this.courseId  = 0,
+    this.sectionId = 0,
     required this.title,
     required this.doctor,
     required this.type,
@@ -37,6 +39,8 @@ class CourseCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.toNamed('/coursedetails', arguments: {
         'courseId':   courseId,
+        'sectionId':  sectionId,
+        'courseName': title,
         'doctorName': doctor,
       }),
       child: Container(

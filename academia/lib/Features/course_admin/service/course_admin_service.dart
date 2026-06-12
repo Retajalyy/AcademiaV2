@@ -42,13 +42,59 @@ class CourseAdminService {
     Map<String, String> facMap,
     Map<String, String> majMap,
   ) async {
+    // Resolve which course codes belong to the active/open registration window
+    Set<String> activeCodes = {};
+    String semesterLabel = '';
+    try {
+      final window = await _db
+          .from('registration_windows')
+          .select('id, next_semester_label, next_year_label')
+          .inFilter('status', ['active', 'open'])
+          .limit(1)
+          .maybeSingle();
+
+      if (window != null) {
+        semesterLabel =
+            '${window['next_semester_label'] ?? ''} ${window['next_year_label'] ?? ''}'
+                .trim();
+
+        final groups = await _db
+            .from('registration_groups')
+            .select('id')
+            .eq('window_id', window['id'] as int);
+
+        final groupIds =
+            (groups as List).map((g) => g['id'] as int).toList();
+
+        if (groupIds.isNotEmpty) {
+          final sections = await _db
+              .from('registration_group_sections')
+              .select('course_code')
+              .inFilter('group_id', groupIds);
+
+          activeCodes = (sections as List)
+              .map((s) => s['course_code'] as String)
+              .toSet();
+        }
+      }
+    } catch (_) {
+      // Fall through — courses will render without active labels
+    }
+
     final data = await _db
         .from('courses')
-        .select('id, name, credit_hours, type, year_level, faculty_code, major_code')
+        .select('id, name, code, credit_hours, type, year_level, faculty_code, major_code')
         .order('name');
-    return (data as List)
-        .map((row) => CourseAdminModel.fromDb(row, facMap, majMap))
-        .toList();
+
+    return (data as List).map((row) {
+      final code     = row['code'] as String? ?? '';
+      final isActive = activeCodes.contains(code);
+      return CourseAdminModel.fromDb(
+        row, facMap, majMap,
+        isActive:      isActive,
+        semesterLabel: isActive ? semesterLabel : '',
+      );
+    }).toList();
   }
 
   Future<CourseAdminModel> addCourse(

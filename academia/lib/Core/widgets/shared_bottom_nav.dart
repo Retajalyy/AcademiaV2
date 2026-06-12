@@ -1,12 +1,10 @@
+import 'package:academia/Core/controllers/tab_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:academia/Core/widgets/bottom_bar.dart';
 
 class SharedBottomNav extends StatelessWidget {
-  /// The tab that should appear selected (0=Home,1=Schedule,2=Services,3=Profile)
   final int currentIndex;
-
   const SharedBottomNav({super.key, this.currentIndex = 2});
 
   @override
@@ -21,7 +19,13 @@ class SharedBottomNav extends StatelessWidget {
       showUnselectedLabels: true,
       onTap: (index) {
         if (index == currentIndex) return;
-        Get.offAll(() => BottomBar(initialIndex: index));
+        // If BottomBar is already in the stack, switch its tab without destroying it
+        if (Get.isRegistered<AppTabController>()) {
+          AppTabController.to.switchTo(index);
+          Get.until((route) => route.isFirst);
+        } else {
+          Get.offAllNamed('/app');
+        }
       },
       items: [
         BottomNavigationBarItem(
@@ -48,15 +52,13 @@ class SharedBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _svg(String path, bool active) {
-    return SvgPicture.asset(
-      path,
-      width: 31,
-      height: 31,
-      colorFilter: ColorFilter.mode(
-        active ? const Color(0xFF2468A0) : Colors.black,
-        BlendMode.srcIn,
-      ),
-    );
-  }
+  Widget _svg(String path, bool active) => SvgPicture.asset(
+        path,
+        width: 31,
+        height: 31,
+        colorFilter: ColorFilter.mode(
+          active ? const Color(0xFF2468A0) : Colors.black,
+          BlendMode.srcIn,
+        ),
+      );
 }

@@ -21,6 +21,7 @@ class CourseScheduleAdminScreen extends StatelessWidget {
       drawer: const SideMenu(activeItem: 'Course Schedule'),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: Column(
           children: [
             _Header(c: c),
@@ -225,16 +226,17 @@ class _GroupsList extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.search_off_rounded,
+              Icon(Icons.event_busy_rounded,
                   size: 52, color: Colors.grey.shade400),
               const SizedBox(height: 12),
-              Text('No groups found',
+              Text('No active schedules',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.grey.shade500)),
               const SizedBox(height: 6),
-              Text('Try a different search term',
+              Text('Schedules appear when a registration plan is active',
+                  textAlign: TextAlign.center,
                   style:
                       TextStyle(fontSize: 13, color: Colors.grey.shade400)),
             ],

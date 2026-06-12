@@ -6,13 +6,14 @@ import '../../../Core/utilities/colors.dart';
 import 'package:academia/Core/widgets/Architecture_progress.dart';
 import 'package:academia/Features/plan_admin/screens/PlanAdmin2Screen .dart';
 class PlanHeader3 extends StatelessWidget {
-  // Changed: accepts reactive activeTab and onTabSelected from controller
-  final RxString activeTab;
+  final RxString        activeTab;
+  final RxList<String>  groupLabels;
   final void Function(String tab) onTabSelected;
 
   const PlanHeader3({
     super.key,
     required this.activeTab,
+    required this.groupLabels,
     required this.onTabSelected,
   });
 
@@ -26,8 +27,8 @@ class PlanHeader3 extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.only(
-                top: 14,
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 14,
                 left: 16,
                 right: 16,
                 bottom: 29,
@@ -87,8 +88,11 @@ class PlanHeader3 extends StatelessWidget {
               bottom: -24,
               left: 16,
               child: Obx(() {
+                final tabs = groupLabels.isNotEmpty
+                    ? groupLabels.toList()
+                    : [activeTab.value];
                 return Row(
-                  children: ['SE1', 'SE2', 'SE3'].map((tab) {
+                  children: tabs.map((tab) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 40),
                       child: GestureDetector(

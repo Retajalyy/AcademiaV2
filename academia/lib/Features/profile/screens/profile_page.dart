@@ -1,7 +1,6 @@
 import 'package:academia/Core/utilities/colors.dart';
 import 'package:academia/Features/Auth/services/auth_service.dart';
 import 'package:academia/Features/profile/widgets/degree_progress.dart';
-import 'package:academia/Features/profile/widgets/semester_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
@@ -62,11 +61,12 @@ class _ProfileBody extends StatelessWidget {
               children: [
                 // ── Academic Statistics ──────────────────────────────────
                 const _SectionTitle(title: 'ACADEMIC STATISTICS'),
-                const SizedBox(height: 14),
+                const SizedBox(height: 8),
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   childAspectRatio: 2.3,
@@ -101,19 +101,6 @@ class _ProfileBody extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 30),
-
-                // ── Academic Progress (semester weeks) ───────────────────
-                const _SectionTitle(title: 'ACADEMIC PROGRESS'),
-                const SizedBox(height: 14),
-                Obx(() {
-                  final c = Get.find<ProfileController>();
-                  return SemesterProgressCard(
-                    currentWeek:   c.currentWeek.value,
-                    totalWeeks:    c.totalWeeks.value,
-                    semesterLabel: c.semesterLabel.value,
-                  );
-                }),
                 const SizedBox(height: 30),
 
                 // ── Degree Progress ──────────────────────────────────────

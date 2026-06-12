@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
 import 'package:academia/Features/Services/screens/services_main_screen.dart';
@@ -35,7 +36,7 @@ class AssessmentHeader extends StatelessWidget {
                   );
                 },
               ),
-                  Icon(Icons.notifications, color: Colors.white, size: 28),
+                  const NotificationBell(),
                 ],
               ),
 

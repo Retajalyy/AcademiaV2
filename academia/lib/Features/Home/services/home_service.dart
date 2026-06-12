@@ -6,22 +6,15 @@ import '../models/assignment_model.dart';
 class HomeService {
   final _db = Supabase.instance.client;
 
-  Future<int> getStudentId(String userId) async {
-    final data = await _db
-        .from('students')
-        .select('id')
-        .eq('profile_id', userId)
-        .single();
-    return data['id'] as int;
-  }
-
-  Future<String> getStudentName(String userId) async {
-    final data = await _db
-        .from('profiles')
-        .select('full_name')
-        .eq('id', userId)
-        .single();
-    return data['full_name'] ?? '';
+  Future<({int id, String name})> getStudentInfo(String userId) async {
+    final results = await Future.wait([
+      _db.from('students').select('id').eq('profile_id', userId).single(),
+      _db.from('profiles').select('full_name').eq('id', userId).single(),
+    ]);
+    return (
+      id:   (results[0] as Map)['id']        as int,
+      name: (results[1] as Map)['full_name'] as String? ?? '',
+    );
   }
 
   Future<List<ScheduleItem>> getTodaySchedule(int studentId) =>
@@ -77,8 +70,7 @@ class HomeService {
     return items;
   }
 
-  Future<ScheduleItem?> getNextClass(int studentId) async {
-    final schedule = await getTodaySchedule(studentId);
+  ScheduleItem? getNextClass(List<ScheduleItem> schedule) {
     final now = TimeOfDay.now();
     for (final item in schedule) {
       final parts     = item.time.split(' - ')[0].split(':');

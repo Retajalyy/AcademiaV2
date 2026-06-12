@@ -37,8 +37,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4FA),
-      body: SafeArea(
-        child: Column(
+      body: Column(
           children: [
             const CustomHeader(
               title: 'Services',
@@ -53,7 +52,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       : _buildContent(),
             ),
           ],
-        ),
       ),
     );
   }

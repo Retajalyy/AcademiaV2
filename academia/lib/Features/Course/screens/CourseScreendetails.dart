@@ -13,7 +13,6 @@ class CourseScreenDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Registers controller if not yet registered; returns existing one if it is.
     final ctrl = Get.put(CourseDetailsController());
 
     return Scaffold(

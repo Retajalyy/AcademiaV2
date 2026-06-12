@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
 import '../controllers/course_details_controller.dart';
+import 'package:academia/Features/Assignments/screens/assignments_screen.dart';
+import 'package:academia/Features/Attendance/screens/student_attendance_screen.dart';
 
 class CourseStats extends StatelessWidget {
   const CourseStats({super.key});
@@ -31,20 +33,52 @@ class CourseStats extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: CircleStat(
-                title:   "Assignments",
-                value:   "${(assignments * 100).toStringAsFixed(0)}%",
-                percent: assignments,
-                color:   AppColors.accentAI,
+              child: GestureDetector(
+                onTap: () {
+                  final ctrl = Get.find<CourseDetailsController>();
+                  final name = ctrl.courseName.value.isNotEmpty
+                      ? ctrl.courseName.value
+                      : (ctrl.course.value?.courseName ?? '');
+                  Get.to(
+                    () => const AssignmentsScreen(),
+                    arguments: {
+                      'sectionId':  ctrl.sectionId.value,
+                      'courseId':   ctrl.courseId.value,
+                      'courseName': name,
+                      'doctorName': ctrl.doctorName.value,
+                    },
+                  );
+                },
+                child: CircleStat(
+                  title:   "Assignments",
+                  value:   "${(assignments * 100).toStringAsFixed(0)}%",
+                  percent: assignments,
+                  color:   AppColors.accentAI,
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: CircleStat(
-                title:   "Attendance",
-                value:   "${(attendance * 100).toStringAsFixed(0)}%",
-                percent: attendance,
-                color:   AppColors.fail,
+              child: GestureDetector(
+                onTap: () {
+                  final name = ctrl.courseName.value.isNotEmpty
+                      ? ctrl.courseName.value
+                      : (ctrl.course.value?.courseName ?? '');
+                  Get.to(
+                    () => const StudentAttendanceScreen(),
+                    arguments: {
+                      'sectionId':  ctrl.sectionId.value,
+                      'courseName': name,
+                      'doctorName': ctrl.doctorName.value,
+                    },
+                  );
+                },
+                child: CircleStat(
+                  title:   "Attendance",
+                  value:   "${(attendance * 100).toStringAsFixed(0)}%",
+                  percent: attendance,
+                  color:   AppColors.fail,
+                ),
               ),
             ),
           ],

@@ -27,6 +27,7 @@ class ExamScheduleAdminScreen extends StatelessWidget {
       backgroundColor: AppColors.primaryBlue,
       drawer: const SideMenu(activeItem: 'Exam Schedule'),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             _Header(c: c),

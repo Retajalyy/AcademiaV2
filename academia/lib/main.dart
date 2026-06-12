@@ -29,11 +29,19 @@ import 'Features/Auth/screens/forgot_password_screen.dart';
 import 'Features/Dashboard_admin/screens/password_reset_screen.dart';
 import 'Features/OutstandingFees_admin/screens/outstanding_fees_screen.dart';
 import 'Features/Professor/screens/upload_material_screen.dart';
+import 'Features/Professor/screens/assign_grades_screen.dart';
+import 'Features/Professor/screens/professor_submissions_screen.dart';
+import 'Features/Professor/screens/student_submissions_detail_screen.dart';
 import 'Features/Professor/screens/take_attendance_screen.dart';
 import 'Features/Professor/screens/attendance_records_screen.dart';
 import 'Features/Professor/screens/attendance_session_detail_screen.dart';
 import 'Features/Professor/screens/students_at_risk_screen.dart';
+import 'Features/Professor/screens/academic_overview_screen.dart';
+import 'Features/Professor/screens/assignment_overview_screen.dart';
+import 'Features/Registiration_admin/screens/all_registration_plans_screen.dart';
 import 'Features/Announcements/screens/announcements_screen.dart';
+import 'Features/Assignments/screens/assignments_screen.dart';
+import 'Features/Attendance/screens/student_attendance_screen.dart';
 import 'Features/Announcements/screens/admin_announcements_screen.dart';
 import 'Features/Announcements/screens/create_announcement_screen.dart';
 
@@ -210,6 +218,14 @@ class MyApp extends StatelessWidget {
           page: () => const NavigationScreen(),
         ),
         GetPage(
+          name: '/assignments',
+          page: () => const AssignmentsScreen(),
+        ),
+        GetPage(
+          name: '/attendance',
+          page: () => const StudentAttendanceScreen(),
+        ),
+        GetPage(
           name: '/forgotPassword',
           page: () => const ForgotPasswordScreen(),
         ),
@@ -226,6 +242,18 @@ class MyApp extends StatelessWidget {
           page: () => const UploadMaterialScreen(),
         ),
         GetPage(
+          name: '/assignGrades',
+          page: () => const AssignGradesScreen(),
+        ),
+        GetPage(
+          name: '/submissions',
+          page: () => const ProfessorSubmissionsScreen(),
+        ),
+        GetPage(
+          name: '/studentSubmissionsDetail',
+          page: () => const StudentSubmissionsDetailScreen(),
+        ),
+        GetPage(
           name: '/takeAttendance',
           page: () => const TakeAttendanceScreen(),
         ),
@@ -240,6 +268,18 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/studentsAtRisk',
           page: () => const StudentsAtRiskScreen(),
+        ),
+        GetPage(
+          name: '/academicOverview',
+          page: () => const AcademicOverviewScreen(),
+        ),
+        GetPage(
+          name: '/assignmentOverview',
+          page: () => const AssignmentOverviewScreen(),
+        ),
+        GetPage(
+          name: '/allRegistrationPlans',
+          page: () => const AllRegistrationPlansScreen(),
         ),
         GetPage(
           name: '/announcements',

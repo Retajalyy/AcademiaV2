@@ -18,24 +18,36 @@ class RegistrationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = Get.put(RegistrationController());
 
-    return Scaffold(
-      backgroundColor: AppColors.babyblue,
-      appBar: const RegistrationAppBar(),
-      bottomNavigationBar: const SharedBottomNav(),
-      body: Obx(() {
-        if (ctrl.isLoading.value) {
-          return const Center(
+    return Obx(() {
+      if (ctrl.isLoading.value) {
+        return const Scaffold(
+          body: Center(
             child: CircularProgressIndicator(color: Color(0xFF1A6EFF)),
-          );
-        }
+          ),
+        );
+      }
 
-        return SingleChildScrollView(
+      if (ctrl.registrationState.value == RegistrationState.done) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFF1F4FC),
+          body: RegistrationDoneWidget(
+            groupLabel:    ctrl.selectedGroup?.label ?? '',
+            semesterLabel: ctrl.semesterInfo.value?.semester ?? '',
+          ),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: AppColors.babyblue,
+        appBar: const RegistrationAppBar(),
+        bottomNavigationBar: const SharedBottomNav(),
+        body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: _buildBody(ctrl.registrationState.value),
-        );
-      }),
-    );
+        ),
+      );
+    });
   }
 
   Widget _buildBody(RegistrationState state) {
@@ -47,7 +59,7 @@ class RegistrationScreen extends StatelessWidget {
       case RegistrationState.notOpenedYet:
         return const RegistrationNotOpenedWidget();
       case RegistrationState.done:
-        return const RegistrationDoneWidget();
+        return const SizedBox.shrink();
       case RegistrationState.feesRequired:
         return const RegistrationFeesRequiredWidget();
     }

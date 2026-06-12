@@ -49,6 +49,7 @@ class ProfileController extends GetxController {
         _service.fetchStudentProfile(),
         _service.fetchSemesterProgress(),
       ]);
+      if (isClosed) return;
       final data = results[0] as StudentModel;
       final sem  = results[1] as Map<String, dynamic>;
       student.value       = data;

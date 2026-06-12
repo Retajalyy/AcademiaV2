@@ -7,6 +7,8 @@ class CourseAdminModel {
   final int credits;
   final String type; // "Core" | "Elective"
   final String prerequisite;
+  final bool isActive;
+  final String semesterLabel; // e.g. "2nd Semester 2025-26"
 
   const CourseAdminModel({
     required this.id,
@@ -17,25 +19,31 @@ class CourseAdminModel {
     required this.credits,
     required this.type,
     this.prerequisite = '—',
+    this.isActive = false,
+    this.semesterLabel = '',
   });
 
   factory CourseAdminModel.fromDb(
     Map<String, dynamic> row,
     Map<String, String> facMap,
-    Map<String, String> majMap,
-  ) {
+    Map<String, String> majMap, {
+    bool isActive = false,
+    String semesterLabel = '',
+  }) {
     final yearLevel = row['year_level'] as int? ?? 1;
     final facCode   = row['faculty_code'] as String? ?? '';
     final majCode   = row['major_code']   as String?;
     return CourseAdminModel(
-      id:           row['id'].toString(),
-      name:         row['name']        as String? ?? '',
-      faculty:      facMap[facCode]    ?? facCode,
-      level:        'Year $yearLevel',
-      major:        majCode != null ? (majMap[majCode] ?? majCode) : 'General',
-      credits:      (row['credit_hours'] as int?) ?? 3,
-      type:         row['type']        as String? ?? 'Core',
-      prerequisite: '—',
+      id:             row['id'].toString(),
+      name:           row['name']        as String? ?? '',
+      faculty:        facMap[facCode]    ?? facCode,
+      level:          'Year $yearLevel',
+      major:          majCode != null ? (majMap[majCode] ?? majCode) : 'General',
+      credits:        (row['credit_hours'] as int?) ?? 3,
+      type:           row['type']        as String? ?? 'Core',
+      prerequisite:   '—',
+      isActive:       isActive,
+      semesterLabel:  semesterLabel,
     );
   }
 
@@ -47,16 +55,20 @@ class CourseAdminModel {
     int? credits,
     String? type,
     String? prerequisite,
+    bool? isActive,
+    String? semesterLabel,
   }) {
     return CourseAdminModel(
-      id: id,
-      name: name ?? this.name,
-      faculty: faculty ?? this.faculty,
-      level: level ?? this.level,
-      major: major ?? this.major,
-      credits: credits ?? this.credits,
-      type: type ?? this.type,
-      prerequisite: prerequisite ?? this.prerequisite,
+      id:            id,
+      name:          name          ?? this.name,
+      faculty:       faculty       ?? this.faculty,
+      level:         level         ?? this.level,
+      major:         major         ?? this.major,
+      credits:       credits       ?? this.credits,
+      type:          type          ?? this.type,
+      prerequisite:  prerequisite  ?? this.prerequisite,
+      isActive:      isActive      ?? this.isActive,
+      semesterLabel: semesterLabel ?? this.semesterLabel,
     );
   }
 }

@@ -50,7 +50,12 @@ class RegistrationController extends GetxController {
   }
 
   Future<void> _loadGroups() async {
-    final groups = await _service.fetchGroups('');
+    final results = await Future.wait([
+      _service.fetchGroups(''),
+      _service.fetchSemesterInfo(),
+    ]);
+    final groups = results[0] as List<CourseGroup>;
+    semesterInfo.value = results[1] as SemesterInfo;
     availableGroups.assignAll(groups);
     if (groups.isNotEmpty) {
       selectedTabIndex.value  = 0;

@@ -11,13 +11,16 @@ class StudentService {
     // 1. Student row
     final sRow = await _db
         .from('students')
-        .select('id, student_number, major, total_credits, phone, avatar_url')
+        .select('id, student_number, faculty, major, total_credits, phone, avatar_url')
         .eq('profile_id', user.id)
         .single();
 
     final studentId = sRow['id'] as int;
     final studentNumber = sRow['student_number'] as String? ?? studentId.toString();
-    final major = sRow['major'] as String? ?? 'N/A';
+    final facultyCode = sRow['faculty'] as String? ?? '';
+    final facultyName = _facultyName(facultyCode);
+    final rawMajor = sRow['major'] as String? ?? '';
+    final major = _resolveMajor(rawMajor);
     final totalCredits = (sRow['total_credits'] as int?) ?? 140;
     final phone = sRow['phone'] as String? ?? '';
     final rawAvatar = sRow['avatar_url'] as String?;
@@ -26,13 +29,14 @@ class StudentService {
         ? '$rawAvatar?t=${DateTime.now().millisecondsSinceEpoch}'
         : null;
 
-    // 2. Profile name
+    // 2. Profile name + uni_id
     final profileRow = await _db
         .from('profiles')
-        .select('full_name')
+        .select('full_name, uni_id')
         .eq('id', user.id)
         .single();
     final name = profileRow['full_name'] as String? ?? user.email ?? 'Student';
+    final uniId = profileRow['uni_id'] as String?;
     final email = user.email ?? '';
 
     // 3. Semester results — number lives in the joined semesters table
@@ -97,9 +101,10 @@ class StudentService {
 
     return StudentModel(
       name: name,
-      id: studentNumber,
+      id: uniId ?? studentNumber,
       level: level,
-      faculty: major,
+      faculty: facultyName,
+      major: major,
       email: email,
       phone: phone,
       avatarUrl: avatarUrl,
@@ -111,6 +116,20 @@ class StudentService {
       totalCredits: totalCredits,
       remainingCredits: totalCredits - completedCredits,
     );
+  }
+
+  String _resolveMajor(String raw) {
+    if (raw.toLowerCase() == 'general' || raw.isEmpty) return 'General';
+    return raw;
+  }
+
+  String _facultyName(String code) {
+    const map = {
+      'FLT': 'Languages and Translation',
+      'FCI': 'Computer and Information',
+      'FBA': 'Business Administration',
+    };
+    return map[code] ?? code;
   }
 
   String _levelFromSemesters(int completed) {

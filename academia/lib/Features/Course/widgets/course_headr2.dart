@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 import '../../../Core/utilities/text_style.dart';
 import '../controllers/course_details_controller.dart';
 
@@ -25,7 +26,7 @@ class CourseHeaderDetails extends StatelessWidget {
                 icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
                 onPressed: Get.back,
               ),
-              const Icon(Icons.notifications, color: Colors.white, size: 28),
+              const NotificationBell(),
             ],
           ),
 

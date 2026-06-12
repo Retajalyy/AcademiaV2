@@ -13,15 +13,13 @@ class ProfessorScheduleScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F4FC),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _Header(),
-            _DaySelector(c: c),
-            Expanded(child: _ClassList(c: c)),
-          ],
-        ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Header(),
+          _DaySelector(c: c),
+          Expanded(child: _ClassList(c: c)),
+        ],
       ),
     );
   }
@@ -32,12 +30,11 @@ class ProfessorScheduleScreen extends StatelessWidget {
 class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 26),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
+    return Builder(builder: (context) => Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(
+          20, MediaQuery.of(context).padding.top + 16, 20, 26),
+      color: AppColors.primaryBlue,
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -59,7 +56,7 @@ class _Header extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

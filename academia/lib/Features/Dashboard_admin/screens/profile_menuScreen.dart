@@ -14,12 +14,13 @@ class ProfileMenuScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.screenBackground,
 
-      body: SafeArea(
-        child: Stack(
-          children: [
+      body: Stack(
+        children: [
 
-            /// DASHBOARD CONTENT
-            SingleChildScrollView(
+          /// DASHBOARD CONTENT
+          SafeArea(
+            top: false,
+            child: SingleChildScrollView(
               child: Column(
                 children: const [
 
@@ -35,25 +36,25 @@ class ProfileMenuScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ),
 
-            /// FADED BACKGROUND
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Get.back(),
-                child: Container(
-                  color: Colors.black.withValues(alpha: 0.35),
-                ),
+          /// FADED BACKGROUND — outside SafeArea so it covers full screen
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => Get.back(),
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.35),
               ),
             ),
+          ),
 
-            /// PROFILE POPUP
-            const Positioned(
-              top: 75,
-              right: 18,
-              child: ProfilePopup(),
-            ),
-          ],
-        ),
+          /// PROFILE POPUP
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 60,
+            right: 18,
+            child: const ProfilePopup(),
+          ),
+        ],
       ),
     );
   }

@@ -14,198 +14,174 @@ class CourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Get.find<CourseAdminController>();
     final isCore = course.type == 'Core';
-
-    final Color leftBorderColor =
-        isCore ? AppColors.accentProgramming1 : AppColors.assignmentColor;
+    final barColor  = isCore ? const Color(0xFF0C4D83) : const Color(0xFFFFC258);
+    final badgeBg   = isCore ? const Color(0xFFDDEDFA) : const Color(0xFFFFF3DF);
+    final badgeText = isCore ? const Color(0xFF0C4D83) : const Color(0xFFB18334);
 
     return Container(
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border(
-          left: BorderSide(color: leftBorderColor, width: 5),
-        ),
-      
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── TOP ROW ───────────────────────────────────────────────
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: isCore
-                        ? AppColors.bluegroundicon
-                        : const Color(0xFFFFF3DF),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    isCore
-                        ? Icons.grid_view_rounded
-                        : Icons.trending_up_rounded,
-                    size: 22,
-                    color: isCore
-                        ? AppColors.accentProgramming1
-                        : AppColors.assignmentColor,
-                  ),
+            // ── Left colored bar ─────────────────────────────────────
+            Container(
+              width: 5,
+              decoration: BoxDecoration(
+                color: barColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    course.name,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.accentProgramming1,
-                      height: 1.3,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    _Badge(text: course.type, isCore: isCore),
-                    const SizedBox(height: 4),
-                    _Badge(text: "${course.credits} credits", isCore: isCore),
-                  ],
-                ),
-              ],
+              ),
             ),
 
-            const SizedBox(height: 12),
-
-            // ── DETAILS ───────────────────────────────────────────────
-            Row(children: [
-              Expanded(
-                  child: _DetailBox(label: "Faculty", value: course.faculty)),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: _DetailBox(label: "Level", value: course.level)),
-            ]),
-            const SizedBox(height: 8),
-            Row(children: [
-              Expanded(
-                  child: _DetailBox(label: "Major", value: course.major)),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: _DetailBox(
-                      label: "Prerequisite", value: course.prerequisite)),
-            ]),
-
-            const SizedBox(height: 14),
-
-            // ── BUTTONS ───────────────────────────────────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Edit button
-                GestureDetector(
-                  onTap: () {
-                    c.loadEditForm(course);
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (_) => EditCourseSheet(course: course),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 36, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      "Edit course",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Delete button
-                GestureDetector(
-                  onTap: () {
-                    c.deletingCourse.value = course;
-                    showDialog(
-                      context: context,
-                      barrierColor: Colors.black.withOpacity(0.5),
-                      builder: (_) => const DeleteCourseDialog(),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 36, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Color(0x14000000),
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Row(children: [
-                      Icon(Icons.delete_outline,
-                          color: AppColors.fail, size: 22),
-                      const SizedBox(width: 4),
-                      Text(
-                        "Delete",
-                        style: TextStyle(
-                          color: AppColors.fail,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
+            // ── Content ──────────────────────────────────────────────
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 14, 10, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Course name + edit button
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            course.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1A2B4A),
+                            ),
+                          ),
                         ),
+                        GestureDetector(
+                          onTap: () {
+                            c.loadEditForm(course);
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) => EditCourseSheet(course: course),
+                            );
+                          },
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0F4FA),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Icon(Icons.edit_outlined,
+                                color: Colors.grey.shade500, size: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Faculty · Major · Level
+                    Row(
+                      children: [
+                        Icon(Icons.person_outline_rounded,
+                            size: 15, color: Colors.grey.shade400),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            '${course.faculty}  ·  ${course.major}',
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey.shade500),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Type + credits + level badges
+                    Row(
+                      children: [
+                        Icon(Icons.people_alt_outlined,
+                            size: 15, color: Colors.grey.shade400),
+                        const SizedBox(width: 6),
+                        _Badge(
+                            text: course.type,
+                            bg: badgeBg,
+                            textColor: badgeText),
+                        const SizedBox(width: 6),
+                        _Badge(
+                            text: '${course.credits} cr',
+                            bg: badgeBg,
+                            textColor: badgeText),
+                        const SizedBox(width: 6),
+                        _Badge(
+                            text: course.level,
+                            bg: badgeBg,
+                            textColor: badgeText),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Semester status
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: course.isActive
+                            ? const Color(0xFFE6F4EA)
+                            : const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ]),
-                  ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            course.isActive
+                                ? Icons.check_circle_rounded
+                                : Icons.radio_button_unchecked_rounded,
+                            size: 13,
+                            color: course.isActive
+                                ? const Color(0xFF137333)
+                                : AppColors.smalltext,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            course.isActive
+                                ? 'Active · ${course.semesterLabel}'
+                                : 'Not assigned this semester',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: course.isActive
+                                  ? const Color(0xFF137333)
+                                  : AppColors.smalltext,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── Detail Box ────────────────────────────────────────────────────────────────
-
-class _DetailBox extends StatelessWidget {
-  final String label, value;
-  const _DetailBox({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEBF4FC),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 11, color: AppColors.smalltext)),
-          const SizedBox(height: 2),
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.accentProgramming1)),
-        ],
       ),
     );
   }
@@ -215,27 +191,25 @@ class _DetailBox extends StatelessWidget {
 
 class _Badge extends StatelessWidget {
   final String text;
-  final bool isCore;
-  const _Badge({required this.text, required this.isCore});
+  final Color  bg;
+  final Color  textColor;
+  const _Badge(
+      {required this.text, required this.bg, required this.textColor});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: isCore ? AppColors.bluegroundicon : const Color(0xFFFFF3DF),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(text,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: isCore
-                ? AppColors.accentProgramming1
-                : AppColors.assignmentColor,
-          )),
-    );
-  }
+  Widget build(BuildContext context) => Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(text,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: textColor)),
+      );
 }
 
 // ── Edit Course Sheet ─────────────────────────────────────────────────────────
@@ -249,106 +223,81 @@ class EditCourseSheet extends StatelessWidget {
     final c = Get.find<CourseAdminController>();
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 24 + bottomInset),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CourseDragHandle(),
-            const SizedBox(height: 16),
+    final maxHeight = MediaQuery.of(context).size.height * 0.88;
 
-            const Text(
-              "Edit Course",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
-              ),
-            ),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 24 + bottomInset),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CourseDragHandle(),
+              const SizedBox(height: 16),
 
-            const SizedBox(height: 12),
-
-            // Warning banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.LightYellow,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Icon(Icons.info_outline,
-                      color: AppColors.assignmentColor, size: 18),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      "Changes will apply to this course across all semester plans it has been added to.",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.assignmentColor,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            const Text(
-              "Course name",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.smalltext,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Container(
-              width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(9),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: Text(
-                course.name,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.accentProgramming1,
+              const Text(
+                "Edit Course",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryBlue,
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-            const CourseFormFields(),
+              // Warning banner
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.LightYellow,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Icon(Icons.info_outline,
+                        color: AppColors.assignmentColor, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Changes will apply to this course across all semester plans it has been added to.",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.assignmentColor,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-            Obx(() => CoursePrimaryButton(
-                  label: "Save Changes",
-                  loading: c.isSubmitting.value,
-                  textSize: 17,
-                  onTap: c.saveEdit,
-                )),
+              const CourseFormFields(),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 24),
 
-            const CourseCancelButton(),
-          ],
+              Obx(() => CoursePrimaryButton(
+                    label: "Save Changes",
+                    loading: c.isSubmitting.value,
+                    textSize: 17,
+                    onTap: c.saveEdit,
+                  )),
+
+              const SizedBox(height: 10),
+
+              const CourseCancelButton(),
+            ],
+          ),
         ),
       ),
     );

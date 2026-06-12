@@ -1,4 +1,5 @@
 class AssessmentModel {
+  final int    sectionId;
   final String courseName;
   final String courseType;
   final double midterm;
@@ -12,6 +13,7 @@ class AssessmentModel {
   final double attendance;
 
   AssessmentModel({
+    required this.sectionId,
     required this.courseName,
     required this.courseType,
     required this.midterm,
@@ -36,6 +38,7 @@ class AssessmentModel {
             : <String, dynamic>{};
 
     return AssessmentModel(
+      sectionId:          row['section_id']                  as int? ?? 0,
       courseName:         course['name']                              ?? '',
       courseType:         course['type']                              ?? 'Core',
       midterm:            (grades['midterm']           as num?)?.toDouble() ?? 0,

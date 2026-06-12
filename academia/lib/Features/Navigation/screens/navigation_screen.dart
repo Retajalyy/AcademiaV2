@@ -167,7 +167,7 @@ class NavigationController extends GetxController {
           .select('step_number, instruction')
           .eq('from_id', fromId)
           .eq('to_id', toId)
-          .order('step_number');
+          .order('step_number', ascending: true);
       routeSteps.value = (data as List)
           .map((r) => r['instruction'] as String)
           .toList();
@@ -385,20 +385,13 @@ class _StepBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E3A5F),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Color(0xFF5B9BD5),
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.8,
-        ),
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFFF5A623),
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
       ),
     );
   }
@@ -520,7 +513,7 @@ class _LocationCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${location.floor}, ${location.building}',
+                  '${location.floor} . ${location.building}',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.55),
                     fontSize: 12,
@@ -602,6 +595,39 @@ class _CameraPermissionBox extends StatelessWidget {
   }
 }
 
+// ── Dashed Border Painter ─────────────────────────────────────────────────────
+
+class _DashedBorderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFFFC258).withValues(alpha: 0.55)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    const dashWidth = 6.0;
+    const dashSpace = 5.0;
+    const radius = Radius.circular(20);
+
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(0.75, 0.75, size.width - 1.5, size.height - 1.5),
+        radius,
+      ));
+
+    for (final metric in path.computeMetrics()) {
+      double start = 0;
+      while (start < metric.length) {
+        canvas.drawPath(metric.extractPath(start, start + dashWidth), paint);
+        start += dashWidth + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 // ── QR Scanner Box ────────────────────────────────────────────────────────────
 
 class _QrScannerBox extends StatelessWidget {
@@ -610,51 +636,52 @@ class _QrScannerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 260,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      clipBehavior: Clip.hardEdge,
-      child: Stack(
-        children: [
-          MobileScanner(
-            controller: c.scannerController,
-            onDetect: c.onQrDetected,
-          ),
-          // Corner overlay
-          Center(
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFF5A623), width: 2.5),
+    return CustomPaint(
+      foregroundPainter: _DashedBorderPainter(),
+      child: Container(
+        height: 300,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A2E45),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+        child: Column(
+          children: [
+            Expanded(
+              child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  children: [
+                    Container(
+                      color: Colors.white,
+                      child: MobileScanner(
+                        controller: c.scannerController,
+                        onDetect: c.onQrDetected,
+                      ),
+                    ),
+                    Center(
+                      child: Container(
+                        width: 160,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: const Color(0xFFF5A623), width: 2.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          // Scan label
-          Positioned(
-            bottom: 12,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Point your camera at a QR code on the wall',
-                  style: TextStyle(color: Colors.white, fontSize: 11),
-                ),
-              ),
+            const SizedBox(height: 14),
+            const Text(
+              'Point your camera at a QR code on the wall',
+              style: TextStyle(color: Colors.white, fontSize: 12),
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,7 +1,7 @@
 import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 import '../controllers/registration_controller.dart';
 
 class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -38,13 +38,7 @@ class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget 
                     ),
                   ),
                   const Spacer(),
-                  SvgPicture.asset(
-                    'lib/assets/Icons/notification.svg',
-                    width: 24,
-                    height: 24,
-                    colorFilter: const ColorFilter.mode(
-                        Colors.white, BlendMode.srcIn),
-                  ),
+                  const NotificationBell(),
                 ],
               ),
             ),

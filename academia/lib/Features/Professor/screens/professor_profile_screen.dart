@@ -52,10 +52,7 @@ class _AvatarHeader extends StatelessWidget {
     final top = MediaQuery.of(context).padding.top;
     return Container(
       padding: EdgeInsets.fromLTRB(16, top + 16, 16, 28),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
+      color: AppColors.primaryBlue,
       child: Column(
         children: [
           // Avatar with camera overlay
@@ -151,7 +148,7 @@ class _InfoNotice extends StatelessWidget {
             SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Name, Instructor ID, Department, and University email are set by the university and cannot be edited.',
+                'Name, Instructor ID, Department, Academic Role, and University email are set by the university and cannot be edited.',
                 style: TextStyle(
                   fontSize: 12,
                   color: Color(0xFF2468A0),
@@ -214,6 +211,14 @@ class _UniversityInfoSection extends StatelessWidget {
                           ? c.department.value
                           : '—',
                       icon: Icons.school_outlined,
+                    ),
+                    _divider(),
+                    _ReadOnlyField(
+                      label: 'Academic Role',
+                      value: c.academicRole.value.isNotEmpty
+                          ? c.academicRole.value
+                          : '—',
+                      icon: Icons.work_outline_rounded,
                     ),
                     _divider(),
                     _ReadOnlyField(

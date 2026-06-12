@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../../Core/screens/file_preview_screen.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
 import '../controllers/course_details_controller.dart';
@@ -117,19 +117,17 @@ class MaterialItem extends StatelessWidget {
     }
   }
 
-  Future<void> _open() async {
+  void _open() {
     if (fileUrl == null || fileUrl!.isEmpty) {
       Get.snackbar('Unavailable', 'No file URL available',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    final uri = Uri.parse(fileUrl!);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar('Error', 'Could not open file',
-          snackPosition: SnackPosition.BOTTOM);
-    }
+    openFilePreview(
+      fileUrl:  fileUrl!,
+      fileName: title,
+      fileType: fileType,
+    );
   }
 
   @override

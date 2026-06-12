@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../controllers/registration_controller.dart';
 import '../models/registration_model.dart';
+import '../screens/registration_confirm_screen.dart';
 
 class RegistrationOpenWidget extends StatelessWidget {
   const RegistrationOpenWidget({super.key});
@@ -689,8 +690,9 @@ class _ConfirmButton extends StatelessWidget {
           width: double.infinity,
           height: h * 0.065,
           child: ElevatedButton(
-            onPressed:
-                ctrl.isSubmitting.value ? null : ctrl.confirmRegistration,
+            onPressed: ctrl.isSubmitting.value
+                ? null
+                : () => Get.to(() => const RegistrationConfirmScreen()),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
               foregroundColor: Colors.white,

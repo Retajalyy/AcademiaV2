@@ -29,7 +29,7 @@ class ActivePlansSection extends StatelessWidget {
             ),
             const Spacer(),
             TextButton(
-              onPressed: () {},
+              onPressed: () => Get.toNamed('/allRegistrationPlans'),
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,

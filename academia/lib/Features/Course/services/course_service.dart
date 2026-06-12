@@ -38,20 +38,27 @@ class CourseService {
         )
         .inFilter('section_id', sectionIds);
 
-    // Fetch course_id for each section_id
+    // Fetch course_id and type for each section_id
     final sectionsData = await _db
         .from('sections')
-        .select('id, course_id')
+        .select('id, course_id, courses(type)')
         .inFilter('id', sectionIds);
 
-    final sectionToCourseId = {
-      for (final s in sectionsData as List)
-        s['id'] as int: s['course_id'] as int,
-    };
+    final sectionToCourseId = <int, int>{};
+    final sectionToType     = <int, String>{};
+    for (final s in sectionsData as List) {
+      final id = s['id'] as int;
+      sectionToCourseId[id] = s['course_id'] as int;
+      sectionToType[id]     = (s['courses'] as Map?)?['type'] as String? ?? '';
+    }
 
     return (data as List).map((row) {
       final sId = row['section_id'] as int? ?? 0;
-      return CourseModel.fromRgs(row, courseId: sectionToCourseId[sId] ?? 0);
+      return CourseModel.fromRgs(
+        row,
+        courseId: sectionToCourseId[sId] ?? 0,
+        type: sectionToType[sId] ?? '',
+      );
     }).toList();
   }
 }

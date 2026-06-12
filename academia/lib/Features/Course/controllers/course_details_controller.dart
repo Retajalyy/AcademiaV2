@@ -9,14 +9,19 @@ class CourseDetailsController extends GetxController {
   var isLoading    = false.obs;
   var errorMessage = ''.obs;
   var doctorName   = ''.obs;
+  var courseName   = ''.obs;
+  var sectionId    = 0.obs;
+  var courseId     = 0.obs;
 
   @override
   void onInit() {
     super.onInit();
-    final args     = Get.arguments as Map<String, dynamic>?;
-    final courseId = args?['courseId'] as int? ?? 0;
+    final args       = Get.arguments as Map<String, dynamic>?;
+    courseId.value   = args?['courseId']   as int?    ?? 0;
+    sectionId.value  = args?['sectionId']  as int?    ?? 0;
+    courseName.value = args?['courseName'] as String? ?? '';
     doctorName.value = args?['doctorName'] as String? ?? '';
-    fetchDetails(courseId);
+    fetchDetails(courseId.value);
   }
 
   Future<void> fetchDetails(int courseId) async {

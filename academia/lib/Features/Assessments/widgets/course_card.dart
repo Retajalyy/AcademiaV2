@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../Core/utilities/text_style.dart';
 import '../../../Core/utilities/colors.dart';
+import 'package:academia/Features/Attendance/screens/student_attendance_screen.dart';
 
 class CourseCard extends StatelessWidget {
+  final int    sectionId;
   final String title;
   final String type;
 
   final String midterm;
   final String midtermStatus;
+
+  final String quiz;
+  final String quizStatus;
 
   final String participation;
   final String participationStatus;
@@ -20,10 +26,13 @@ class CourseCard extends StatelessWidget {
 
   const CourseCard({
     super.key,
+    required this.sectionId,
     required this.title,
     required this.type,
     required this.midterm,
     required this.midtermStatus,
+    required this.quiz,
+    required this.quizStatus,
     required this.participation,
     required this.participationStatus,
     required this.attendance,
@@ -266,15 +275,25 @@ class CourseCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _stat("Midterm", midterm, midtermStatus)),
+              Expanded(child: _stat("Midterm",  midterm,  midtermStatus)),
+              const SizedBox(width: 8),
+              Expanded(child: _stat("Assignments", quiz, quizStatus)),
+              const SizedBox(width: 8),
+              Expanded(child: _stat("Classwork", participation, participationStatus)),
               const SizedBox(width: 8),
               Expanded(
-                  child: _stat(
-                      "Participation", participation, participationStatus)),
-              const SizedBox(width: 8),
-              Expanded(
-                  child:
-                      _stat("Attendance", attendance, attendanceStatus)),
+                child: GestureDetector(
+                  onTap: () => Get.to(
+                    () => const StudentAttendanceScreen(),
+                    arguments: {
+                      'sectionId':  sectionId,
+                      'courseName': title,
+                      'doctorName': '',
+                    },
+                  ),
+                  child: _stat("Attendance", attendance, attendanceStatus),
+                ),
+              ),
             ],
           ),
 

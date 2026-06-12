@@ -70,6 +70,26 @@ class ProfessorCourseDetailController extends GetxController {
     }
   }
 
+  Future<void> renameMaterial(int materialId, String newName) async {
+    try {
+      await _service.renameCourseMaterial(materialId, newName);
+      await _load();
+    } catch (e) {
+      Get.snackbar('Error', 'Rename failed: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> deleteMaterial(int materialId, String? fileUrl) async {
+    try {
+      await _service.deleteCourseMaterial(materialId, fileUrl);
+      await _load();
+    } catch (e) {
+      Get.snackbar('Error', 'Delete failed: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
   @override
   Future<void> refresh() => _load();
 }

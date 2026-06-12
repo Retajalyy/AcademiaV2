@@ -20,6 +20,7 @@ class Planadminscreen2 extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             const PlanHeader2(currentStep: 2),
@@ -33,10 +34,14 @@ class Planadminscreen2 extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// GROUP FORM
-                      GroupFormWidget(
-                        onAddAnotherGroup: () {},
-                      ),
+                      /// GROUP FORM — keyed by active index so it rebuilds
+                      /// when switching groups, restoring each group's state
+                      Obx(() => GroupFormWidget(
+                        key: ValueKey(
+                            Get.find<PlanAdminController>().activeGroupIndex.value),
+                        onAddAnotherGroup:
+                            Get.find<PlanAdminController>().addGroup,
+                      )),
 
                       const SizedBox(height: 24),
 

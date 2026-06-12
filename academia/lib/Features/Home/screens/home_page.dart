@@ -1,9 +1,11 @@
+import 'package:academia/Core/controllers/tab_controller.dart';
 import 'package:academia/Core/utilities/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:academia/Features/Home/controllers/home_controller.dart';
 import 'package:academia/Features/Home/widgets/Due_soon_card.dart';
 import 'package:academia/Features/Home/widgets/schedule_card.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -186,35 +188,35 @@ class _Header extends StatelessWidget {
               ),
               // Notification bell
               GestureDetector(
-                onTap: () => Get.toNamed('/announcements'),
-                child: Stack(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(sw * 0.022),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
+                onTap: () async {
+                  await Get.toNamed('/announcements');
+                  Get.put(NotificationController(), permanent: true).fetchUnread();
+                },
+                child: Obx(() {
+                  final hasUnread = Get.put(NotificationController(), permanent: true).unreadCount.value > 0;
+                  return Stack(
+                    children: [
+                      Icon(
                         Icons.notifications_outlined,
                         color: Colors.white,
                         size: sw * 0.065,
                       ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        width: sw * 0.025,
-                        height: sw * 0.025,
-                        decoration: const BoxDecoration(
-                          color: AppColors.secondaryYellow,
-                          shape: BoxShape.circle,
+                      if (hasUnread)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            width: sw * 0.025,
+                            height: sw * 0.025,
+                            decoration: const BoxDecoration(
+                              color: AppColors.secondaryYellow,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                }),
               ),
             ],
           ),
@@ -354,7 +356,7 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => Get.toNamed('/schedule'),
+            onTap: () => AppTabController.to.switchTo(1),
             child: Text(
               actionLabel,
               style: TextStyle(

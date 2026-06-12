@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
 import 'package:academia/Features/Payement/screens/PayementScreen.dart';
@@ -30,7 +31,7 @@ class PayementStatusHeader extends StatelessWidget {
                   );
                 },
               ),
-              const Icon(Icons.notifications, color: Colors.white,size: 28),
+              const NotificationBell(),
             ],
           ),
 

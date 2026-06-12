@@ -23,7 +23,7 @@ class CourseModel {
     required this.location,
   });
 
-  factory CourseModel.fromRgs(Map<String, dynamic> row, {int courseId = 0}) {
+  factory CourseModel.fromRgs(Map<String, dynamic> row, {int courseId = 0, String type = ''}) {
     final start = (row['lecture_start'] as String?)?.substring(0, 5) ?? '--:--';
     final end   = (row['lecture_end']   as String?)?.substring(0, 5) ?? '--:--';
     return CourseModel(
@@ -32,7 +32,7 @@ class CourseModel {
       title:     row['course_name']       as String? ?? '',
       code:      row['course_code']       as String? ?? '',
       doctor:    row['lecture_instructor'] as String? ?? '',
-      type:      '',
+      type:      type,
       credits:   '${row['credit_hours'] ?? 3} credits',
       day:       row['lecture_day']       as String? ?? '',
       time:      '$start - $end',

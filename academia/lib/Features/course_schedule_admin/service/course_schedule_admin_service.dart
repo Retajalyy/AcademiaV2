@@ -5,10 +5,23 @@ class CourseScheduleAdminService {
   final _db = Supabase.instance.client;
 
   Future<List<CourseScheduleGroupModel>> fetchGroups() async {
+    // Only show groups that belong to an active or open registration window
+    final activeWindows = await _db
+        .from('registration_windows')
+        .select('id')
+        .inFilter('status', ['active', 'open']);
+
+    final activeWindowIds = (activeWindows as List)
+        .map((w) => w['id'] as int)
+        .toList();
+
+    if (activeWindowIds.isEmpty) return [];
+
     final results = await Future.wait([
       _db
           .from('registration_groups')
           .select('id, label, level, faculty, major, registration_group_sections(course_name)')
+          .inFilter('window_id', activeWindowIds)
           .order('faculty')
           .order('level')
           .order('label'),

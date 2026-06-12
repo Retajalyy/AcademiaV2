@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../Core/utilities/colors.dart';
-import 'package:academia/Core/widgets/side_menu.dart';
 // ── Model ─────────────────────────────────────────────────────────────────────
 
 class AnnouncementModel {
@@ -193,16 +192,13 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F8),
-      drawer: const SideMenu(activeItem: 'Announcements'),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _Header(c: c),
-            _SearchBar(c: c),
-            _TabBar(c: c),
-            Expanded(child: _Body(c: c)),
-          ],
-        ),
+      body: Column(
+        children: [
+          _Header(c: c),
+          _SearchBar(c: c),
+          _TabBar(c: c),
+          Expanded(child: _Body(c: c)),
+        ],
       ),
     );
   }
@@ -218,99 +214,39 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.primaryBlue,
-
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Back + title
-          Row(
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 16, 20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Builder(
-                builder: (ctx) => IconButton(
-                  icon: const Icon(Icons.menu_rounded, color: Colors.white),
-                  onPressed: () => Scaffold.of(ctx).openDrawer(),
-                ),
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white, size: 20),
+                onPressed: Get.back,
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Announcements',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold)),
-                    Text('View all updates from your university',
-                        style: TextStyle(color: Colors.white60, fontSize: 11)),
-                  ],
-                ),
+              const SizedBox(width: 4),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Announcements',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'View all updates from your university',
+                    style: TextStyle(color: Colors.white60, fontSize: 13),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          // Unread summary card
-          Obx(() {
-            final count = c.unreadCount.value;
-            return GestureDetector(
-              onTap: count > 0 ? () => c.setTab('Unread') : null,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: const Color(0xFF93C5FD).withValues(alpha: 0.5)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF93C5FD).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.notifications_outlined,
-                          color: Color(0xFF93C5FD), size: 18),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            count > 0
-                                ? '$count Unread Announcement${count == 1 ? '' : 's'}'
-                                : 'All caught up!',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            count > 0
-                                ? 'Tap to view unread messages'
-                                : 'No new announcements',
-                            style: const TextStyle(
-                                color: Colors.white54, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (count > 0)
-                      const Icon(Icons.arrow_forward_ios_rounded,
-                          color: Colors.white38, size: 14),
-                  ],
-                ),
-              ),
-            );
-          }),
-          const SizedBox(height: 14),
-        ],
+        ),
       ),
     );
   }
@@ -325,21 +261,20 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.primaryBlue,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      color: const Color(0xFFF2F4F8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: TextField(
         onChanged: c.onSearch,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: const TextStyle(color: Color(0xFF1A2B4A), fontSize: 14),
         decoration: InputDecoration(
           hintText: 'Search announcements...',
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-          prefixIcon: Icon(Icons.search,
-              color: Colors.white.withValues(alpha: 0.6), size: 20),
+          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13),
+          prefixIcon: Icon(Icons.search, color: Colors.grey.shade400, size: 20),
           filled: true,
-          fillColor: Colors.white.withValues(alpha: 0.12),
+          fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(24),
             borderSide: BorderSide.none,
           ),
         ),
@@ -357,10 +292,10 @@ class _TabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.primaryBlue,
+      color: const Color(0xFFF2F4F8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
         child: Obx(() => Row(
               children: c.tabs.map((tab) {
                 final active = c.activeTab.value == tab;
@@ -369,20 +304,23 @@ class _TabBar extends StatelessWidget {
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 7),
+                        horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: active
-                          ? Colors.white
-                          : Colors.white.withValues(alpha: 0.15),
+                          ? AppColors.primaryBlue
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
+                      border: active
+                          ? null
+                          : Border.all(color: Colors.grey.shade300),
                     ),
                     child: Text(
                       tab,
                       style: TextStyle(
                         color: active
-                            ? AppColors.primaryBlue
-                            : Colors.white,
-                        fontSize: 12,
+                            ? Colors.white
+                            : Colors.grey.shade600,
+                        fontSize: 13,
                         fontWeight: active
                             ? FontWeight.w700
                             : FontWeight.w500,
@@ -502,12 +440,9 @@ class _AnnouncementCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => _showDetail(context),
       child: Container(
-        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: ann.isRead
-              ? Colors.white
-              : const Color(0xFFEEF3FF),
-          borderRadius: BorderRadius.circular(14),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -515,97 +450,98 @@ class _AnnouncementCard extends StatelessWidget {
               offset: const Offset(0, 2),
             ),
           ],
-          border: ann.isRead
-              ? null
-              : Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.15)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Type badge + time
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    if (!ann.isRead)
-                      Container(
-                        width: 7,
-                        height: 7,
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryBlue,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: _typeColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Left accent border
+              Container(
+                width: 4,
+                decoration: BoxDecoration(
+                  color: _typeColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    bottomLeft: Radius.circular(12),
+                  ),
+                ),
+              ),
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(
-                            ann.type == 'urgent'
-                                ? Icons.warning_amber_rounded
-                                : ann.type == 'warning'
-                                    ? Icons.error_outline_rounded
-                                    : ann.type == 'info'
-                                        ? Icons.info_outline_rounded
-                                        : Icons.campaign_outlined,
-                            color: _typeColor,
-                            size: 12,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _typeLabel,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: _typeColor,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _typeColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
                             ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  ann.type == 'urgent'
+                                      ? Icons.access_time_rounded
+                                      : ann.type == 'warning'
+                                          ? Icons.error_outline_rounded
+                                          : ann.type == 'info'
+                                              ? Icons.info_outline_rounded
+                                              : Icons.notifications_outlined,
+                                  color: _typeColor,
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _typeLabel,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: _typeColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            ann.timeAgo,
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey.shade400),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        ann.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A2B4A),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        ann.body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  ann.timeAgo,
-                  style: TextStyle(
-                      fontSize: 11, color: Colors.grey.shade400),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            Text(
-              ann.title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1A2B4A),
               ),
-            ),
-
-            const SizedBox(height: 4),
-
-            Text(
-              ann.body,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-                height: 1.4,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -71,7 +71,7 @@ class ProfessorHomeScreen extends StatelessWidget {
                       '${c.professorTitle.value}. ${c.professorName.value}',
                       style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
+                          fontSize: 21,
                           fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -90,7 +90,7 @@ class ProfessorHomeScreen extends StatelessWidget {
                         c.avatarInitials,
                         style: const TextStyle(
                             color: AppColors.primaryBlue,
-                            fontSize: 17,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -157,7 +157,7 @@ class _NextClassCard extends StatelessWidget {
                 'NEXT CLASS',
                 style: TextStyle(
                   color: Colors.white60,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4,
                 ),
@@ -172,38 +172,40 @@ class _NextClassCard extends StatelessWidget {
             item.title,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 10),
 
-          // Time + room + group in one row
+          // Time · Room · Group
           Row(
             children: [
               const Icon(Icons.access_time_outlined,
                   color: Colors.white70, size: 15),
               const SizedBox(width: 5),
               Text('${item.startTime} - ${item.endTime}',
-                  style: const TextStyle(
-                      color: Colors.white70, fontSize: 13)),
+                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
               if (item.location.isNotEmpty) ...[
                 const SizedBox(width: 14),
                 const Icon(Icons.location_on_outlined,
                     color: Colors.white70, size: 15),
                 const SizedBox(width: 5),
                 Text(item.location,
-                    style: const TextStyle(
-                        color: Colors.white70, fontSize: 13)),
+                    style: const TextStyle(color: Colors.white70, fontSize: 13)),
               ],
               if (item.groups.isNotEmpty) ...[
                 const SizedBox(width: 14),
-                const Icon(Icons.group_outlined,
+                const Icon(Icons.people_outlined,
                     color: Colors.white70, size: 15),
                 const SizedBox(width: 5),
-                Text(item.groups.join(' · '),
-                    style: const TextStyle(
-                        color: Colors.white70, fontSize: 13)),
+                Flexible(
+                  child: Text(
+                    item.groups.first,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ],
           ),
@@ -241,7 +243,7 @@ class _TimeBadge extends StatelessWidget {
           _label,
           style: const TextStyle(
             color: AppColors.primaryBlue,
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -267,7 +269,7 @@ class _TodayScheduleSection extends StatelessWidget {
               const Text(
                 "Today's Schedule",
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A2A4A)),
               ),
@@ -277,7 +279,7 @@ class _TodayScheduleSection extends StatelessWidget {
                 child: const Text(
                   'Full Schedule >',
                   style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 10,
                       color: AppColors.primaryBlue,
                       fontWeight: FontWeight.w600),
                 ),
@@ -350,13 +352,13 @@ class _ScheduleItem extends StatelessWidget {
               children: [
                 Text(item.startTime,
                     style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1A2A4A))),
                 const SizedBox(height: 3),
                 Text(item.endTime,
                     style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         color: Color(0xFF9CA3AF))),
               ],
             ),
@@ -387,7 +389,7 @@ class _ScheduleItem extends StatelessWidget {
                       child: Text(
                         item.title,
                         style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: AppColors.primaryBlue),
                       ),
@@ -402,7 +404,7 @@ class _ScheduleItem extends StatelessWidget {
                     if (item.groups.isNotEmpty) item.groups.join(' · '),
                   ].join(' . '),
                   style: const TextStyle(
-                      fontSize: 12, color: Color(0xFF9CA3AF)),
+                      fontSize: 10, color: Color(0xFF9CA3AF)),
                 ),
               ],
             ),
@@ -432,7 +434,7 @@ class _TypeBadge extends StatelessWidget {
       child: Text(
         type,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: FontWeight.w600,
           color: isLecture
               ? AppColors.primaryBlue
@@ -460,17 +462,16 @@ class _AcademicOverviewSection extends StatelessWidget {
                 const Text(
                   'Academic Overview',
                   style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A2A4A)),
                 ),
                 GestureDetector(
-                  onTap: () =>
-                      Get.find<ProfessorNavController>().goTo(2),
+                  onTap: () => Get.toNamed('/academicOverview'),
                   child: const Text(
                     'See All >',
                     style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 10,
                         color: AppColors.primaryBlue,
                         fontWeight: FontWeight.w600),
                   ),
@@ -481,15 +482,20 @@ class _AcademicOverviewSection extends StatelessWidget {
 
             // Assignment card
             if (c.latestAssignment.value != null)
-              _OverviewCard(
-                iconData: Icons.assignment_outlined,
-                iconBg: const Color(0xFFE8F0FE),
-                iconColor: AppColors.primaryBlue,
-                title: c.latestAssignment.value!['title'] as String,
-                subtitle: c.latestAssignment.value!['course'] as String,
-                badge: c.latestAssignment.value!['badge'] as String,
-                badgeColor: const Color(0xFFE6F4EA),
-                badgeTextColor: const Color(0xFF137333),
+              GestureDetector(
+                onTap: () => Get.toNamed('/assignmentOverview',
+                    arguments: c.latestAssignment.value),
+                child: _OverviewCard(
+                  iconData: Icons.assignment_outlined,
+                  iconBg: const Color(0xFFE8F0FE),
+                  iconColor: AppColors.primaryBlue,
+                  title: c.latestAssignment.value!['title'] as String,
+                  subtitle: c.latestAssignment.value!['course'] as String,
+                  badge: c.latestAssignment.value!['badge'] as String,
+                  badgeColor: const Color(0xFFE6F4EA),
+                  badgeTextColor: const Color(0xFF137333),
+                  showArrow: true,
+                ),
               ),
 
             if (c.latestAssignment.value != null)
@@ -541,6 +547,7 @@ class _OverviewCard extends StatelessWidget {
   final String   badge;
   final Color    badgeColor;
   final Color    badgeTextColor;
+  final bool     showArrow;
 
   const _OverviewCard({
     required this.iconData,
@@ -551,6 +558,7 @@ class _OverviewCard extends StatelessWidget {
     required this.badge,
     required this.badgeColor,
     required this.badgeTextColor,
+    this.showArrow = false,
   });
 
   @override
@@ -589,13 +597,13 @@ class _OverviewCard extends StatelessWidget {
               children: [
                 Text(title,
                     style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A2A4A))),
                 const SizedBox(height: 3),
                 Text(subtitle,
                     style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 10,
                         color: Color(0xFF9CA3AF))),
               ],
             ),
@@ -613,14 +621,16 @@ class _OverviewCard extends StatelessWidget {
             ),
             child: Text(badge,
                 style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: badgeTextColor)),
           ),
 
-          const SizedBox(width: 6),
-          Icon(Icons.chevron_right_rounded,
-              color: Colors.grey.shade400, size: 20),
+          if (showArrow) ...[
+            const SizedBox(width: 6),
+            Icon(Icons.chevron_right_rounded,
+                color: Colors.grey.shade400, size: 20),
+          ],
         ],
       ),
     );

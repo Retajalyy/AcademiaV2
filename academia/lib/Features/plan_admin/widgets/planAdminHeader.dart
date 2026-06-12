@@ -14,8 +14,8 @@ class PlanHeader1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(
-        top: 14,
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 14,
         left: 16,
         right: 16,
         bottom: 22,

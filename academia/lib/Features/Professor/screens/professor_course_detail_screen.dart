@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../Core/screens/file_preview_screen.dart';
 import '../../../Core/utilities/colors.dart';
 import '../controllers/professor_course_detail_controller.dart';
 import '../models/professor_course_detail_model.dart';
@@ -228,7 +229,7 @@ class _Body extends StatelessWidget {
             detail: detail, courseId: c.course.courseId, ctrl: c),
         const SizedBox(height: 24),
         _SectionLabel('ACTIONS'),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _ActionsGrid(c: c),
       ],
     );
@@ -367,8 +368,86 @@ class _MaterialRow extends StatelessWidget {
   const _MaterialRow(
       {required this.material, required this.isLast});
 
+  void _showRenameDialog(ProfessorCourseDetailController ctrl) {
+    final nameCtrl = TextEditingController(text: material.name);
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Rename File',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: nameCtrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Enter new name',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF6B7280))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final name = nameCtrl.text.trim();
+              if (name.isEmpty) return;
+              Get.back();
+              ctrl.renameMaterial(material.id, name);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text('Rename'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteDialog(ProfessorCourseDetailController ctrl) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete File',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        content: Text(
+            'Are you sure you want to delete "${material.name}"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: const Text('Cancel',
+                style: TextStyle(color: Color(0xFF6B7280))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              ctrl.deleteMaterial(material.id, material.fileUrl);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   bool get _isAssignment =>
-      material.fileType == 'DOCX' || material.fileType == 'DOC';
+      material.fileType == 'DOCX' ||
+      material.fileType == 'DOC' ||
+      material.materialType == 'Assignment' ||
+      material.materialType == 'Quiz';
 
   Color get _iconBg => _isAssignment
       ? const Color(0xFFFFF3DF)
@@ -426,13 +505,61 @@ class _MaterialRow extends StatelessWidget {
               ),
 
               // Eye icon
-              Icon(Icons.visibility_outlined,
-                  size: 20, color: Colors.grey.shade400),
+              GestureDetector(
+                onTap: () {
+                  final url = material.fileUrl;
+                  if (url == null || url.isEmpty) return;
+                  openFilePreview(
+                    fileUrl:  url,
+                    fileName: material.name,
+                    fileType: material.fileType,
+                  );
+                },
+                child: Icon(Icons.visibility_outlined,
+                    size: 20, color: Colors.grey.shade400),
+              ),
               const SizedBox(width: 12),
 
               // Three dots
-              Icon(Icons.more_vert_rounded,
-                  size: 20, color: Colors.grey.shade400),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert_rounded,
+                    size: 20, color: Colors.grey.shade400),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                onSelected: (value) {
+                  final ctrl = Get.find<ProfessorCourseDetailController>();
+                  if (value == 'rename') {
+                    _showRenameDialog(ctrl);
+                  } else if (value == 'delete') {
+                    _showDeleteDialog(ctrl);
+                  }
+                },
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'rename',
+                    child: Row(
+                      children: [
+                        Icon(Icons.drive_file_rename_outline_rounded,
+                            size: 18, color: Color(0xFF1A2B4A)),
+                        SizedBox(width: 10),
+                        Text('Rename'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline_rounded,
+                            size: 18, color: Colors.red),
+                        SizedBox(width: 10),
+                        Text('Delete',
+                            style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -471,20 +598,22 @@ class _ActionsGrid extends StatelessWidget {
             : 'Assign\nGrades',
         iconColor: AppColors.primaryBlue,
         iconBg: AppColors.lightblue,
-        onTap: () => Get.snackbar(
-            c.isTA ? 'TA Access' : 'Coming soon',
-            c.isTA
-                ? 'You can grade quizzes & assignments only'
-                : 'Assign Grades',
-            snackPosition: SnackPosition.BOTTOM),
+        onTap: () => Get.toNamed('/assignGrades', arguments: {
+          'course':      c.course,
+          'professorId': c.professorId,
+          'isTA':        c.isTA,
+        }),
       ),
       _ActionItem(
         icon: Icons.file_copy_outlined,
         label: 'View\nSubmissions',
         iconColor: AppColors.assignmentColor,
         iconBg: AppColors.LightYellow,
-        onTap: () => Get.snackbar('Coming soon', 'View Submissions',
-            snackPosition: SnackPosition.BOTTOM),
+        onTap: () => Get.toNamed('/submissions', arguments: {
+          'course':      c.course,
+          'professorId': c.professorId,
+          'isTA':        c.isTA,
+        }),
       ),
       _ActionItem(
         icon: Icons.calendar_month_outlined,

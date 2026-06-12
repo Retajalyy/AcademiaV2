@@ -17,7 +17,7 @@ class UploadMaterialScreen extends StatelessWidget {
           _buildHeader(c),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -41,8 +41,9 @@ class UploadMaterialScreen extends StatelessWidget {
 
   Widget _buildHeader(UploadMaterialController c) {
     return Container(
+      width: double.infinity,
       color: AppColors.primaryBlue,
-      padding: const EdgeInsets.fromLTRB(16, 54, 16, 22),
+      padding: const EdgeInsets.fromLTRB(20, 54, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

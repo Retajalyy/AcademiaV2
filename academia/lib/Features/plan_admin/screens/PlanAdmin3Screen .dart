@@ -25,10 +25,12 @@ class Planadminscreen3 extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             PlanHeader3(
-              activeTab: c.activeGroupTab,
+              activeTab:     c.activeGroupTab,
+              groupLabels:   c.savedGroupLabels,
               onTabSelected: c.selectGroupTab,
             ),
 

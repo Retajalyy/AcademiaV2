@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../model/plan_admin_model.dart';
 import '../service/plan_admin_service.dart';
+import '../../Registiration_admin/controller/registiration_controller.dart';
 
 class PlanAdminController extends GetxController {
   final PlanAdminService _service;
@@ -40,15 +41,43 @@ class PlanAdminController extends GetxController {
   // ── Screen 2: selected course names ──────────────────────────────────────
   final RxList<String> selectedCourseNames = <String>[].obs;
 
-  // ── Screen 2: per-course assignment state ────────────────────────────────
-  final RxMap<String, CourseAssignment> assignments =
-      <String, CourseAssignment>{}.obs;
+  // ── Screen 2: multi-group support ────────────────────────────────────────
+  // Each element = one group's assignments; index = group number
+  final groupAssignments  = <Map<String, CourseAssignment>>[{}].obs;
+  final groupCapacities   = <int>[30].obs;
+  final activeGroupIndex  = 0.obs;
 
-  // ── Group capacity ────────────────────────────────────────────────────────
-  final RxInt groupCapacity = 30.obs;
+  // Active group convenience getters
+  Map<String, CourseAssignment> get assignments =>
+      groupAssignments[activeGroupIndex.value];
 
-  // ── Screen 3: saved group ID + schedule ──────────────────────────────────
-  int? savedGroupId;
+  int get groupCapacity => groupCapacities[activeGroupIndex.value];
+
+  String groupLabel(int i) {
+    final m = selectedMajor.value;
+    final prefix = m.length >= 2 ? m.substring(0, 2).toUpperCase() : m.toUpperCase();
+    return '$prefix${selectedLevel.value > 0 ? selectedLevel.value : ''}${i + 1}';
+  }
+
+  void addGroup() {
+    // Refresh current group state (already kept in sync by setters)
+    final newGroup = <String, CourseAssignment>{
+      for (final c in selectedCourseNames) c: CourseAssignment(),
+    };
+    groupAssignments.add(newGroup);
+    groupCapacities.add(30);
+    activeGroupIndex.value = groupAssignments.length - 1;
+    groupAssignments.refresh();
+  }
+
+  void switchGroup(int index) {
+    activeGroupIndex.value = index;
+    groupAssignments.refresh();
+  }
+
+  // ── Screen 3: saved group IDs + schedule ─────────────────────────────────
+  final savedGroupIds    = <int>[];
+  int?  savedGroupId; // last saved (kept for compat)
   final RxList<LectureScheduleModel> scheduleCards =
       <LectureScheduleModel>[].obs;
 
@@ -57,7 +86,8 @@ class PlanAdminController extends GetxController {
   final RxString errorMessage = ''.obs;
 
   // ── Screen 3 tab ──────────────────────────────────────────────────────────
-  final RxString activeGroupTab = 'SE1'.obs;
+  final RxString       activeGroupTab   = ''.obs;
+  final RxList<String> savedGroupLabels = <String>[].obs;
 
   @override
   void onInit() {
@@ -188,43 +218,61 @@ class PlanAdminController extends GetxController {
       selectedCourseNames.contains(courseName);
 
   // ── Per-course assignment setters ─────────────────────────────────────────
-  void setLectureProfessor(String c, int? id)    { _a(c).lectureProfessorId = id; assignments.refresh(); }
-  void setLectureDay(String c, String? v)        { _a(c).lectureDay  = v; assignments.refresh(); }
-  void setLectureHall(String c, String? v)       { _a(c).lectureHall = v; assignments.refresh(); }
-  void setLectureFrom(String c, String? v)       { _a(c).lectureFrom = v; assignments.refresh(); }
-  void setLectureTo(String c, String? v)         { _a(c).lectureTo   = v; assignments.refresh(); }
-  void toggleSection(String c, bool has)         { _a(c).hasSection  = has; assignments.refresh(); }
-  void setSectionProfessor(String c, int? id)    { _a(c).sectionProfessorId = id; assignments.refresh(); }
-  void setSectionDay(String c, String? v)        { _a(c).sectionDay  = v; assignments.refresh(); }
-  void setSectionHall(String c, String? v)       { _a(c).sectionHall = v; assignments.refresh(); }
-  void setSectionFrom(String c, String? v)       { _a(c).sectionFrom = v; assignments.refresh(); }
-  void setSectionTo(String c, String? v)         { _a(c).sectionTo   = v; assignments.refresh(); }
+  void setLectureProfessor(String c, int? id)    { _a(c).lectureProfessorId = id; groupAssignments.refresh(); }
+  void setLectureDay(String c, String? v)        { _a(c).lectureDay  = v; groupAssignments.refresh(); }
+  void setLectureHall(String c, String? v)       { _a(c).lectureHall = v; groupAssignments.refresh(); }
+  void setLectureFrom(String c, String? v)       { _a(c).lectureFrom = v; groupAssignments.refresh(); }
+  void setLectureTo(String c, String? v)         { _a(c).lectureTo   = v; groupAssignments.refresh(); }
+  void toggleSection(String c, bool has)         { _a(c).hasSection  = has; groupAssignments.refresh(); }
+  void setSectionProfessor(String c, int? id)    { _a(c).sectionProfessorId = id; groupAssignments.refresh(); }
+  void setSectionDay(String c, String? v)        { _a(c).sectionDay  = v; groupAssignments.refresh(); }
+  void setSectionHall(String c, String? v)       { _a(c).sectionHall = v; groupAssignments.refresh(); }
+  void setSectionFrom(String c, String? v)       { _a(c).sectionFrom = v; groupAssignments.refresh(); }
+  void setSectionTo(String c, String? v)         { _a(c).sectionTo   = v; groupAssignments.refresh(); }
 
   CourseAssignment _a(String course) =>
       assignments.putIfAbsent(course, () => CourseAssignment());
 
   // ── Capacity ──────────────────────────────────────────────────────────────
-  void incrementCapacity() => groupCapacity.value++;
+  void incrementCapacity() {
+    groupCapacities[activeGroupIndex.value]++;
+    groupCapacities.refresh();
+  }
   void decrementCapacity() {
-    if (groupCapacity.value > 1) groupCapacity.value--;
+    if (groupCapacities[activeGroupIndex.value] > 1) {
+      groupCapacities[activeGroupIndex.value]--;
+      groupCapacities.refresh();
+    }
   }
 
-  // ── Save to DB ────────────────────────────────────────────────────────────
+  // ── Save to DB — saves ALL groups ────────────────────────────────────────
   Future<void> saveAssignments() async {
     isLoading.value    = true;
     errorMessage.value = '';
     try {
       final profNames = { for (final p in professors) p.id: p.name };
-      final groupId = await _service.saveGroupAssignments(
-        faculty:        selectedFaculty.value,
-        major:          selectedMajor.value,
-        level:          selectedLevel.value,
-        groupCapacity:  groupCapacity.value,
-        assignments:    assignments,
-        professorNames: profNames,
-      );
-      savedGroupId = groupId;
-      await _loadSchedule(groupId);
+      savedGroupIds.clear();
+      final labels = <String>[];
+
+      for (int i = 0; i < groupAssignments.length; i++) {
+        final label = groupLabel(i);
+        final groupId = await _service.saveGroupAssignments(
+          faculty:        selectedFaculty.value,
+          major:          selectedMajor.value,
+          level:          selectedLevel.value,
+          groupCapacity:  groupCapacities[i],
+          assignments:    groupAssignments[i],
+          professorNames: profNames,
+          groupLabel:     label,
+        );
+        savedGroupIds.add(groupId);
+        labels.add(label);
+      }
+
+      savedGroupId = savedGroupIds.isNotEmpty ? savedGroupIds.last : null;
+      savedGroupLabels.assignAll(labels);
+      activeGroupTab.value = labels.isNotEmpty ? labels.first : '';
+      if (savedGroupIds.isNotEmpty) await _loadSchedule(savedGroupIds.first);
       Get.snackbar('Saved', 'Group assignments saved successfully.',
           snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
@@ -267,10 +315,15 @@ class PlanAdminController extends GetxController {
   Future<void> publishPlan() async {
     isLoading.value = true;
     try {
-      // Data is already persisted by saveAssignments().
-      // Navigate back to the registration screen so it reloads and shows the plan.
+      // Data already persisted by saveAssignments().
+      // Delete both controllers so fresh state is guaranteed on return.
       Get.delete<PlanAdminController>(force: true);
-      Get.offAllNamed('/NoregistirationAdmin');
+      Get.delete<RegistrationController>(force: true);
+
+      // Navigate — RegistrationAdminScreen will create a fresh
+      // RegistrationController that loads plans from DB on init.
+      Get.offAllNamed('/registirationAdmin');
+
       Get.snackbar(
         'Published',
         'Semester plan published successfully.',

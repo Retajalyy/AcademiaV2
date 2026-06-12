@@ -147,7 +147,8 @@ class ProfileEditScreen extends StatelessWidget {
                 _buildInfoTile(Icons.person_outline, "Full name", user.name),
                 _buildInfoTile(Icons.credit_card_outlined, "Student ID", user.id),
                 _buildInfoTile(Icons.account_balance_outlined, "Faculty", user.faculty),
-                _buildInfoTile(Icons.school_outlined, "Major", user.faculty),
+                _buildInfoTile(Icons.bar_chart_outlined, "Level", user.level),
+                _buildInfoTile(Icons.school_outlined, "Major", user.major),
                 _buildInfoTile(Icons.email_outlined, "University email", user.email),
               ]),
 

@@ -508,6 +508,7 @@ class _FDropdown extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final safeValue = (value != null && items.contains(value)) ? value : null;
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -518,7 +519,7 @@ class _FDropdown extends StatelessWidget {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: value,
+          value: safeValue,
           isExpanded: true,
           hint: Text(
             'Select...',

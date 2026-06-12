@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../utilities/colors.dart';
+import 'notification_bell.dart';
 
 class CustomHeader extends StatelessWidget {
   final String title;
@@ -44,13 +44,7 @@ class CustomHeader extends StatelessWidget {
                     )
                   else
                     const SizedBox.shrink(),
-                  SvgPicture.asset(
-                    'lib/assets/Icons/notification.svg',
-                    width: 24,
-                    height: 24,
-                    colorFilter: const ColorFilter.mode(
-                        Colors.white, BlendMode.srcIn),
-                  ),
+                  const NotificationBell(),
                 ],
               ),
 

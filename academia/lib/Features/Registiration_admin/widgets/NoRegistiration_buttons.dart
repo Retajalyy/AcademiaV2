@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../controller/registiration_controller.dart';
 import 'package:academia/Features/plan_admin/screens/PlanAdminScreen.dart';
+import 'create_plan_sheet.dart';
 
 class RegistrationButtons extends StatelessWidget {
   const RegistrationButtons({super.key});
@@ -34,14 +35,18 @@ class RegistrationButtons extends StatelessWidget {
                 ),
                 onPressed: loading
                     ? null
-                    : () {
-                        Navigator.pushReplacement(
+                    : () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const Planadminscreen1(),
+                            builder: (_) => CreatePlanSheet(
+                              onCreated: () => Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const Planadminscreen1()),
+                              ),
+                            ),
                           ),
-                        );
-                      },
+                        ),
                 child: loading
                     ? const SizedBox(
                         width: 20,
@@ -78,14 +83,18 @@ class RegistrationButtons extends StatelessWidget {
                 ),
                 onPressed: loading
                     ? null
-                    : () {
-                        Navigator.pushReplacement(
+                    : () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const Planadminscreen1(),
+                            builder: (_) => CreatePlanSheet(
+                              onCreated: () => Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const Planadminscreen1()),
+                              ),
+                            ),
                           ),
-                        );
-                      },
+                        ),
                 child: const Text(
                   "Duplicate Previous Plan",
                   style: TextStyle(

@@ -17,6 +17,7 @@ class AssessmentService {
     final data = await _db
         .from('enrollments')
         .select('''
+          section_id,
           sections!inner(
             courses(name, type)
           ),

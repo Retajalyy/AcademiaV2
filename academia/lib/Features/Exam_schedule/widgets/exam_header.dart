@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../../Core/utilities/text_style.dart';
 
@@ -21,11 +22,11 @@ class ExamHeader extends StatelessWidget {
           children: [
 
             /// Top row
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.arrow_back, color: Colors.white, size: 32),
-                Icon(Icons.notifications, color: Colors.white, size: 32),
+                const Icon(Icons.arrow_back, color: Colors.white, size: 32),
+                const NotificationBell(),
               ],
             ),
 

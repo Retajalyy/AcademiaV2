@@ -3,6 +3,7 @@ class StudentModel {
   final String id;
   final String level;
   final String faculty;
+  final String major;
   final String email;
   final String phone;
   final String? avatarUrl;
@@ -19,6 +20,7 @@ class StudentModel {
     required this.id,
     required this.level,
     required this.faculty,
+    required this.major,
     required this.email,
     required this.phone,
     this.avatarUrl,

@@ -1,5 +1,5 @@
 import 'package:academia/Features/Auth/services/auth_service.dart';
-import 'package:academia/Features/Registiration_admin/screens/NoRegistirationScreen.dart';
+import 'package:academia/Features/Registiration_admin/screens/RegistirationScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../utilities/colors.dart';
@@ -151,7 +151,7 @@ class _SideMenuState extends State<SideMenu> {
                         icon: Icons.edit_square,
                         title: "Registration",
                         active: widget.activeItem == "Registration",
-                        onTap: () => _navigate(context, const NoRegistrationAdminScreen()),
+                        onTap: () => _navigate(context, const RegistrationAdminScreen()),
                       ),
 
                       /// ACADEMIC WITH EXPAND

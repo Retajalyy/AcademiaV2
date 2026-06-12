@@ -22,11 +22,10 @@ class _Planadminscreen1State extends State<Planadminscreen1> {
   @override
   void initState() {
     super.initState();
-    if (!Get.isRegistered<PlanAdminController>()) {
-      Get.put(PlanAdminController(), permanent: true);
-    }
+    // Always start fresh — delete any stale controller from a previous flow
+    Get.delete<PlanAdminController>(force: true);
+    Get.put(PlanAdminController(), permanent: true);
     c = Get.find<PlanAdminController>();
-    // Load faculties after first frame to avoid build-time side effects
     WidgetsBinding.instance.addPostFrameCallback((_) {
       c.loadFaculties();
       c.loadProfessors();
@@ -38,6 +37,7 @@ class _Planadminscreen1State extends State<Planadminscreen1> {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             const PlanHeader1(currentStep: 1),

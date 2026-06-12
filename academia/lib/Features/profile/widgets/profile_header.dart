@@ -4,6 +4,7 @@ import 'package:academia/Features/profile/screens/profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:academia/Core/widgets/notification_bell.dart';
 import '../models/student_model.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -44,18 +45,7 @@ class ProfileHeader extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: SvgPicture.asset(
-                      'lib/assets/Icons/notification.svg',
-                      width: 26,
-                      height: 26,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    onPressed: () {},
-                  ),
+                  const NotificationBell(),
                   IconButton(
                     icon: SvgPicture.asset(
                       'lib/assets/Icons/profileedit.svg',

@@ -5,6 +5,8 @@ import '../models/professor_course_model.dart';
 import '../models/professor_course_detail_model.dart';
 import '../models/professor_schedule_item.dart';
 import '../models/attendance_models.dart';
+import '../models/assignment_submission_info.dart';
+import '../models/student_submission_record.dart';
 
 class ProfessorService {
   final _db = Supabase.instance.client;
@@ -97,13 +99,20 @@ class ProfessorService {
     final sectionIds = todaySections.map((r) => r['id'] as int).toList();
     final groupsBySection = await _fetchGroupsBySection(sectionIds);
 
-    // Step 3 — build items
-    final items = todaySections
-        .map((row) => ProfessorScheduleItem.fromMap(
-              row,
-              groups: groupsBySection[row['id'] as int] ?? [],
-            ))
-        .toList();
+    // Step 3 — build items, deduplicating by (courseId, time, type)
+    final seen  = <String>{};
+    final items = <ProfessorScheduleItem>[];
+    for (final row in todaySections) {
+      final course   = row['courses'] as Map<String, dynamic>;
+      final schedule = (row['schedules'] as List).first;
+      final key = '${course['id']}-${schedule['start_time']}-${row['type']}';
+      if (seen.contains(key)) continue;
+      seen.add(key);
+      items.add(ProfessorScheduleItem.fromMap(
+        row,
+        groups: groupsBySection[row['id'] as int] ?? [],
+      ));
+    }
 
     items.sort((a, b) => a.time.compareTo(b.time));
     return items;
@@ -314,7 +323,7 @@ class ProfessorService {
     return ProfessorCourseDetailModel(
       totalStudents: groups.fold(0, (sum, g) => sum + g.studentCount),
       groupCount: groups.length,
-      major: major,
+      major: (level == 1 || level == 2) ? 'General' : major,
       level: level,
       groups: groups,
       materials: materials,
@@ -398,33 +407,55 @@ class ProfessorService {
     try {
       final sectionsData = await _db
           .from('sections')
-          .select('id, courses(name)')
+          .select('id, course_id, courses(name)')
           .eq(isTA ? 'ta_id' : 'professor_id', professorId);
       final list = sectionsData as List;
       if (list.isEmpty) return null;
 
-      final sectionIds = list.map((s) => s['id'] as int).toList();
+      // Collect distinct course IDs
+      final courseIds = list
+          .map((s) => s['course_id'] as int?)
+          .whereType<int>()
+          .toSet()
+          .toList();
 
+      // Latest course_material with a due_date across all professor's courses
       final data = await _db
-          .from('assessments')
-          .select('id, title, section_id, max_score')
-          .inFilter('section_id', sectionIds)
-          .order('created_at', ascending: false)
+          .from('course_materials')
+          .select('id, name, course_id, material_type, due_date')
+          .inFilter('course_id', courseIds)
+          .not('due_date', 'is', null)
+          .order('due_date', ascending: false)
           .limit(1)
           .maybeSingle();
 
       if (data == null) return null;
 
+      final cId      = data['course_id'] as int;
+      final dueRaw   = data['due_date']  as String?;
+      final due      = dueRaw != null ? DateTime.tryParse(dueRaw) : null;
       final sectionRow = list.firstWhere(
-          (s) => s['id'] == data['section_id'],
+          (s) => s['course_id'] == cId,
           orElse: () => <String, dynamic>{});
       final courseName =
           (sectionRow['courses'] as Map?)?['name'] as String? ?? '';
 
+      const months = ['','Jan','Feb','Mar','Apr','May','Jun',
+                         'Jul','Aug','Sep','Oct','Nov','Dec'];
+      final dueLabel = due != null
+          ? 'Due ${months[due.month]} ${due.day}'
+          : '';
+
       return {
-        'title':  data['title'] as String? ?? 'Assignment',
-        'course': courseName,
-        'badge':  '/ ${data['max_score'] ?? 100}',
+        'title':       data['name']          as String? ?? 'Assignment',
+        'course':      courseName,
+        'badge':       dueLabel,
+        'materialId':  data['id']            as int,
+        'courseId':    cId,
+        'dueDate':     dueRaw,
+        'materialType': data['material_type'] as String? ?? 'Assignment',
+        'professorId': professorId,
+        'isTA':        isTA,
       };
     } catch (_) {
       return null;
@@ -477,39 +508,109 @@ class ProfessorService {
 
   /// Fetches registration group labels for a list of section IDs.
   /// Returns a map: sectionId → [groupLabel, ...]
+  /// Primary path: registration_group_sections → registration_groups.
+  /// Fallback for sections with no RGS entry: enrollments → student_registrations → registration_groups.
   Future<Map<int, List<String>>> _fetchGroupsBySection(
       List<int> sectionIds) async {
     if (sectionIds.isEmpty) return {};
 
-    final data = await _db
-        .from('registration_group_sections')
-        .select('section_id, registration_groups(label, major, level)')
-        .inFilter('section_id', sectionIds);
-
     final result = <int, List<String>>{};
-    for (final row in data as List) {
-      final sId = row['section_id'] as int?;
-      if (sId == null) continue;
-      final grp = row['registration_groups'];
-      if (grp is! Map) continue;
 
-      final label = grp['label']?.toString() ?? '';
-      final major = grp['major']?.toString() ?? '';
-      final level = grp['level']?.toString() ?? '';
+    // ── Primary path ───────────────────────────────────────────────────────
+    final rgsData = await _db
+        .from('registration_group_sections')
+        .select('section_id, group_id')
+        .inFilter('section_id', sectionIds)
+        .not('group_id', 'is', null);
 
-      // Use label directly if meaningful, otherwise build from major+level
-      String display;
-      if (label.isNotEmpty) {
-        display = label;
-      } else {
-        final suffix = label.isNotEmpty ? label[label.length - 1] : '';
-        display = '$major$level$suffix';
-      }
+    final rgs = rgsData as List;
+    if (rgs.isNotEmpty) {
+      final groupIds = rgs
+          .map((r) => r['group_id'] as int?)
+          .whereType<int>()
+          .toSet()
+          .toList();
 
-      if (display.isNotEmpty) {
-        result.putIfAbsent(sId, () => []).add(display);
+      final groupsData = await _db
+          .from('registration_groups')
+          .select('id, label')
+          .inFilter('id', groupIds);
+
+      final labelMap = <int, String>{
+        for (final g in groupsData as List)
+          g['id'] as int: (g['label'] as String? ?? ''),
+      };
+
+      for (final row in rgs) {
+        final sId = row['section_id'] as int?;
+        final gId = row['group_id']   as int?;
+        if (sId == null || gId == null) continue;
+        final label = labelMap[gId] ?? '';
+        if (label.isNotEmpty) result.putIfAbsent(sId, () => []).add(label);
       }
     }
+
+    // ── Fallback: sections still missing — look up via enrollments ─────────
+    final missing = sectionIds.where((id) => !result.containsKey(id)).toList();
+    if (missing.isNotEmpty) {
+      final enrollData = await _db
+          .from('enrollments')
+          .select('section_id, student_id')
+          .inFilter('section_id', missing);
+
+      final studentIds = (enrollData as List)
+          .map((e) => e['student_id'] as int?)
+          .whereType<int>()
+          .toSet()
+          .toList();
+
+      if (studentIds.isNotEmpty) {
+        final regData = await _db
+            .from('student_registrations')
+            .select('student_id, group_id')
+            .inFilter('student_id', studentIds)
+            .not('group_id', 'is', null);
+
+        final fallbackGroupIds = (regData as List)
+            .map((r) => r['group_id'] as int?)
+            .whereType<int>()
+            .toSet()
+            .toList();
+
+        if (fallbackGroupIds.isNotEmpty) {
+          final gData = await _db
+              .from('registration_groups')
+              .select('id, label')
+              .inFilter('id', fallbackGroupIds);
+
+          final fallbackLabelMap = <int, String>{
+            for (final g in gData as List)
+              g['id'] as int: (g['label'] as String? ?? ''),
+          };
+
+          final studentToGroup = <int, int>{};
+          for (final r in regData) {
+            final stuId = r['student_id'] as int?;
+            final gId   = r['group_id']   as int?;
+            if (stuId != null && gId != null) studentToGroup[stuId] = gId;
+          }
+
+          for (final e in enrollData) {
+            final secId = e['section_id'] as int?;
+            final stuId = e['student_id'] as int?;
+            if (secId == null || stuId == null) continue;
+            final gId   = studentToGroup[stuId];
+            if (gId == null) continue;
+            final label = fallbackLabelMap[gId] ?? '';
+            if (label.isNotEmpty) {
+              result.putIfAbsent(secId, () => []);
+              if (!result[secId]!.contains(label)) result[secId]!.add(label);
+            }
+          }
+        }
+      }
+    }
+
     return result;
   }
 
@@ -965,5 +1066,377 @@ class ProfessorService {
     }).toList();
 
     await _db.from('attendance_records').insert(records);
+  }
+
+  // ── Submissions ───────────────────────────────────────────────────────────
+
+  Future<List<AssignmentSubmissionInfo>> getCourseAssignments({
+    required int professorId,
+    required int courseId,
+    bool isTA = false,
+  }) async {
+    // 1. Get assignments from course_materials that have a due_date
+    final mData = await _db
+        .from('course_materials')
+        .select('id, name, due_date, material_type')
+        .eq('course_id', courseId)
+        .not('due_date', 'is', null)
+        .order('due_date', ascending: false);
+
+    final materials = mData as List;
+    if (materials.isEmpty) return [];
+
+    // 2. Get total enrolled students across this professor's sections
+    final sectionsData = await _db
+        .from('sections')
+        .select('id')
+        .eq(isTA ? 'ta_id' : 'professor_id', professorId)
+        .eq('course_id', courseId);
+
+    final sectionIds = (sectionsData as List).map((s) => s['id'] as int).toList();
+    int totalStudents = 0;
+    if (sectionIds.isNotEmpty) {
+      final enrollData = await _db
+          .from('enrollments')
+          .select('student_id')
+          .inFilter('section_id', sectionIds);
+      // Distinct students — a student may be enrolled in multiple sections
+      totalStudents = (enrollData as List)
+          .map((e) => e['student_id'])
+          .toSet()
+          .length;
+    }
+
+    // 3. Get submission counts per material (graceful fallback if table missing)
+    final countByMaterial = <int, Map<String, int>>{};
+    try {
+      final materialIds = materials.map((m) => m['id'] as int).toList();
+      final subData = await _db
+          .from('submissions')
+          .select('material_id, submitted_at')
+          .inFilter('material_id', materialIds);
+
+      for (final m in materials) {
+        final mid     = m['id']        as int;
+        final dueRaw  = m['due_date']  as String?;
+        final due     = dueRaw != null ? DateTime.tryParse(dueRaw) : null;
+        int onTime = 0, late = 0;
+
+        for (final s in subData as List) {
+          if (s['material_id'] != mid) continue;
+          final submittedAt = DateTime.tryParse(s['submitted_at'] as String? ?? '');
+          if (submittedAt == null) continue;
+          if (due == null || submittedAt.isBefore(due)) {
+            onTime++;
+          } else {
+            late++;
+          }
+        }
+        countByMaterial[mid] = {'onTime': onTime, 'late': late};
+      }
+    } catch (_) {}
+
+    return materials.map((m) {
+      final mid      = m['id']           as int;
+      final dueRaw   = m['due_date']     as String?;
+      final due      = dueRaw != null ? DateTime.tryParse(dueRaw) : null;
+      final counts   = countByMaterial[mid] ?? {'onTime': 0, 'late': 0};
+      final onTime   = counts['onTime']!;
+      final late     = counts['late']!;
+      final total    = onTime + late;
+      final pending  = (totalStudents - total).clamp(0, totalStudents);
+      final isOpen   = due == null || due.isAfter(DateTime.now());
+
+      return AssignmentSubmissionInfo(
+        materialId:  mid,
+        name:        m['name']          as String? ?? '',
+        materialType: m['material_type'] as String? ?? 'Assignment',
+        dueDate:     due,
+        isOpen:      isOpen,
+        onTime:      onTime,
+        late:        late,
+        pending:     pending,
+      );
+    }).toList();
+  }
+
+  // ── Group labels for a course ─────────────────────────────────────────────
+
+  Future<List<String>> getGroupLabelsForCourse({
+    required int  professorId,
+    required int  courseId,
+    bool          isTA = false,
+  }) async {
+    try {
+      final sectionsData = await _db
+          .from('sections')
+          .select('id')
+          .eq(isTA ? 'ta_id' : 'professor_id', professorId)
+          .eq('course_id', courseId);
+      final sectionIds =
+          (sectionsData as List).map((s) => s['id'] as int).toList();
+      if (sectionIds.isEmpty) return [];
+
+      final groupsBySection = await _fetchGroupsBySection(sectionIds);
+      final labels = groupsBySection.values
+          .expand((l) => l)
+          .toSet()
+          .toList()
+        ..sort();
+      return labels;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  // ── Student submissions per assignment ────────────────────────────────────
+
+  Future<List<StudentSubmissionRecord>> getStudentSubmissionsForAssignment({
+    required int    professorId,
+    required int    courseId,
+    required int    materialId,
+    required DateTime? dueDate,
+    required String materialType,
+    bool isTA = false,
+  }) async {
+    // 1. Section IDs
+    final sectionsData = await _db
+        .from('sections')
+        .select('id')
+        .eq(isTA ? 'ta_id' : 'professor_id', professorId)
+        .eq('course_id', courseId);
+    final sectionIds = (sectionsData as List).map((s) => s['id'] as int).toList();
+    if (sectionIds.isEmpty) return [];
+
+    // 2. Enrollments — deduplicate by student_id
+    final enrollData = await _db
+        .from('enrollments')
+        .select('id, student_id')
+        .inFilter('section_id', sectionIds);
+
+    final seenEnrollments = <int, int>{}; // student_id → enrollment_id
+    for (final e in enrollData as List) {
+      final sid = e['student_id'] as int?;
+      final eid = e['id']         as int?;
+      if (sid != null && eid != null && !seenEnrollments.containsKey(sid)) {
+        seenEnrollments[sid] = eid;
+      }
+    }
+    if (seenEnrollments.isEmpty) return [];
+
+    // 3. Student profiles (two-step, no FK join)
+    final studentIds = seenEnrollments.keys.toList();
+    final stuData = await _db
+        .from('students')
+        .select('id, profile_id')
+        .inFilter('id', studentIds);
+
+    final profileIds = (stuData as List)
+        .map((s) => s['profile_id'] as String?)
+        .whereType<String>()
+        .toList();
+    final studentToProfile = <int, String>{
+      for (final s in stuData) s['id'] as int: s['profile_id'] as String? ?? '',
+    };
+
+    final profileData = profileIds.isEmpty ? <dynamic>[] : await _db
+        .from('profiles')
+        .select('id, full_name, uni_id')
+        .inFilter('id', profileIds);
+
+    final profileMap = <String, Map<String, dynamic>>{
+      for (final p in profileData as List)
+        p['id'] as String: Map<String, dynamic>.from(p as Map),
+    };
+
+    // 3. Submission records (graceful fallback — table may not exist yet)
+    final submissionByStudent = <int, Map<String, dynamic>>{};
+    try {
+      final subData = await _db
+          .from('submissions')
+          .select('student_id, submitted_at, file_url, file_name')
+          .eq('material_id', materialId);
+      for (final s in subData as List) {
+        final sid = s['student_id'] as int;
+        submissionByStudent[sid] = s;
+      }
+    } catch (_) {}
+
+    // 4. Existing grades for grade column display
+    final gradeCol    = _gradeCol(materialType);
+    final enrollIds   = seenEnrollments.values.toList();
+    final gradeByEnrollment = <int, double>{};
+    if (enrollIds.isNotEmpty) {
+      try {
+        final gData = await _db
+            .from('grades')
+            .select('enrollment_id, $gradeCol')
+            .inFilter('enrollment_id', enrollIds);
+        for (final g in gData as List) {
+          final eid   = g['enrollment_id'] as int;
+          final score = (g[gradeCol] as num?)?.toDouble();
+          if (score != null) gradeByEnrollment[eid] = score;
+        }
+      } catch (_) {}
+    }
+
+    // 5. Build records
+    return seenEnrollments.entries.map<StudentSubmissionRecord>((entry) {
+      final sid = entry.key;
+      final eid = entry.value;
+      final profileId = studentToProfile[sid] ?? '';
+      final profile   = profileMap[profileId] ?? {};
+      final name      = profile['full_name'] as String? ?? '';
+      final uniId     = profile['uni_id']    as String? ?? '';
+      final sub       = submissionByStudent[sid];
+      final submittedAt = sub != null
+          ? DateTime.tryParse(sub['submitted_at'] as String? ?? '')
+          : null;
+
+      SubmissionStatus status;
+      if (sub == null) {
+        status = SubmissionStatus.missing;
+      } else if (dueDate == null || submittedAt == null || submittedAt.isBefore(dueDate)) {
+        status = SubmissionStatus.onTime;
+      } else {
+        status = SubmissionStatus.late;
+      }
+
+      return StudentSubmissionRecord(
+        studentId:    sid,
+        enrollmentId: eid,
+        name:         name,
+        uniId:        uniId,
+        status:       status,
+        submittedAt:  submittedAt,
+        fileUrl:      sub?['file_url']  as String?,
+        fileName:     sub?['file_name'] as String?,
+        currentGrade: gradeByEnrollment[eid],
+        maxGrade:     _defaultTotal(materialType),
+      );
+    }).toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  Future<void> saveStudentGrade({
+    required int    enrollmentId,
+    required String materialType,
+    required double score,
+  }) async {
+    final col      = _gradeCol(materialType);
+    final totalCol = '${col}_total';
+    await _db.from('grades').upsert(
+      {
+        'enrollment_id': enrollmentId,
+        col:             score,
+        totalCol:        _defaultTotal(materialType),
+      },
+      onConflict: 'enrollment_id',
+    );
+  }
+
+  // ── Material management ───────────────────────────────────────────────────
+
+  Future<void> renameCourseMaterial(int materialId, String newName) async {
+    await _db
+        .from('course_materials')
+        .update({'name': newName})
+        .eq('id', materialId);
+  }
+
+  Future<void> deleteCourseMaterial(int materialId, String? fileUrl) async {
+    // Delete from storage if we have a path
+    if (fileUrl != null && fileUrl.isNotEmpty) {
+      try {
+        final uri  = Uri.parse(fileUrl);
+        final segs = uri.pathSegments;
+        // Storage path is everything after 'course-materials/'
+        final idx  = segs.indexOf('course-materials');
+        if (idx != -1 && idx + 1 < segs.length) {
+          final path = segs.sublist(idx + 1).join('/');
+          await _db.storage.from('course-materials').remove([path]);
+        }
+      } catch (_) {}
+    }
+    await _db.from('course_materials').delete().eq('id', materialId);
+  }
+
+  // ── Grade upload ──────────────────────────────────────────────────────────
+
+  Future<void> uploadGradesFromCsv({
+    required int                 professorId,
+    required int                 courseId,
+    required String              gradeType,
+    required Map<String, double> scores,
+    bool                         isTA = false,
+  }) async {
+    // 1. Section IDs for this professor + course
+    final sectionsData = await _db
+        .from('sections')
+        .select('id')
+        .eq(isTA ? 'ta_id' : 'professor_id', professorId)
+        .eq('course_id', courseId);
+    final sectionIds =
+        (sectionsData as List).map((s) => s['id'] as int).toList();
+    if (sectionIds.isEmpty) return;
+
+    // 2. Enrollments with student uni_ids
+    final enrollData = await _db
+        .from('enrollments')
+        .select('id, students!inner(profiles!inner(uni_id))')
+        .inFilter('section_id', sectionIds);
+
+    // 3. Build uni_id → enrollment_id map
+    final enrollMap = <String, int>{};
+    for (final e in enrollData as List) {
+      final student = e['students'] as Map?;
+      final profile = student?['profiles'] as Map?;
+      final uniId   = profile?['uni_id'] as String?;
+      final eId     = e['id'] as int?;
+      if (uniId != null && eId != null) enrollMap[uniId] = eId;
+    }
+
+    // 4. Build upsert records
+    final col      = _gradeCol(gradeType);
+    final totalCol = '${col}_total';
+    final defTotal = _defaultTotal(gradeType);
+
+    final records = <Map<String, dynamic>>[];
+    for (final entry in scores.entries) {
+      final eId = enrollMap[entry.key];
+      if (eId == null) continue;
+      records.add({
+        'enrollment_id': eId,
+        col:             entry.value,
+        totalCol:        defTotal,
+      });
+    }
+
+    if (records.isEmpty) return;
+
+    await _db.from('grades').upsert(
+      records,
+      onConflict: 'enrollment_id',
+    );
+  }
+
+  static String _gradeCol(String type) {
+    switch (type) {
+      case 'midterm':       return 'midterm';
+      case 'participation': return 'participation';
+      case 'quiz':          return 'quiz';
+      case 'final':         return 'final';
+      default:              return type;
+    }
+  }
+
+  static double _defaultTotal(String type) {
+    switch (type) {
+      case 'midterm':       return 15;
+      case 'participation': return 25;
+      case 'quiz':          return 10;
+      case 'final':         return 60;
+      default:              return 100;
+    }
   }
 }
