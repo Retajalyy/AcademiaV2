@@ -90,7 +90,7 @@ class _AssignmentOverviewScreenState extends State<AssignmentOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         children: [
           // ── Header ──────────────────────────────────────────────────

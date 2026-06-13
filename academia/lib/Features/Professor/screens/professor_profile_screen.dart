@@ -12,7 +12,7 @@ class ProfessorProfileScreen extends StatelessWidget {
     final c = Get.put(ProfessorProfileController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Obx(() {
         if (c.isLoading.value) {
           return const Center(child: CircularProgressIndicator());

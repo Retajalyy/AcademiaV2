@@ -7,6 +7,7 @@ import '../widgets/exam_header.dart';
 import '../widgets/noexam_card.dart';
 import 'package:academia/Features/Exam_schedule/widgets/while_waitingcard.dart';
 import '../../../../core/utilities/colors.dart';
+import 'package:academia/Core/widgets/shared_bottom_nav.dart';
 
 class NoExamScheduleScreen extends StatelessWidget {
   const NoExamScheduleScreen({super.key});
@@ -17,7 +18,9 @@ ExamController get _c => Get.put(ExamController());
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.babyblue,
+      bottomNavigationBar: const SharedBottomNav(),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             const ExamHeader(),

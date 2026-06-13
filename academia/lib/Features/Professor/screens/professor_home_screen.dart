@@ -13,7 +13,7 @@ class ProfessorHomeScreen extends StatelessWidget {
     final c = Get.put(ProfessorHomeController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Obx(() {
         if (c.isLoading.value) {
           return const Center(child: CircularProgressIndicator(
@@ -64,14 +64,14 @@ class ProfessorHomeScreen extends StatelessWidget {
                     Text(
                       c.greeting,
                       style: const TextStyle(
-                          color: Colors.white70, fontSize: 16),
+                          color: Colors.white70, fontSize: 18),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${c.professorTitle.value}. ${c.professorName.value}',
                       style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 21,
+                          fontSize: 23,
                           fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -90,7 +90,7 @@ class ProfessorHomeScreen extends StatelessWidget {
                         c.avatarInitials,
                         style: const TextStyle(
                             color: AppColors.primaryBlue,
-                            fontSize: 10,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -118,7 +118,7 @@ class ProfessorHomeScreen extends StatelessWidget {
                     SizedBox(width: 10),
                     Text('No more classes today',
                         style: TextStyle(
-                            color: Colors.white60, fontSize: 14)),
+                            color: Colors.white60, fontSize: 16)),
                   ],
                 ),
               );
@@ -157,7 +157,7 @@ class _NextClassCard extends StatelessWidget {
                 'NEXT CLASS',
                 style: TextStyle(
                   color: Colors.white60,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.4,
                 ),
@@ -172,7 +172,7 @@ class _NextClassCard extends StatelessWidget {
             item.title,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -185,14 +185,14 @@ class _NextClassCard extends StatelessWidget {
                   color: Colors.white70, size: 15),
               const SizedBox(width: 5),
               Text('${item.startTime} - ${item.endTime}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                  style: const TextStyle(color: Colors.white70, fontSize: 15)),
               if (item.location.isNotEmpty) ...[
                 const SizedBox(width: 14),
                 const Icon(Icons.location_on_outlined,
                     color: Colors.white70, size: 15),
                 const SizedBox(width: 5),
                 Text(item.location,
-                    style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                    style: const TextStyle(color: Colors.white70, fontSize: 15)),
               ],
               if (item.groups.isNotEmpty) ...[
                 const SizedBox(width: 14),
@@ -202,7 +202,7 @@ class _NextClassCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     item.groups.first,
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    style: const TextStyle(color: Colors.white70, fontSize: 15),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -243,7 +243,7 @@ class _TimeBadge extends StatelessWidget {
           _label,
           style: const TextStyle(
             color: AppColors.primaryBlue,
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -269,7 +269,7 @@ class _TodayScheduleSection extends StatelessWidget {
               const Text(
                 "Today's Schedule",
                 style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A2A4A)),
               ),
@@ -279,7 +279,7 @@ class _TodayScheduleSection extends StatelessWidget {
                 child: const Text(
                   'Full Schedule >',
                   style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 12,
                       color: AppColors.primaryBlue,
                       fontWeight: FontWeight.w600),
                 ),
@@ -352,13 +352,13 @@ class _ScheduleItem extends StatelessWidget {
               children: [
                 Text(item.startTime,
                     style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1A2A4A))),
                 const SizedBox(height: 3),
                 Text(item.endTime,
                     style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         color: Color(0xFF9CA3AF))),
               ],
             ),
@@ -389,7 +389,7 @@ class _ScheduleItem extends StatelessWidget {
                       child: Text(
                         item.title,
                         style: const TextStyle(
-                            fontSize: 10,
+                            fontSize: 12,
                             fontWeight: FontWeight.w700,
                             color: AppColors.primaryBlue),
                       ),
@@ -404,7 +404,7 @@ class _ScheduleItem extends StatelessWidget {
                     if (item.groups.isNotEmpty) item.groups.join(' · '),
                   ].join(' . '),
                   style: const TextStyle(
-                      fontSize: 10, color: Color(0xFF9CA3AF)),
+                      fontSize: 12, color: Color(0xFF9CA3AF)),
                 ),
               ],
             ),
@@ -434,7 +434,7 @@ class _TypeBadge extends StatelessWidget {
       child: Text(
         type,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
           color: isLecture
               ? AppColors.primaryBlue
@@ -462,7 +462,7 @@ class _AcademicOverviewSection extends StatelessWidget {
                 const Text(
                   'Academic Overview',
                   style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A2A4A)),
                 ),
@@ -471,7 +471,7 @@ class _AcademicOverviewSection extends StatelessWidget {
                   child: const Text(
                     'See All >',
                     style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         color: AppColors.primaryBlue,
                         fontWeight: FontWeight.w600),
                   ),
@@ -516,6 +516,7 @@ class _AcademicOverviewSection extends StatelessWidget {
                 badge: '${c.studentsAtRisk.value} student${c.studentsAtRisk.value == 1 ? '' : 's'}',
                 badgeColor: const Color(0xFFFFEEEE),
                 badgeTextColor: AppColors.fail,
+                showArrow: true,
               ),
             ),
 
@@ -597,13 +598,13 @@ class _OverviewCard extends StatelessWidget {
               children: [
                 Text(title,
                     style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A2A4A))),
                 const SizedBox(height: 3),
                 Text(subtitle,
                     style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         color: Color(0xFF9CA3AF))),
               ],
             ),
@@ -621,7 +622,7 @@ class _OverviewCard extends StatelessWidget {
             ),
             child: Text(badge,
                 style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: badgeTextColor)),
           ),

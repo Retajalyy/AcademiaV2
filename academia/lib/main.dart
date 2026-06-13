@@ -9,8 +9,8 @@ import 'package:academia/Features/Payement/screens/PayementScreen.dart';
 import 'package:academia/Features/Registiration_admin/screens/NoRegistirationScreen.dart';
 import 'package:academia/Features/Registration/screens/registration_screen.dart';
 import 'package:academia/Features/Splash/screens/splash_screen.dart';
-import 'package:academia/Features/Exam_schedule/screens/exam_Schedule_screen.dart';
 import 'package:academia/Features/Exam_schedule/screens/no_exam_screen.dart';
+import 'package:academia/Features/Exam_schedule/screens/exam_router_screen.dart';
 import 'package:academia/Features/profile/screens/profile_page.dart';
 import 'package:academia/Features/schedule/screens/schedule_screen.dart';
 import 'Features/Dashboard_admin/screens/Dashboard_screen.dart';
@@ -116,7 +116,7 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/exam',
-          page: () => ExamScheduleScreen(),
+          page: () => const ExamRouterScreen(),
         ),
         GetPage(
           name: '/assesments',

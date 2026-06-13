@@ -29,7 +29,7 @@ class RegistrationScreen extends StatelessWidget {
 
       if (ctrl.registrationState.value == RegistrationState.done) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF1F4FC),
+          backgroundColor: AppColors.babyblue,
           body: RegistrationDoneWidget(
             groupLabel:    ctrl.selectedGroup?.label ?? '',
             semesterLabel: ctrl.semesterInfo.value?.semester ?? '',

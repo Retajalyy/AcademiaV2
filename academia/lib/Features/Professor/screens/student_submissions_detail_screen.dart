@@ -13,7 +13,7 @@ class StudentSubmissionsDetailScreen extends StatelessWidget {
     final c = Get.put(StudentSubmissionsDetailController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         children: [
           _Header(c: c),

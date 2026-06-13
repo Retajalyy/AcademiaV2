@@ -8,13 +8,32 @@ import 'package:academia/Features/Course/widgets/course_stat.dart';
 import 'package:academia/Features/Course/widgets/material_list.dart';
 import 'package:academia/Core/utilities/colors.dart';
 
-class CourseScreenDetails extends StatelessWidget {
+class CourseScreenDetails extends StatefulWidget {
   const CourseScreenDetails({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ctrl = Get.put(CourseDetailsController());
+  State<CourseScreenDetails> createState() => _CourseScreenDetailsState();
+}
 
+class _CourseScreenDetailsState extends State<CourseScreenDetails> {
+  late final CourseDetailsController ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    // Always delete any stale instance so data is fresh on every navigation
+    Get.delete<CourseDetailsController>(force: true);
+    ctrl = Get.put(CourseDetailsController());
+  }
+
+  @override
+  void dispose() {
+    Get.delete<CourseDetailsController>(force: true);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
@@ -38,12 +57,7 @@ class CourseScreenDetails extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           ElevatedButton(
-                            onPressed: () {
-                              final courseId =
-                                  (Get.arguments as Map<String, dynamic>?)?[
-                                          'courseId'] as int? ?? 0;
-                              ctrl.fetchDetails(courseId);
-                            },
+                            onPressed: () => ctrl.fetchDetails(ctrl.courseId.value),
                             child: const Text('Retry'),
                           ),
                         ],
@@ -55,16 +69,20 @@ class CourseScreenDetails extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        CourseStats(),
-                        SizedBox(height: 20),
-                        CourseMaterialList(),
-                        SizedBox(height: 20),
-                      ],
+                  return RefreshIndicator(
+                    onRefresh: () async => ctrl.fetchDetails(ctrl.courseId.value),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          CourseStats(),
+                          SizedBox(height: 20),
+                          CourseMaterialList(),
+                          SizedBox(height: 20),
+                        ],
+                      ),
                     ),
                   );
                 }),

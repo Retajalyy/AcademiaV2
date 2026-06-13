@@ -74,7 +74,7 @@ class ProfileHeader extends StatelessWidget {
           ),
           child: Container(
             width: double.infinity,
-            color: const Color(0xFFF5F6FA),
+            color: AppColors.babyblue,
             padding: EdgeInsets.only(
               top: avatarRadius + 12, // space for the overlapping avatar
               bottom: 20,

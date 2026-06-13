@@ -23,7 +23,7 @@ class RegistrationConfirmScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         children: [
           _Header(),
@@ -335,7 +335,7 @@ class _ConfirmButton extends StatelessWidget {
     await ctrl.confirmRegistration();
     if (ctrl.registrationState.value == RegistrationState.done) {
       Get.off(() => Scaffold(
-            backgroundColor: const Color(0xFFF1F4FC),
+            backgroundColor: AppColors.babyblue,
             body: RegistrationDoneWidget(
               groupLabel:    ctrl.selectedGroup?.label ?? '',
               semesterLabel: ctrl.semesterInfo.value?.semester ?? '',

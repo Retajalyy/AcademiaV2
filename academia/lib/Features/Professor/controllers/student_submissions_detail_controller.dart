@@ -65,12 +65,16 @@ class StudentSubmissionsDetailController extends GetxController {
     final score = double.tryParse(ctrl.text.trim());
     if (score == null) return;
 
+    final student = students.firstWhereOrNull((s) => s.enrollmentId == enrollmentId);
+
     isSaving.value = true;
     try {
       await _service.saveStudentGrade(
         enrollmentId: enrollmentId,
         materialType: assignment.materialType,
         score:        score,
+        studentId:    student?.studentId,
+        assignmentId: assignment.materialId,
       );
       Get.snackbar('Saved', 'Grade saved successfully',
           snackPosition: SnackPosition.BOTTOM);

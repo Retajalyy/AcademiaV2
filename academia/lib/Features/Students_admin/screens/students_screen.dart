@@ -31,7 +31,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.babyblue,
       body: SafeArea(
         top: false,
         child: Column(

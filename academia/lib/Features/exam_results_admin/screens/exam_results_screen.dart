@@ -12,7 +12,7 @@ class ExamResultsAdminScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: AppColors.babyblue,
 
       /// SIDE MENU
       drawer: const SideMenu(

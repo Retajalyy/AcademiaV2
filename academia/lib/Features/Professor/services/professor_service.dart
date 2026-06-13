@@ -1107,14 +1107,14 @@ class ProfessorService {
           .length;
     }
 
-    // 3. Get submission counts per material (graceful fallback if table missing)
+    // 3. Get submission counts per material from assignment_submissions table
     final countByMaterial = <int, Map<String, int>>{};
     try {
       final materialIds = materials.map((m) => m['id'] as int).toList();
       final subData = await _db
-          .from('submissions')
-          .select('material_id, submitted_at')
-          .inFilter('material_id', materialIds);
+          .from('assignment_submissions')
+          .select('assignment_id, submitted_at')
+          .inFilter('assignment_id', materialIds);
 
       for (final m in materials) {
         final mid     = m['id']        as int;
@@ -1123,7 +1123,7 @@ class ProfessorService {
         int onTime = 0, late = 0;
 
         for (final s in subData as List) {
-          if (s['material_id'] != mid) continue;
+          if (s['assignment_id'] != mid) continue;
           final submittedAt = DateTime.tryParse(s['submitted_at'] as String? ?? '');
           if (submittedAt == null) continue;
           if (due == null || submittedAt.isBefore(due)) {
@@ -1249,13 +1249,13 @@ class ProfessorService {
         p['id'] as String: Map<String, dynamic>.from(p as Map),
     };
 
-    // 3. Submission records (graceful fallback — table may not exist yet)
+    // 3. Submission records from assignment_submissions table
     final submissionByStudent = <int, Map<String, dynamic>>{};
     try {
       final subData = await _db
-          .from('submissions')
-          .select('student_id, submitted_at, file_url, file_name')
-          .eq('material_id', materialId);
+          .from('assignment_submissions')
+          .select('student_id, submitted_at, file_url, grade')
+          .eq('assignment_id', materialId);
       for (final s in subData as List) {
         final sid = s['student_id'] as int;
         submissionByStudent[sid] = s;
@@ -1310,7 +1310,7 @@ class ProfessorService {
         status:       status,
         submittedAt:  submittedAt,
         fileUrl:      sub?['file_url']  as String?,
-        fileName:     sub?['file_name'] as String?,
+        fileName:     null,
         currentGrade: gradeByEnrollment[eid],
         maxGrade:     _defaultTotal(materialType),
       );
@@ -1322,6 +1322,8 @@ class ProfessorService {
     required int    enrollmentId,
     required String materialType,
     required double score,
+    int? studentId,
+    int? assignmentId,
   }) async {
     final col      = _gradeCol(materialType);
     final totalCol = '${col}_total';
@@ -1333,6 +1335,17 @@ class ProfessorService {
       },
       onConflict: 'enrollment_id',
     );
+
+    // Mirror the grade to assignment_submissions so the student can see it
+    if (studentId != null && assignmentId != null) {
+      try {
+        await _db
+            .from('assignment_submissions')
+            .update({'grade': score})
+            .eq('assignment_id', assignmentId)
+            .eq('student_id', studentId);
+      } catch (_) {}
+    }
   }
 
   // ── Material management ───────────────────────────────────────────────────
@@ -1421,22 +1434,28 @@ class ProfessorService {
   }
 
   static String _gradeCol(String type) {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'midterm':       return 'midterm';
       case 'participation': return 'participation';
+      case 'classwork':     return 'participation';
       case 'quiz':          return 'quiz';
+      case 'assignment':    return 'quiz';
+      case 'lab':           return 'quiz';
       case 'final':         return 'final';
-      default:              return type;
+      default:              return 'quiz';
     }
   }
 
   static double _defaultTotal(String type) {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'midterm':       return 15;
       case 'participation': return 25;
+      case 'classwork':     return 25;
       case 'quiz':          return 10;
+      case 'assignment':    return 10;
+      case 'lab':           return 10;
       case 'final':         return 60;
-      default:              return 100;
+      default:              return 10;
     }
   }
 }

@@ -16,7 +16,7 @@ class AppColors {
   static const Color accentStatistics = Color(0xFFFF6B81); // Statistics course cards/labels
 
   // Backgrounds
-  static const Color screenBackground = Color(0xFFF5F5F5); // Main background behind cards
+  static const Color screenBackground = Color(0xFFF1F4FC); // Main background behind cards
   static const Color cardBackground = Color(0xFFFFFFFF); // Cards, popups, content containers
   static const Color navbarFooterBackground = Color(0xFFF0F0F0); // Navbar/Footer background
 

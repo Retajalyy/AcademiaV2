@@ -191,7 +191,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         children: [
           _Header(c: c),
@@ -261,7 +261,7 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF2F4F8),
+      color: AppColors.babyblue,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: TextField(
         onChanged: c.onSearch,
@@ -292,7 +292,7 @@ class _TabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF2F4F8),
+      color: AppColors.babyblue,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),

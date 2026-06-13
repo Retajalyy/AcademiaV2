@@ -83,7 +83,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 1.1,
+        mainAxisExtent: 152,
       ),
       itemBuilder: (context, index) {
         final item = section.items[index];

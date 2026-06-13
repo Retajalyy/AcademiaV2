@@ -1,8 +1,8 @@
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:academia/Core/utilities/colors.dart';
 import '../models/assignment_model.dart';
 import '../services/assignments_service.dart';
@@ -18,8 +18,8 @@ class AssignmentsController extends GetxController {
   final filter        = 'all'.obs;
   final isSubmitting  = false.obs;
 
-  // selected file per assignment id
-  final selectedPaths = <int, String>{}.obs;
+  // selected file per assignment id (bytes + name, no path dependency)
+  final selectedBytes = <int, Uint8List>{}.obs;
   final selectedNames = <int, String>{}.obs;
 
   late final int sectionId;
@@ -48,12 +48,15 @@ class AssignmentsController extends GetxController {
   Future<void> _init() async {
     isLoading.value = true;
     errorMessage.value = null;
+    debugPrint('[AssignmentsCtrl] _init sectionId=$sectionId courseId=$courseId');
     try {
       final uid  = Supabase.instance.client.auth.currentUser!.id;
       _studentId = await _service.getStudentId(uid);
       assignments.value =
           await _service.getAssignments(sectionId, _studentId, courseId: courseId);
-    } catch (_) {
+      debugPrint('[AssignmentsCtrl] total=${assignments.length}');
+    } catch (e) {
+      debugPrint('[AssignmentsCtrl] error: $e');
       assignments.value = [];
     } finally {
       isLoading.value = false;
@@ -64,17 +67,19 @@ class AssignmentsController extends GetxController {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'docx', 'zip'],
+      withData: true, // read bytes directly — avoids Android content-URI path issues
     );
-    if (result != null && result.files.single.path != null) {
-      selectedPaths[assignmentId] = result.files.single.path!;
-      selectedNames[assignmentId] = result.files.single.name;
+    final file = result?.files.single;
+    if (file != null && file.bytes != null) {
+      selectedBytes[assignmentId] = file.bytes!;
+      selectedNames[assignmentId] = file.name;
     }
   }
 
   Future<void> submit(int assignmentId) async {
-    final path = selectedPaths[assignmentId];
-    final name = selectedNames[assignmentId];
-    if (path == null) {
+    final bytes = selectedBytes[assignmentId];
+    final name  = selectedNames[assignmentId];
+    if (bytes == null) {
       Get.snackbar('No file selected', 'Please attach a file first',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade400,
@@ -83,26 +88,26 @@ class AssignmentsController extends GetxController {
     }
     isSubmitting.value = true;
     try {
-      final item = assignments.firstWhere((a) => a.id == assignmentId);
       await _service.submitAssignment(
         assignmentId: assignmentId,
         studentId:    _studentId,
-        filePath:     path,
+        fileBytes:    bytes,
         fileName:     name!,
-        isMaterial:   item.isMaterial,
       );
-      selectedPaths.remove(assignmentId);
+      selectedBytes.remove(assignmentId);
       selectedNames.remove(assignmentId);
       await _init();
       Get.snackbar('Submitted!', 'Assignment submitted successfully',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.green.shade500,
           colorText: Colors.white);
-    } catch (_) {
-      Get.snackbar('Error', 'Failed to submit. Please try again.',
+    } catch (e) {
+      debugPrint('[Submit] error: $e');
+      Get.snackbar('Error', e.toString(),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade400,
-          colorText: Colors.white);
+          colorText: Colors.white,
+          duration: const Duration(seconds: 8));
     } finally {
       isSubmitting.value = false;
     }
@@ -126,7 +131,6 @@ class AssignmentsScreen extends StatelessWidget {
       body: Column(
         children: [
           _Header(courseName: courseName, doctorName: doctorName),
-          _StatCards(c: c),
           _FilterBar(c: c),
           Expanded(
             child: Obx(() {
@@ -148,7 +152,7 @@ class AssignmentsScreen extends StatelessWidget {
                       Text(
                         'No assignments yet',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.grey.shade500,
                         ),
@@ -158,7 +162,7 @@ class AssignmentsScreen extends StatelessWidget {
                         'Assignments for this course\nwill appear here.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 13, color: Colors.grey.shade400),
+                            fontSize: 15, color: Colors.grey.shade400),
                       ),
                     ],
                   ),
@@ -173,15 +177,15 @@ class AssignmentsScreen extends StatelessWidget {
                     if (i == 0) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: Obx(() => Text(
-                              '${c.assignments.length} SESSIONS',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.8,
-                              ),
-                            )),
+                        child: Text(
+                          '${items.length} ASSIGNMENT${items.length == 1 ? '' : 'S'}',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
                       );
                     }
                     return _AssignmentCard(item: items[i - 1], c: c);
@@ -226,7 +230,7 @@ class _Header extends StatelessWidget {
                     Text('Course Details',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 13,
+                          fontSize: 15,
                         )),
                   ],
                 ),
@@ -236,7 +240,7 @@ class _Header extends StatelessWidget {
                 'Assignments',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 28,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -247,79 +251,11 @@ class _Header extends StatelessWidget {
                       .join(' . '),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.65),
-                    fontSize: 13,
+                    fontSize: 15,
                   ),
                 ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Stat cards ────────────────────────────────────────────────────────────────
-
-class _StatCards extends StatelessWidget {
-  final AssignmentsController c;
-  const _StatCards({required this.c});
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() => Container(
-          color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Row(
-            children: [
-              _Card(label: 'Total',   value: c.totalCount,   color: AppColors.primaryBlue),
-              const SizedBox(width: 8),
-              _Card(label: 'Pending', value: c.pendingCount, color: const Color(0xFFF59E0B)),
-              const SizedBox(width: 8),
-              _Card(label: 'Handed',  value: c.handedCount,  color: const Color(0xFF16A34A)),
-              const SizedBox(width: 8),
-              _Card(label: 'Missed',  value: c.missedCount,  color: const Color(0xFFDC2626)),
-            ],
-          ),
-        ));
-  }
-}
-
-class _Card extends StatelessWidget {
-  final String label;
-  final int value;
-  final Color color;
-  const _Card({required this.label, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          children: [
-            Text(
-              '$value',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: color.withValues(alpha: 0.8),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -338,7 +274,7 @@ class _FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.babyblue,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Obx(() => Row(
             children: List.generate(_filters.length, (i) {
@@ -366,7 +302,7 @@ class _FilterBar extends StatelessWidget {
                       _labels[i],
                       style: TextStyle(
                         color: selected ? Colors.white : Colors.grey.shade600,
-                        fontSize: 13,
+                        fontSize: 15,
                         fontWeight: selected
                             ? FontWeight.w600
                             : FontWeight.normal,
@@ -388,26 +324,36 @@ class _AssignmentCard extends StatelessWidget {
   final AssignmentsController c;
   const _AssignmentCard({required this.item, required this.c});
 
-  static const _pendingColor = Color(0xFFF59E0B);
-  static const _handedColor  = Color(0xFF16A34A);
-  static const _missedColor  = Color(0xFFDC2626);
+  // pending uses a distinct set of three tones
+  static const _pendingIcon   = Color(0xFFB18334); // icon, badge text, days-left
+  static const _pendingBorder = Color(0xFFFFC258); // left accent bar
+  static const _pendingBg     = Color(0xFFFFF3DF); // icon bg, badge bg
+  static const _handedColor   = Color(0xFF07704F);
+  static const _handedBg     = Color(0xFFE1F5EF);
+  static const _missedColor   = Color(0xFFDC2626);
 
   Color get _borderColor => item.isPending
-      ? _pendingColor
+      ? _pendingBorder
+      : item.isHanded
+          ? _handedColor
+          : _missedColor;
+
+  Color get _iconColor => item.isPending
+      ? _pendingIcon
       : item.isHanded
           ? _handedColor
           : _missedColor;
 
   Color get _iconBg => item.isPending
-      ? const Color(0xFFFEF3C7)
+      ? _pendingBg
       : item.isHanded
-          ? const Color(0xFFDCFCE7)
+          ? _handedBg
           : const Color(0xFFFEE2E2);
 
   Color get _badgeBg => item.isPending
-      ? const Color(0xFFFEF3C7)
+      ? _pendingBg
       : item.isHanded
-          ? const Color(0xFFDCFCE7)
+          ? _handedBg
           : const Color(0xFFFEE2E2);
 
   String get _badgeLabel => item.isPending
@@ -453,7 +399,7 @@ class _AssignmentCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(Icons.edit_outlined,
-                      color: _borderColor, size: 20),
+                      color: _iconColor, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -462,14 +408,14 @@ class _AssignmentCard extends StatelessWidget {
                     children: [
                       Text(item.title,
                           style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1F2937),
                           )),
                       const SizedBox(height: 2),
                       Text(_dateLabel,
                           style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 14,
                               color: Colors.grey.shade500)),
                     ],
                   ),
@@ -484,8 +430,8 @@ class _AssignmentCard extends StatelessWidget {
                   ),
                   child: Text(_badgeLabel,
                       style: TextStyle(
-                        color: _borderColor,
-                        fontSize: 12,
+                        color: _iconColor,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       )),
                 ),
@@ -527,13 +473,15 @@ class _PendingBottom extends StatelessWidget {
               Text('Not submitted yet',
                   style: TextStyle(
                       color: Colors.grey.shade400,
-                      fontSize: 13,
+                      fontSize: 15,
                       fontStyle: FontStyle.italic)),
               Text(
-                '${item.daysLeft > 0 ? item.daysLeft : 0} days left',
+                item.hasDueDate
+                    ? '${item.daysLeft > 0 ? item.daysLeft : 0} days left'
+                    : 'Open',
                 style: const TextStyle(
-                  color: Color(0xFFF59E0B),
-                  fontSize: 13,
+                  color: Color(0xFFB18334),
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -541,57 +489,20 @@ class _PendingBottom extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // View assignment file (professor-uploaded)
-          if (item.materialFileUrl != null && item.materialFileUrl!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: GestureDetector(
-                onTap: () async {
-                  final uri = Uri.tryParse(item.materialFileUrl!);
-                  if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.description_outlined,
-                          size: 20, color: AppColors.primaryBlue),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text('View Assignment',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryBlue,
-                            )),
-                      ),
-                      Icon(Icons.open_in_new_rounded,
-                          size: 16, color: AppColors.primaryBlue),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
           // File attach area
           Obx(() {
-            final path = c.selectedPaths[item.id];
-            final name = c.selectedNames[item.id];
+            final hasFile = c.selectedBytes[item.id] != null;
+            final name    = c.selectedNames[item.id];
             return GestureDetector(
               onTap: () => c.pickFile(item.id),
-              child: Container(
+              child: CustomPaint(
+                painter: _DashedBorderPainter(),
+                child: Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: Colors.grey.shade300, width: 1),
                 ),
                 child: Row(
                   children: [
@@ -603,19 +514,19 @@ class _PendingBottom extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            path != null ? name! : 'Attach your file',
+                            hasFile ? name! : 'Attach your file',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 15,
                               fontWeight: FontWeight.w500,
-                              color: path != null
+                              color: hasFile
                                   ? AppColors.primaryBlue
                                   : Colors.grey.shade600,
                             ),
                           ),
-                          if (path == null)
+                          if (!hasFile)
                             Text('PDF, DOCX, ZIP supported',
                                 style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 13,
                                     color: Colors.grey.shade400)),
                         ],
                       ),
@@ -632,13 +543,14 @@ class _PendingBottom extends StatelessWidget {
                       child: Text('Browse',
                           style: TextStyle(
                             color: AppColors.primaryBlue,
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           )),
                     ),
                   ],
                 ),
-              ),
+              ),   // Container
+            ),     // CustomPaint
             );
           }),
           const SizedBox(height: 10),
@@ -668,7 +580,7 @@ class _PendingBottom extends StatelessWidget {
                           style: TextStyle(
                             color: AppColors.primaryBlue,
                             fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                            fontSize: 16,
                           )),
                 ),
               )),
@@ -692,20 +604,16 @@ class _GradeBottom extends StatelessWidget {
     final percent = item.gradePercent;
     final pctLabel = '${(percent * 100).toStringAsFixed(0)}%';
 
-    // No grade assigned yet — just confirm submission
+    // No grade assigned yet — show nothing extra (date already shown in header)
     if (max == 0) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
         child: Row(
           children: [
             Icon(Icons.check_circle_outline_rounded, size: 16, color: color),
             const SizedBox(width: 6),
-            Text(
-              item.isHanded
-                  ? 'Submitted ${item.formattedSubmitDate}'
-                  : 'Not submitted — grade pending',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-            ),
+            Text('Grade not assigned yet',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade400)),
           ],
         ),
       );
@@ -717,18 +625,18 @@ class _GradeBottom extends StatelessWidget {
         children: [
           Text('Grade ',
               style: TextStyle(
-                  color: Colors.grey.shade500, fontSize: 13)),
+                  color: Colors.grey.shade500, fontSize: 15)),
           Text(
             grade.toStringAsFixed(grade.truncateToDouble() == grade ? 0 : 1),
             style: TextStyle(
               color: color,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(' / ${max.toStringAsFixed(max.truncateToDouble() == max ? 0 : 1)}',
               style: TextStyle(
-                  color: Colors.grey.shade500, fontSize: 13)),
+                  color: Colors.grey.shade500, fontSize: 15)),
           const SizedBox(width: 12),
           Expanded(
             child: ClipRRect(
@@ -744,9 +652,46 @@ class _GradeBottom extends StatelessWidget {
           const SizedBox(width: 10),
           Text(pctLabel,
               style: const TextStyle(
-                  fontSize: 13, fontWeight: FontWeight.bold)),
+                  fontSize: 15, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
+}
+
+// ── Dashed border painter ─────────────────────────────────────────────────────
+
+class _DashedBorderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0x26000000) // #000000 at 15% opacity
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    const dashWidth = 6.0;
+    const dashSpace = 4.0;
+    const radius    = Radius.circular(10);
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      radius,
+    );
+
+    final path     = Path()..addRRect(rrect);
+    final dashPath = Path();
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        dashPath.addPath(
+          metric.extractPath(distance, distance + dashWidth),
+          Offset.zero,
+        );
+        distance += dashWidth + dashSpace;
+      }
+    }
+    canvas.drawPath(dashPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => false;
 }

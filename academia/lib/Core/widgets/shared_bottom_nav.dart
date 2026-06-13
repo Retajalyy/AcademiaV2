@@ -11,6 +11,7 @@ class SharedBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
+      backgroundColor: Colors.white,
       type: BottomNavigationBarType.fixed,
       selectedItemColor: const Color(0xFF2468A0),
       unselectedItemColor: Colors.grey,
@@ -18,7 +19,6 @@ class SharedBottomNav extends StatelessWidget {
       unselectedFontSize: 12,
       showUnselectedLabels: true,
       onTap: (index) {
-        if (index == currentIndex) return;
         // If BottomBar is already in the stack, switch its tab without destroying it
         if (Get.isRegistered<AppTabController>()) {
           AppTabController.to.switchTo(index);

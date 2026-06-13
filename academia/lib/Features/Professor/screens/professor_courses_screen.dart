@@ -12,7 +12,7 @@ class ProfessorCoursesScreen extends StatelessWidget {
     final c = Get.put(ProfessorCoursesController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -121,7 +121,7 @@ class PasswordResetScreen extends StatelessWidget {
     final c = Get.put(PasswordResetController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: AppColors.babyblue,
       body: SafeArea(
         child: Column(
           children: [
@@ -382,7 +382,7 @@ class _ResetBottomSheetState extends State<_ResetBottomSheet> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF2F4F8),
+                color: AppColors.babyblue,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -454,7 +454,7 @@ class _ResetBottomSheetState extends State<_ResetBottomSheet> {
               obscureText: _obscure,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color(0xFFF2F4F8),
+                fillColor: AppColors.babyblue,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,

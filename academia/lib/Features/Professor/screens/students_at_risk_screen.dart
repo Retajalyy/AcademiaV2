@@ -13,7 +13,7 @@ class StudentsAtRiskScreen extends StatelessWidget {
     final c = Get.put(StudentsAtRiskController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         children: [
           _buildHeader(),

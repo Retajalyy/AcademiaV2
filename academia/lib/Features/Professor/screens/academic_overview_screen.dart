@@ -11,7 +11,7 @@ class AcademicOverviewScreen extends StatelessWidget {
     final c = Get.find<ProfessorHomeController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         children: [
           // ── Header ──────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ class AcademicOverviewScreen extends StatelessWidget {
                       Text('Home',
                           style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 15,
+                              fontSize: 18,
                               fontWeight: FontWeight.w500)),
                     ],
                   ),
@@ -42,12 +42,12 @@ class AcademicOverviewScreen extends StatelessWidget {
                 const Text('Academic Overview',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 26,
+                        fontSize: 29,
                         fontWeight: FontWeight.w800)),
                 const SizedBox(height: 4),
                 const Text('Assignments, at-risk students & upcoming exams',
                     style:
-                        TextStyle(color: Colors.white70, fontSize: 13)),
+                        TextStyle(color: Colors.white70, fontSize: 16)),
               ],
             ),
           ),
@@ -133,7 +133,7 @@ class _SectionLabel extends StatelessWidget {
         children: [
           Text(text,
               style: const TextStyle(
-                  fontSize: 11,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF9CA3AF),
                   letterSpacing: 0.8)),
@@ -200,13 +200,13 @@ class _OverviewCard extends StatelessWidget {
                 children: [
                   Text(title,
                       style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 17,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1A2B4A))),
                   const SizedBox(height: 2),
                   Text(subtitle,
                       style: const TextStyle(
-                          fontSize: 12, color: Color(0xFF9CA3AF))),
+                          fontSize: 15, color: Color(0xFF9CA3AF))),
                 ],
               ),
             ),
@@ -218,7 +218,7 @@ class _OverviewCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20)),
               child: Text(badge,
                   style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: badgeTextColor)),
             ),

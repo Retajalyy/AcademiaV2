@@ -17,7 +17,7 @@ class CourseAdminScreen extends StatelessWidget {
     final c = Get.find<CourseAdminController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       drawer: const SideMenu(activeItem: "Courses"),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

@@ -12,7 +12,7 @@ class ProfessorSubmissionsScreen extends StatelessWidget {
     final c = Get.put(ProfessorSubmissionsController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F4FC),
+      backgroundColor: AppColors.babyblue,
       body: Column(
         children: [
           _Header(c: c),

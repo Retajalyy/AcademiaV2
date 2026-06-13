@@ -115,7 +115,7 @@ class ConfirmCourseDialog extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F4FC),
+                color: AppColors.babyblue,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(

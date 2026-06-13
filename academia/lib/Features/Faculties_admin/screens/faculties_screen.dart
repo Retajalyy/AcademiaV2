@@ -30,7 +30,7 @@ class _AdminFacultiesScreenState extends State<AdminFacultiesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.babyblue,
       body: SafeArea(
         top: false,
         child: Column(
@@ -263,9 +263,9 @@ class _MajorChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color:        const Color(0xFFF1F4FC),
+          color:        AppColors.babyblue,
           borderRadius: BorderRadius.circular(20),
-          border:       Border.all(color: const Color(0xFFF1F4FC)),
+          border:       Border.all(color: AppColors.babyblue),
         ),
         child: Text(label,
             style: const TextStyle(

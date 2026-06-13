@@ -17,9 +17,14 @@ class BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tabCtrl = Get.put(AppTabController(), permanent: true);
-    // Only set the index if this is the first time or navigating from outside
+    // Only set the index if this is the first time or navigating from outside.
+    // Deferred to after this frame so it doesn't mutate the Rx value while
+    // the framework is still building this widget (which would trip
+    // "setState called during build" on any still-mounted Obx listeners).
     if (tabCtrl.currentIndex.value != initialIndex) {
-      tabCtrl.currentIndex.value = initialIndex;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        tabCtrl.currentIndex.value = initialIndex;
+      });
     }
     return const _BottomBarView();
   }

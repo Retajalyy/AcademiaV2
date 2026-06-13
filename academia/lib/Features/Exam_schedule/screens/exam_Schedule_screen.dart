@@ -6,6 +6,7 @@ import '../controller/exam_controller.dart';
 import '../widgets/exam_header.dart';
 import '../widgets/exam_card.dart';
 import '../../../../core/utilities/colors.dart';
+import 'package:academia/Core/widgets/shared_bottom_nav.dart';
 
 class ExamScheduleScreen extends StatelessWidget {
   const ExamScheduleScreen({super.key});
@@ -29,7 +30,9 @@ class ExamScheduleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
+      bottomNavigationBar: const SharedBottomNav(),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             const ExamHeader(),

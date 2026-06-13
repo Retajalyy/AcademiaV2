@@ -13,7 +13,7 @@ class ChatbotScreen extends StatelessWidget {
     final ctrl = Get.put(ChatbotController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.babyblue,
       appBar: _ChatAppBar(),
       body: Column(
         children: [
@@ -315,7 +315,7 @@ class _InputBar extends StatelessWidget {
                 hintStyle: const TextStyle(
                     color: Color(0xFF9CA3AF), fontSize: 14),
                 filled: true,
-                fillColor: const Color(0xFFF5F6FA),
+                fillColor: AppColors.babyblue,
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 10),
                 border: OutlineInputBorder(

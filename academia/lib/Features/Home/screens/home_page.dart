@@ -17,7 +17,7 @@ class HomePage extends StatelessWidget {
     final double sh = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F3FA),
+      backgroundColor: AppColors.babyblue,
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -150,10 +150,6 @@ class _Header extends StatelessWidget {
       ),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -153,7 +153,7 @@ class GroupFormWidget extends StatelessWidget {
                                 child: Container(
                                   height: 38,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F4FC),
+                                    color: AppColors.babyblue,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                         color: const Color(0x12000000)),

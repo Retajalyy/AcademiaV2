@@ -22,7 +22,7 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.babyblue,
       body: SafeArea(
         top: false,
         child: Column(
