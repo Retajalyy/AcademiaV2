@@ -223,7 +223,7 @@ class _Header extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 20),
+                    color: Colors.white, size: 22),
                 onPressed: Get.back,
               ),
               const SizedBox(width: 4),

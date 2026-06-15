@@ -33,7 +33,10 @@ class RegistrationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadData();
+    // Defer until after the current build completes — mutating Rx values
+    // synchronously here would trigger Obx widgets to rebuild while the
+    // screen that calls Get.put() is still in its own build phase.
+    Future.microtask(loadData);
   }
 
   // ─── Load ─────────────────────────────────────────────────────────────────

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:academia/Core/utilities/colors.dart';
+import 'package:academia/Features/Fees/screens/FeesScreen.dart';
 import 'package:academia/Features/Payement/model/payement_status_model.dart';
 import 'package:academia/Features/Payement/widgets/PayementStatusHeader.dart';
 
@@ -92,6 +94,34 @@ class PaymentSuccessScreen extends StatelessWidget {
                 ),
 
               const SizedBox(height: 40),
+
+              /// 🔵 DONE BUTTON
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Get.offAll(() => const FeesScreen()),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
             ],
           ),
         ),

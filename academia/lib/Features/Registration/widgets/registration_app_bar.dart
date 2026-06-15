@@ -32,7 +32,7 @@ class RegistrationAppBar extends StatelessWidget implements PreferredSizeWidget 
                       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       child: Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        size: 20,
+                        size: 22,
                         color: Colors.white,
                       ),
                     ),

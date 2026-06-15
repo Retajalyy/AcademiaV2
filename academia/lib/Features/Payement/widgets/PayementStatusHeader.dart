@@ -21,7 +21,7 @@ class PayementStatusHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white,size: 28),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,

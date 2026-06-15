@@ -34,7 +34,7 @@ class FeesHeader extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: () => Navigator.pop(context),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
               ),
               const NotificationBell(),
             ],

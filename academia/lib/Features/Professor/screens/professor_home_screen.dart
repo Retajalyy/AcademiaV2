@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
+import '../../../Core/widgets/link_arrow.dart';
 import '../controllers/professor_home_controller.dart';
 import '../controllers/professor_nav_controller.dart';
 import '../models/professor_schedule_item.dart';
@@ -276,8 +277,8 @@ class _TodayScheduleSection extends StatelessWidget {
               GestureDetector(
                 onTap: () =>
                     Get.find<ProfessorNavController>().goTo(1),
-                child: const Text(
-                  'Full Schedule >',
+                child: const LinkArrow(
+                  label: 'Full Schedule',
                   style: TextStyle(
                       fontSize: 12,
                       color: AppColors.primaryBlue,
@@ -468,8 +469,8 @@ class _AcademicOverviewSection extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () => Get.toNamed('/academicOverview'),
-                  child: const Text(
-                    'See All >',
+                  child: const LinkArrow(
+                    label: 'See All',
                     style: TextStyle(
                         fontSize: 12,
                         color: AppColors.primaryBlue,

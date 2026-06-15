@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../Core/controllers/tab_controller.dart';
 import '../../../Core/utilities/colors.dart';
 import '../../Home/controllers/home_controller.dart';
 import '../../Course/controllers/course_controller.dart';
@@ -33,10 +32,10 @@ class RegistrationDoneWidget extends StatelessWidget {
                   GestureDetector(
                     onTap: () {
                       _clearStaleControllers();
-                      Get.offAllNamed('/app');
+                      Get.offAllNamed('/app', arguments: 2);
                     },
-                    child: const Icon(Icons.arrow_back_rounded,
-                        color: Colors.white, size: 24),
+                    child: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: 22),
                   ),
                   const Icon(Icons.notifications_none_rounded,
                       color: Colors.white, size: 24),
@@ -164,8 +163,7 @@ class RegistrationDoneWidget extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       _clearStaleControllers();
-                      Get.offAllNamed('/app');
-                      AppTabController.to.switchTo(1);
+                      Get.offAllNamed('/app', arguments: 1);
                     },
                     icon: const Icon(Icons.calendar_today_rounded, size: 18),
                     label: const Text(

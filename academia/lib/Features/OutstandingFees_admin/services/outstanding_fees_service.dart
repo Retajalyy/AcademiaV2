@@ -84,7 +84,7 @@ class OutstandingFeesService {
         nearestDueDate:   nearestDue,
         avatarUrl:        student['avatar_url'] as String?,
       );
-    }).where((s) => !s.isRegistrationBlocked).toList()
+    }).toList()
       // Sort by nearest due date
       ..sort((a, b) => a.nearestDueDate.compareTo(b.nearestDueDate));
   }

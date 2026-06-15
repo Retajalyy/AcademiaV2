@@ -6,6 +6,7 @@ class AuthUserModel {
   final String role;
   final String email;
   final String? avatarUrl;
+  final bool mustChangePassword;
 
   // Convenience getter so the rest of your UI doesn't break
   String get fullName => '$fname $lname';
@@ -18,6 +19,7 @@ class AuthUserModel {
     required this.role,
     required this.email,
     this.avatarUrl,
+    this.mustChangePassword = false,
   });
 
   factory AuthUserModel.fromMap(Map<String, dynamic> map) {
@@ -29,6 +31,7 @@ class AuthUserModel {
       role:      map['role']?.toString() ?? 'student',
       email:     map['email']?.toString() ?? '',
       avatarUrl: map['avatar_url']?.toString(),
+      mustChangePassword: map['must_change_password'] as bool? ?? false,
     );
   }
 
@@ -40,5 +43,19 @@ class AuthUserModel {
     'role': role,
     'email': email,
     'avatar_url': avatarUrl,
+    'must_change_password': mustChangePassword,
   };
+
+  AuthUserModel copyWith({bool? mustChangePassword}) {
+    return AuthUserModel(
+      id: id,
+      uniId: uniId,
+      fname: fname,
+      lname: lname,
+      role: role,
+      email: email,
+      avatarUrl: avatarUrl,
+      mustChangePassword: mustChangePassword ?? this.mustChangePassword,
+    );
+  }
 }

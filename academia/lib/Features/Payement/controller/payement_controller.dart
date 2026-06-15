@@ -23,12 +23,6 @@ class PaymentController extends GetxController {
     orderSummary.value = summary;
   }
 
-  void updateCardNumber(String v) =>
-      cardModel.value = cardModel.value.copyWith(cardNumber: v);
-  void updateExpiry(String v) =>
-      cardModel.value = cardModel.value.copyWith(expiry: v);
-  void updateCvv(String v) =>
-      cardModel.value = cardModel.value.copyWith(cvv: v);
   void updateName(String v) =>
       cardModel.value = cardModel.value.copyWith(nameOnCard: v);
 

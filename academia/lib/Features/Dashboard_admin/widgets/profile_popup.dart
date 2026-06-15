@@ -1,5 +1,5 @@
 import 'package:academia/Features/AccountSettings_admin/screens/AccountSettingScreen.dart';
-import 'package:academia/Features/Auth/services/auth_service.dart';
+import 'package:academia/Features/Auth/utils/sign_out.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -101,32 +101,7 @@ class ProfilePopup extends StatelessWidget {
               ),
             ),
 
-            onTap: () async {
-              final confirmed = await Get.dialog<bool>(
-                AlertDialog(
-                  title: const Text('Sign Out'),
-                  content: const Text('Are you sure you want to sign out?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Get.back(result: false),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () => Get.back(result: true),
-                      child: Text(
-                        'Sign Out',
-                        style: TextStyle(color: Colors.red.shade600),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-              if (confirmed != true) return;
-              try {
-                await AuthService().logout();
-              } catch (_) {}
-              Get.offAllNamed('/login');
-            },
+            onTap: confirmSignOut,
           ),
 
         ],

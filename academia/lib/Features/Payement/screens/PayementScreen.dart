@@ -37,6 +37,7 @@ class _PayementScreenState extends State<PayementScreen> {
     return Scaffold(
       backgroundColor: AppColors.primaryBlue,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             const PayementHeader(),
@@ -53,9 +54,6 @@ class _PayementScreenState extends State<PayementScreen> {
                       const SizedBox(height: 20),
                       CardDetailsForm(
                         formKey: _cardFormKey,
-                        onCardNumberChanged: ctrl.updateCardNumber,
-                        onExpiryChanged: ctrl.updateExpiry,
-                        onCvvChanged: ctrl.updateCvv,
                         onNameChanged: ctrl.updateName,
                       ),
                       const SizedBox(height: 20),

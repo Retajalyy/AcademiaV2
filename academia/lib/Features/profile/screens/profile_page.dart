@@ -1,5 +1,5 @@
 import 'package:academia/Core/utilities/colors.dart';
-import 'package:academia/Features/Auth/services/auth_service.dart';
+import 'package:academia/Features/Auth/utils/sign_out.dart';
 import 'package:academia/Features/profile/widgets/degree_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,7 +11,12 @@ import '../widgets/stat_card.dart';
 class ProfilePage extends StatelessWidget {
   ProfilePage({super.key});
 
-  final ProfileController controller = Get.put(ProfileController());
+  // ProfilePage is one of the permanent BottomBar tabs (kept alive in an
+  // IndexedStack), so its controller must be permanent too — otherwise
+  // GetX's smart management can delete it on route transitions while
+  // ProfileHeader's Obx is still subscribed to it.
+  final ProfileController controller =
+      Get.put(ProfileController(), permanent: true);
   final RxInt selectedIndex = 3.obs;
 
   @override
@@ -117,10 +122,7 @@ class _ProfileBody extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () async {
-                      await AuthService().logout();
-                      Get.offAllNamed('/login');
-                    },
+                    onPressed: confirmSignOut,
                     icon: const Icon(Icons.logout, color: Colors.red),
                     label: const Text(
                       'Sign Out',

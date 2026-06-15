@@ -17,13 +17,17 @@ class BottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tabCtrl = Get.put(AppTabController(), permanent: true);
+    // Allow callers to request a starting tab via Get.toNamed/offAllNamed
+    // arguments (e.g. Get.offAllNamed('/app', arguments: 1)).
+    final args = Get.arguments;
+    final targetIndex = args is int ? args : initialIndex;
     // Only set the index if this is the first time or navigating from outside.
     // Deferred to after this frame so it doesn't mutate the Rx value while
     // the framework is still building this widget (which would trip
     // "setState called during build" on any still-mounted Obx listeners).
-    if (tabCtrl.currentIndex.value != initialIndex) {
+    if (tabCtrl.currentIndex.value != targetIndex) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        tabCtrl.currentIndex.value = initialIndex;
+        tabCtrl.currentIndex.value = targetIndex;
       });
     }
     return const _BottomBarView();

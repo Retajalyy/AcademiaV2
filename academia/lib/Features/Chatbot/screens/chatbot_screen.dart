@@ -38,7 +38,7 @@ class _ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.primaryBlue,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded,
-            color: Colors.white, size: 18),
+            color: Colors.white, size: 22),
         onPressed: () => Get.back(),
       ),
       title: Row(

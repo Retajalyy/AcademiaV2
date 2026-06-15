@@ -114,8 +114,6 @@ class Assessmentscreen extends StatelessWidget {
                               type: a.courseType,
                               midterm: a.midtermStr,
                               midtermStatus: a.midtermStatus,
-                              quiz: a.quizStr,
-                              quizStatus: a.quizStatus,
                               participation: a.participationStr,
                               participationStatus: a.participationStatus,
                               attendance: a.attendanceStr,

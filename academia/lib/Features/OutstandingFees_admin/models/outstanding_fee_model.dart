@@ -46,8 +46,6 @@ class OutstandingFeeStudent {
   bool get isOverdue             => daysUntilDue < 0;
   bool get isDueSoon             => !isOverdue && daysUntilDue <= 10;
   bool get needsReminder         => unremindedFeeIds.isNotEmpty;
-  // Overdue by more than 7 days → blocked from registration, skip entirely
-  bool get isRegistrationBlocked => daysUntilDue < -7;
 
   String get dueDateLabel {
     const m = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

@@ -23,15 +23,15 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.babyblue,
-      body: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            // ── Header ────────────────────────────────────────────────
-            _buildHeader(),
+      body: Column(
+        children: [
+          // ── Header ──────────────────────────────────────────────────
+          _buildHeader(context),
 
-            // ── Scrollable body ───────────────────────────────────────
-            Expanded(
+          // ── Scrollable body ───────────────────────────────────────
+          Expanded(
+            child: SafeArea(
+              top: false,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
                 child: Column(
@@ -93,16 +93,17 @@ class _AddNewUserScreenState extends State<AddNewUserScreen> {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final topInset = MediaQuery.of(context).padding.top;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+      padding: EdgeInsets.fromLTRB(16, topInset + 14, 16, 20),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
       ),
@@ -483,6 +484,8 @@ class _ProfessorForm extends StatelessWidget {
         const SizedBox(height: 12),
         _LabeledField(ctrl: c.phone, label: 'Phone Number',
             keyboard: TextInputType.phone),
+        const SizedBox(height: 12),
+        _PasswordField(c: c),
 
         const SizedBox(height: 20),
         const _SectionLabel('ACADEMIC INFORMATION'),
@@ -603,6 +606,8 @@ class _AdminForm extends StatelessWidget {
         _LabeledField(ctrl: c.phone, label: 'Phone Number',
             keyboard: TextInputType.phone),
         const SizedBox(height: 12),
+        _PasswordField(c: c),
+        const SizedBox(height: 12),
         _LabeledField(ctrl: c.jobTitle, label: 'Job Title'),
         const SizedBox(height: 24),
         Obx(() => SizedBox(
@@ -658,10 +663,14 @@ class _LabeledField extends StatelessWidget {
   final TextEditingController ctrl;
   final String label;
   final TextInputType keyboard;
+  final bool obscureText;
+  final Widget? suffixIcon;
   const _LabeledField({
     required this.ctrl,
     required this.label,
     this.keyboard = TextInputType.text,
+    this.obscureText = false,
+    this.suffixIcon,
   });
 
   @override
@@ -677,10 +686,12 @@ class _LabeledField extends StatelessWidget {
           TextField(
             controller: ctrl,
             keyboardType: keyboard,
+            obscureText: obscureText,
             style: const TextStyle(fontSize: 14, color: Color(0xFF1A2B4A)),
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
+              suffixIcon: suffixIcon,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               border: OutlineInputBorder(
@@ -697,6 +708,38 @@ class _LabeledField extends StatelessWidget {
                     const BorderSide(color: AppColors.primaryBlue, width: 1.5),
               ),
             ),
+          ),
+        ],
+      );
+}
+
+class _PasswordField extends StatelessWidget {
+  final AddUserController c;
+  const _PasswordField({required this.c});
+
+  @override
+  Widget build(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Obx(() => _LabeledField(
+                ctrl: c.password,
+                label: 'Temporary Password',
+                obscureText: c.obscurePassword.value,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    c.obscurePassword.value
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: AppColors.primaryBlue,
+                    size: 20,
+                  ),
+                  onPressed: c.togglePasswordVisibility,
+                ),
+              )),
+          const SizedBox(height: 4),
+          const Text(
+            'The user will be required to change this password after their first login.',
+            style: TextStyle(fontSize: 12, color: Color(0xFF908C8C)),
           ),
         ],
       );

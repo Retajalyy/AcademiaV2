@@ -24,6 +24,13 @@ class ProfileHeader extends StatelessWidget {
     const double avatarRadius = 46.0; // total avatar size = 92
     const double bannerExtraHeight = 120.0; // extra space in banner above avatar
 
+    // Look up the controller once, outside the Obx — calling Get.find()
+    // inside an Obx builder re-runs on every rebuild and throws if the
+    // controller was ever deleted while this Obx is still subscribed.
+    final profileController = Get.isRegistered<ProfileController>()
+        ? Get.find<ProfileController>()
+        : null;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -133,7 +140,7 @@ class ProfileHeader extends StatelessWidget {
                 ],
               ),
               child: Obx(() {
-                  final url = Get.find<ProfileController>().avatarUrl.value;
+                  final url = profileController?.avatarUrl.value;
                   return CircleAvatar(
                     radius: avatarRadius - 3.5,
                     backgroundColor: AppColors.primaryBlue,

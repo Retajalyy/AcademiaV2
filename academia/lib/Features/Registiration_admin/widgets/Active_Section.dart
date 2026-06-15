@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
+import '../../../Core/widgets/link_arrow.dart';
 import '../controller/registiration_controller.dart';
 import 'semster_card.dart';
 
@@ -34,8 +35,8 @@ class ActivePlansSection extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,
               ),
-              child: const Text(
-                "View all >",
+              child: const LinkArrow(
+                label: "View all",
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,

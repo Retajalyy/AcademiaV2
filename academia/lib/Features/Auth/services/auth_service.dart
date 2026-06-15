@@ -62,7 +62,7 @@ class AuthService {
       
       final dynamic profileData = await _supabase
           .from('profiles')
-          .select('id, uni_id, fname, lname, role, email, avatar_url')
+          .select('id, uni_id, fname, lname, role, email, avatar_url, must_change_password')
           .eq('id', user.id)
           .single();
 
@@ -101,6 +101,22 @@ class AuthService {
       print('❌ Unexpected error: $e');
       print('📚 Stack trace:\n$stackTrace');
       throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  /// Updates the current user's password and clears the
+  /// "must change password" flag on their profile.
+  Future<void> changePassword(String newPassword) async {
+    try {
+      await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+
+      await _supabase.rpc('mark_password_changed');
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Failed to update password: $e');
     }
   }
 

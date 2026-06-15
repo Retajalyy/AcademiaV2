@@ -58,6 +58,8 @@ class AddUserController extends GetxController {
     csvResultMsg.value = '';
   }
 
+  void togglePasswordVisibility() => obscurePassword.toggle();
+
   Future<void> _loadFaculties() async {
     final list = await _service.fetchFaculties();
     faculties.assignAll(list);

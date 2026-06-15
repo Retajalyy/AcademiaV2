@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
 import '../controllers/professor_profile_controller.dart';
-import '../../Auth/services/auth_service.dart';
+import '../../Auth/utils/sign_out.dart';
 
 class ProfessorProfileScreen extends StatelessWidget {
   const ProfessorProfileScreen({super.key});
@@ -348,10 +348,7 @@ class _LogoutButton extends StatelessWidget {
         width: double.infinity,
         height: 50,
         child: OutlinedButton.icon(
-          onPressed: () async {
-            await AuthService().logout();
-            Get.offAllNamed('/login');
-          },
+          onPressed: confirmSignOut,
           icon: const Icon(Icons.logout, color: Colors.red),
           label: const Text(
             'Sign Out',

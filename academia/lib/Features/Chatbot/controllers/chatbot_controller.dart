@@ -14,12 +14,16 @@ class ChatbotController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Greeting message
-    messages.add(ChatMessage(
-      role: 'assistant',
-      content: "Hi! I'm Advisa 👋\nI can help you with grades, registration, exams, fees, and anything else about your studies. What's on your mind?",
-      timestamp: DateTime.now(),
-    ));
+    // Defer until after the current build completes — mutating messages
+    // synchronously here would trigger the Obx in _MessageList to rebuild
+    // while the screen that calls Get.put() is still in its own build phase.
+    Future.microtask(() {
+      messages.add(ChatMessage(
+        role: 'assistant',
+        content: "Hi! I'm Advisa 👋\nI can help you with grades, registration, exams, fees, and anything else about your studies. What's on your mind?",
+        timestamp: DateTime.now(),
+      ));
+    });
   }
 
   @override

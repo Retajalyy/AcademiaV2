@@ -1,4 +1,4 @@
-import 'package:academia/Features/Auth/services/auth_service.dart';
+import 'package:academia/Features/Auth/utils/sign_out.dart';
 import 'package:academia/Features/Registiration_admin/screens/RegistirationScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -267,32 +267,7 @@ class _SideMenuState extends State<SideMenu> {
                         title: "Sign Out",
                         onTap: () async {
                           Navigator.pop(context);
-                          final confirmed = await Get.dialog<bool>(
-                            AlertDialog(
-                              title: const Text('Sign Out'),
-                              content: const Text(
-                                  'Are you sure you want to sign out?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Get.back(result: false),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Get.back(result: true),
-                                  child: Text(
-                                    'Sign Out',
-                                    style: TextStyle(
-                                        color: Colors.red.shade600),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                          if (confirmed != true) return;
-                          try {
-                            await AuthService().logout();
-                          } catch (_) {}
-                          Get.offAllNamed('/login');
+                          await confirmSignOut();
                         },
                       ),
 

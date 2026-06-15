@@ -18,7 +18,10 @@ class RegistrationConfirmScreen extends StatelessWidget {
     final ctrl = Get.find<RegistrationController>();
     final group = ctrl.selectedGroup;
     if (group == null) {
-      Get.back();
+      // Defer navigation — popping during build triggers
+      // "setState()/markNeedsBuild() called during build" on the
+      // previous route's Obx.
+      WidgetsBinding.instance.addPostFrameCallback((_) => Get.back());
       return const SizedBox.shrink();
     }
 
@@ -70,8 +73,8 @@ class _Header extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: Get.back,
-                child: const Icon(Icons.arrow_back_rounded,
-                    color: Colors.white, size: 24),
+                child: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white, size: 22),
               ),
               const Icon(Icons.notifications_none_rounded,
                   color: Colors.white, size: 24),

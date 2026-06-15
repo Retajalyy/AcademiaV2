@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:academia/Features/Auth/models/auth_user_model.dart';
+import 'package:academia/Features/Auth/utils/auth_navigation.dart';
 
 class SplashController extends GetxController {
 
@@ -19,26 +21,22 @@ class SplashController extends GetxController {
       return;
     }
 
-    // Session exists — fetch role and route accordingly
+    // Session exists — fetch profile and route accordingly
     try {
       final profile = await Supabase.instance.client
           .from('profiles')
-          .select('role')
+          .select('id, uni_id, fname, lname, role, email, avatar_url, must_change_password')
           .eq('id', session.user.id)
           .single();
 
-      final role = (profile['role'] as String? ?? 'student').toLowerCase().trim();
+      final user = AuthUserModel.fromMap(profile);
 
-      switch (role) {
-        case 'admin':
-          Get.offAllNamed('/Dashboard');
-          break;
-        case 'professor':
-          Get.offAllNamed('/professorApp');
-          break;
-        default:
-          Get.offAllNamed('/app');
+      if (user.mustChangePassword) {
+        Get.offAllNamed('/changePassword', arguments: user);
+        return;
       }
+
+      navigateToRoleHome(user);
     } catch (_) {
       // If profile fetch fails, fall back to login
       Get.offAllNamed('/login');

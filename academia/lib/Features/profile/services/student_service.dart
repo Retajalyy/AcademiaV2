@@ -79,24 +79,39 @@ class StudentService {
         .eq('student_id', studentId);
     final coursesEnrolled = (enrollments as List).length;
 
-    // 6. Attendance average — grades are linked through enrollments
-    final enrollmentGrades = await _db
-        .from('enrollments')
-        .select('grades(attendance)')
-        .eq('student_id', studentId);
+    // 6. Attendance — from live tracking tables (attendance_sessions +
+    // attendance_records) across all sections the student is enrolled in.
     int attendancePercent = 0;
-    final attendanceValues = (enrollmentGrades as List)
-        .map((e) {
-          final g = e['grades'];
-          if (g is Map) return (g['attendance'] as num?)?.toInt();
-          if (g is List && g.isNotEmpty) return (g.first['attendance'] as num?)?.toInt();
-          return null;
-        })
+    final enrollmentSections = await _db
+        .from('enrollments')
+        .select('section_id')
+        .eq('student_id', studentId);
+    final sectionIds = (enrollmentSections as List)
+        .map((e) => e['section_id'] as int?)
         .whereType<int>()
         .toList();
-    if (attendanceValues.isNotEmpty) {
-      final sum = attendanceValues.fold(0, (acc, v) => acc + v);
-      attendancePercent = (sum / attendanceValues.length).round();
+
+    if (sectionIds.isNotEmpty) {
+      final sessionsRaw = await _db
+          .from('attendance_sessions')
+          .select('id')
+          .inFilter('section_id', sectionIds);
+      final sessionIds =
+          (sessionsRaw as List).map((s) => s['id'] as int).toList();
+
+      if (sessionIds.isNotEmpty) {
+        final recordsRaw = await _db
+            .from('attendance_records')
+            .select('is_present')
+            .eq('student_id', studentId)
+            .inFilter('session_id', sessionIds);
+
+        final total = sessionIds.length;
+        final present = (recordsRaw as List)
+            .where((r) => r['is_present'] == true)
+            .length;
+        attendancePercent = total > 0 ? ((present / total) * 100).round() : 0;
+      }
     }
 
     return StudentModel(

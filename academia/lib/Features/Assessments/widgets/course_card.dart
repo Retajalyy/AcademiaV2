@@ -12,9 +12,6 @@ class CourseCard extends StatelessWidget {
   final String midterm;
   final String midtermStatus;
 
-  final String quiz;
-  final String quizStatus;
-
   final String participation;
   final String participationStatus;
 
@@ -31,8 +28,6 @@ class CourseCard extends StatelessWidget {
     required this.type,
     required this.midterm,
     required this.midtermStatus,
-    required this.quiz,
-    required this.quizStatus,
     required this.participation,
     required this.participationStatus,
     required this.attendance,
@@ -276,8 +271,6 @@ class CourseCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _stat("Midterm",  midterm,  midtermStatus)),
-              const SizedBox(width: 8),
-              Expanded(child: _stat("Assignments", quiz, quizStatus)),
               const SizedBox(width: 8),
               Expanded(child: _stat("Classwork", participation, participationStatus)),
               const SizedBox(width: 8),

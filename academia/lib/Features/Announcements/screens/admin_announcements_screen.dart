@@ -155,6 +155,7 @@ class _AdminAnnouncementsScreenState
       backgroundColor: const Color(0xFFF0F4FA),
       drawer: const SideMenu(activeItem: 'Announcements'),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             _Header(),
@@ -172,13 +173,13 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       color: AppColors.primaryBlue,
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Menu + title row
-          Row(
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Builder(
@@ -210,59 +211,62 @@ class _Header extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+        ),
+      ),
+    );
+  }
+}
 
-          // Write Announcement card
-          GestureDetector(
-            onTap: () => Get.toNamed('/createAnnouncement'),
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+// ── Write Announcement Card ─────────────────────────────────────────────────
+
+class _WriteAnnouncementCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed('/createAnnouncement'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0C4D83),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFF0C4D83),
-                borderRadius: BorderRadius.circular(14),
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
+              child: const Icon(Icons.edit_outlined,
+                  color: Color(0xFFFFC258), size: 22),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.edit_outlined,
-                        color: Color(0xFFFFC258), size: 22),
-                  ),
-                  const SizedBox(width: 14),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Write an Announcement',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Compose and deliver to selected groups',
-                          style: TextStyle(
-                              color: Colors.white54, fontSize: 12),
-                        ),
-                      ],
+                  Text(
+                    'Write an Announcement',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios_rounded,
-                      color: Colors.white38, size: 15),
+                  SizedBox(height: 2),
+                  Text(
+                    'Compose and deliver to selected groups',
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+            const Icon(Icons.arrow_forward_ios_rounded,
+                color: Colors.white38, size: 15),
+          ],
+        ),
       ),
     );
   }
@@ -278,6 +282,12 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Write Announcement card
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: _WriteAnnouncementCard(),
+        ),
+
         // Search bar
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),

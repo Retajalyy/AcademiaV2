@@ -36,7 +36,7 @@ class ProfileEditScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white),
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 22),
                             onPressed: () => Get.back(),
                           ),
                           const Text(

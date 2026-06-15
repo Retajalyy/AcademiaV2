@@ -2,6 +2,7 @@ import 'package:academia/Features/Auth/models/auth_user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/auth_service.dart';
+import '../utils/auth_navigation.dart';
 
 class LoginController extends GetxController {
   final AuthService _authService = AuthService();
@@ -50,18 +51,11 @@ class LoginController extends GetxController {
   }
 
   void _navigateByRole(AuthUserModel user) {
-    switch (user.role.toLowerCase().trim()) {
-      case 'student':
-        Get.offAllNamed('/app', arguments: user);
-        break;
-      case 'professor':
-        Get.offAllNamed('/professorApp', arguments: user);
-        break;
-      case 'admin':
-        Get.offAllNamed('/Dashboard', arguments: user);
-        break;
-      default:
-        _showError('Role Error', 'Unauthorized role: ${user.role}');
+    if (user.mustChangePassword) {
+      Get.offAllNamed('/changePassword', arguments: user);
+      return;
     }
+
+    navigateToRoleHome(user);
   }
 }

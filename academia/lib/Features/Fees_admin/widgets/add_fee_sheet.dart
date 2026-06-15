@@ -23,12 +23,23 @@ class AddFeeSheet extends StatelessWidget {
     final c = Get.find<FeesAdminController>();
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.88,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (_, scrollController) {
-        return Container(
+    return Stack(
+      children: [
+        // Tapping anywhere outside the sheet closes it. DraggableScrollableSheet
+        // expands to fill the modal route, so without this the empty area above
+        // the visible card would swallow taps instead of dismissing.
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ),
+        DraggableScrollableSheet(
+          initialChildSize: 0.88,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, scrollController) {
+            return Container(
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -396,6 +407,8 @@ class AddFeeSheet extends StatelessWidget {
           ),
         );
       },
+    ),
+      ],
     );
   }
 }

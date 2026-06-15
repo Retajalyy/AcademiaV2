@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import '../models/registration_model.dart';
 import '../services/registration_service.dart';
@@ -27,7 +28,10 @@ class RegistrationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _initialize();
+    // Defer until after the current frame finishes building — mutating Rx
+    // values synchronously here would trigger the Obx in RegistrationScreen
+    // to rebuild while it is still in its own build phase.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
   }
 
   Future<void> _initialize() async {

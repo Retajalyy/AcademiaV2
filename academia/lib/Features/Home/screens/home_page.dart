@@ -6,6 +6,7 @@ import 'package:academia/Features/Home/controllers/home_controller.dart';
 import 'package:academia/Features/Home/widgets/Due_soon_card.dart';
 import 'package:academia/Features/Home/widgets/schedule_card.dart';
 import 'package:academia/Core/widgets/notification_bell.dart';
+import 'package:academia/Core/widgets/link_arrow.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -37,7 +38,8 @@ class HomePage extends StatelessWidget {
                   // Today's Schedule
                   _SectionHeader(
                     title: "Today's Schedule",
-                    actionLabel: "Full schedule >",
+                    actionLabel: "Full schedule",
+                    onTap: () => AppTabController.to.switchTo(1),
                     sw: sw,
                     sh: sh,
                   ),
@@ -62,7 +64,8 @@ class HomePage extends StatelessWidget {
                   // Due Soon
                   _SectionHeader(
                     title: "Due Soon",
-                    actionLabel: "All courses >",
+                    actionLabel: "All courses",
+                    onTap: () => Get.toNamed('/course'),
                     sw: sw,
                     sh: sh,
                   ),
@@ -323,10 +326,12 @@ class _Header extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final String title;
   final String actionLabel;
+  final VoidCallback onTap;
   final double sw, sh;
   const _SectionHeader({
     required this.title,
     required this.actionLabel,
+    required this.onTap,
     required this.sw,
     required this.sh,
   });
@@ -352,9 +357,9 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => AppTabController.to.switchTo(1),
-            child: Text(
-              actionLabel,
+            onTap: onTap,
+            child: LinkArrow(
+              label: actionLabel,
               style: TextStyle(
                 fontSize: sw * 0.033,
                 color:AppColors.primaryBlue,

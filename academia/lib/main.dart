@@ -26,6 +26,7 @@ import 'Core/widgets/professor_bottom_bar.dart';
 import 'Features/Professor/screens/professor_course_detail_screen.dart';
 import 'Features/Navigation/screens/navigation_screen.dart';
 import 'Features/Auth/screens/forgot_password_screen.dart';
+import 'Features/Auth/screens/change_password_screen.dart';
 import 'Features/Dashboard_admin/screens/password_reset_screen.dart';
 import 'Features/OutstandingFees_admin/screens/outstanding_fees_screen.dart';
 import 'Features/Professor/screens/upload_material_screen.dart';
@@ -48,10 +49,11 @@ import 'Features/Announcements/screens/create_announcement_screen.dart';
 import 'Features/Registiration_admin/screens/RegistirationScreen.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 
 import 'core/services/supabase_service.dart';
-import 'Core/utilities/colors.dart'; 
+import 'Core/utilities/colors.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/home/screens/home_page.dart';
 
@@ -59,7 +61,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SupabaseService.init();
- 
+
+  // Stripe test-mode publishable key (safe to embed in the app).
+  // Replace with your own from https://dashboard.stripe.com/test/apikeys
+  Stripe.publishableKey =
+      'pk_test_51TiOsqGxiO7neIOBzNcwq4FCdwV5qHp4126J2dPdibWogCaKm4OZg3ysENfFmbhctqJufER1xrb1L2BnVCFNxYQZ00JPzHUvbg';
+  await Stripe.instance.applySettings();
 
   runApp(const MyApp());
 }
@@ -228,6 +235,10 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/forgotPassword',
           page: () => const ForgotPasswordScreen(),
+        ),
+        GetPage(
+          name: '/changePassword',
+          page: () => ChangePasswordScreen(),
         ),
         GetPage(
           name: '/passwordResetRequests',
