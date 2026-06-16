@@ -39,7 +39,7 @@ class ExamScheduleScreen extends StatelessWidget {
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 decoration: const BoxDecoration(color: AppColors.babyblue),
                 child: Obx(() {
                   if (_c.isLoading.value) {
@@ -63,6 +63,7 @@ class ExamScheduleScreen extends StatelessWidget {
                   }
 
                   return ListView(
+                    padding: EdgeInsets.zero,
                     children: [
                       // ── Highlighted period banner ─────────────────
                       if (_c.examPeriod.value != null)
@@ -79,12 +80,14 @@ class ExamScheduleScreen extends StatelessWidget {
                         _sectionTitle('Next Exam'),
                         const SizedBox(height: 12),
                         ExamCard(
-                          date:   _c.nextExam!.date,
-                          month:  _c.nextExam!.month,
-                          title:  _c.nextExam!.title,
-                          time:   _c.nextExam!.time,
-                          room:   _c.nextExam!.room,
-                          isNext: true,
+                          date:      _c.nextExam!.date,
+                          month:     _c.nextExam!.month,
+                          title:     _c.nextExam!.title,
+                          time:      _c.nextExam!.time,
+                          room:      _c.nextExam!.room,
+                          level:     _c.nextExam!.level,
+                          daysUntil: _c.nextExam!.daysUntil,
+                          isNext:    true,
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -102,6 +105,7 @@ class ExamScheduleScreen extends StatelessWidget {
                               title: e.title,
                               time:  e.time,
                               room:  e.room,
+                              level: e.level,
                             ),
                           ),
                         ),
@@ -121,6 +125,7 @@ class ExamScheduleScreen extends StatelessWidget {
                               title:       e.title,
                               time:        e.time,
                               room:        e.room,
+                              level:       e.level,
                               isCompleted: true,
                             ),
                           ),

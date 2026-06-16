@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -118,8 +120,82 @@ class ExamScheduleAdminScreen extends StatelessWidget {
                           padding:
                               const EdgeInsets.fromLTRB(16, 0, 16, 100),
                           itemCount: list.length,
-                          itemBuilder: (_, i) =>
-                              _UploadCard(upload: list[i]),
+                          itemBuilder: (_, i) {
+                            final upload = list[i];
+                            return Dismissible(
+                              key: ValueKey(upload.id),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEF4444),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 24),
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.delete_outline,
+                                        color: Colors.white, size: 28),
+                                    SizedBox(height: 4),
+                                    Text('Delete',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              ),
+                              confirmDismiss: (_) async {
+                                if (Platform.isIOS) {
+                                  return await showCupertinoDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => CupertinoAlertDialog(
+                                      title: const Text('Delete Schedule'),
+                                      content: const Text(
+                                          'This will remove the upload record and all related exam entries. Continue?'),
+                                      actions: [
+                                        CupertinoDialogAction(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        CupertinoDialogAction(
+                                          isDestructiveAction: true,
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
+                                          child: const Text('Delete'),
+                                        ),
+                                      ],
+                                    ),
+                                  ) ?? false;
+                                }
+                                return await showDialog<bool>(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text('Delete Schedule'),
+                                    content: const Text(
+                                        'This will remove the upload record and all related exam entries. Continue?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
+                                          child: const Text('Cancel')),
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
+                                          child: const Text('Delete',
+                                              style: TextStyle(
+                                                  color: Color(0xFFEF4444)))),
+                                    ],
+                                  ),
+                                ) ?? false;
+                              },
+                              onDismissed: (_) => c.deleteUpload(upload),
+                              child: _UploadCard(upload: upload),
+                            );
+                          },
                         );
                       }),
                     ),

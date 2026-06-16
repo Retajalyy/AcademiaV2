@@ -49,6 +49,7 @@ class ActiveFeeModel {
   final double progress;
   final String progressText;
   final String dueDate;
+  final DateTime? rawDueDate;
   final bool isOverdue;
   final String dueDateLabel;
   final IconData icon;
@@ -61,6 +62,7 @@ class ActiveFeeModel {
     required this.progress,
     required this.progressText,
     required this.dueDate,
+    required this.rawDueDate,
     required this.isOverdue,
     required this.dueDateLabel,
     required this.icon,

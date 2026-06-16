@@ -16,6 +16,7 @@ class PaymentSuccessScreen extends StatelessWidget {
       backgroundColor: AppColors.babyblue,
 
       body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           child: Column(
             children: [

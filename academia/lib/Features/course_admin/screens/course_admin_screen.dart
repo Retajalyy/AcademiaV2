@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -218,27 +219,23 @@ class CourseAdminScreen extends StatelessWidget {
                             color: Colors.white, size: 28),
                       ),
                       confirmDismiss: (_) async {
-                        return await showDialog<bool>(
+                        return await showCupertinoDialog<bool>(
                           context: ctx,
-                          builder: (_) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(16)),
+                          builder: (dialogCtx) => CupertinoAlertDialog(
                             title: const Text('Delete Course'),
                             content: Text(
                                 'Delete "${course.name}"? This cannot be undone.'),
                             actions: [
-                              TextButton(
+                              CupertinoDialogAction(
                                 onPressed: () =>
-                                    Navigator.pop(ctx, false),
+                                    Navigator.pop(dialogCtx, false),
                                 child: const Text('Cancel'),
                               ),
-                              TextButton(
+                              CupertinoDialogAction(
+                                isDestructiveAction: true,
                                 onPressed: () =>
-                                    Navigator.pop(ctx, true),
-                                child: const Text('Delete',
-                                    style: TextStyle(
-                                        color: AppColors.fail)),
+                                    Navigator.pop(dialogCtx, true),
+                                child: const Text('Delete'),
                               ),
                             ],
                           ),

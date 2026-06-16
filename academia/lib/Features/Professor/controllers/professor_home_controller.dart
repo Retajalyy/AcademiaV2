@@ -47,7 +47,6 @@ class ProfessorHomeController extends GetxController {
         _service.getTodaySchedule(info.id, isTA: info.isTA),
         _service.getNextClass(info.id, isTA: info.isTA),
         _service.getOverviewStats(info.id, isTA: info.isTA),
-        _service.getStudentsAtRiskCount(info.id, isTA: info.isTA),
         _service.getLatestAssignmentInfo(info.id, isTA: info.isTA),
         _service.getNextExamInfo(info.id, isTA: info.isTA),
       ]);
@@ -55,9 +54,13 @@ class ProfessorHomeController extends GetxController {
       todaySchedule.value    = data[0] as List<ProfessorScheduleItem>;
       nextClass.value        = data[1] as ProfessorScheduleItem?;
       overviewStats.value    = data[2] as Map<String, int>;
-      studentsAtRisk.value   = data[3] as int;
-      latestAssignment.value = data[4] as Map<String, dynamic>?;
-      nextExamInfo.value     = data[5] as Map<String, dynamic>?;
+      latestAssignment.value = data[3] as Map<String, dynamic>?;
+      nextExamInfo.value     = data[4] as Map<String, dynamic>?;
+
+      // Run after lighter queries — getStudentsAtRisk makes several sequential
+      // DB calls and fails silently under high concurrent load when batched above.
+      studentsAtRisk.value =
+          await _service.getStudentsAtRiskCount(info.id, isTA: info.isTA);
     } catch (e) {
       Get.snackbar('Error', 'Failed to load data: $e');
     } finally {

@@ -23,6 +23,7 @@ class FeesAdminScreen extends StatelessWidget {
       backgroundColor: AppColors.primaryBlue,
       drawer: const SideMenu(activeItem: "Fees & Payments"),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             const FeesAdminHeader(),

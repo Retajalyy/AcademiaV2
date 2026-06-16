@@ -9,6 +9,8 @@ class ExamModel {
   final String room;
   final String examType;
   final ExamStatus status;
+  final String? level;
+  final int daysUntil;
 
   const ExamModel({
     required this.id,
@@ -19,9 +21,11 @@ class ExamModel {
     required this.room,
     required this.examType,
     required this.status,
+    this.level,
+    this.daysUntil = 0,
   });
 
-  factory ExamModel.fromMap(Map<String, dynamic> row, ExamStatus status) {
+  factory ExamModel.fromMap(Map<String, dynamic> row, ExamStatus status, {String? level}) {
     final examDate  = DateTime.parse(row['exam_date'] as String);
     final startTime = _fmtTime(row['start_time'] as String?);
     final endTime   = _fmtTime(row['end_time']   as String?);
@@ -38,15 +42,22 @@ class ExamModel {
       }
     }
 
+    final today    = DateTime.now();
+    final todayDay = DateTime(today.year, today.month, today.day);
+    final examDay  = DateTime(examDate.year, examDate.month, examDate.day);
+    final days     = examDay.difference(todayDay).inDays;
+
     return ExamModel(
-      id:       row['id'].toString(),
-      title:    title,
-      date:     examDate.day.toString(),
-      month:    months[examDate.month],
-      time:     '$startTime - $endTime',
-      room:     row['room'] as String? ?? '',
-      examType: row['exam_type'] as String? ?? 'Midterm',
-      status:   status,
+      id:        row['id'].toString(),
+      title:     title,
+      date:      examDate.day.toString(),
+      month:     months[examDate.month],
+      time:      '$startTime - $endTime',
+      room:      row['room'] as String? ?? '',
+      examType:  row['exam_type'] as String? ?? 'Midterm',
+      status:    status,
+      level:     level,
+      daysUntil: days,
     );
   }
 

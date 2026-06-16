@@ -394,12 +394,8 @@ class ProfessorService {
 
   Future<int> getStudentsAtRiskCount(int professorId,
       {bool isTA = false}) async {
-    try {
-      final courses = await getStudentsAtRisk(professorId, isTA: isTA);
-      return courses.fold<int>(0, (sum, c) => sum + c.students.length);
-    } catch (_) {
-      return 0;
-    }
+    final courses = await getStudentsAtRisk(professorId, isTA: isTA);
+    return courses.fold<int>(0, (sum, c) => sum + c.students.length);
   }
 
   Future<Map<String, dynamic>?> getLatestAssignmentInfo(int professorId,
@@ -474,11 +470,15 @@ class ProfessorService {
 
       final sectionIds = list.map((s) => s['id'] as int).toList();
 
+      final today = DateTime.now();
+      final todayStr = '${today.year}-${today.month.toString().padLeft(2,'0')}-${today.day.toString().padLeft(2,'0')}';
+
       final data = await _db
           .from('exam_schedules')
-          .select('id, exam_type, exam_date, section_id')
+          .select('id, exam_type, exam_date, section_id, course_name')
           .inFilter('section_id', sectionIds)
-          .gte('exam_date', DateTime.now().toIso8601String())
+          .isFilter('student_id', null)
+          .gte('exam_date', todayStr)
           .order('exam_date', ascending: true)
           .limit(1)
           .maybeSingle();
@@ -488,16 +488,19 @@ class ProfessorService {
       final sectionRow = list.firstWhere(
           (s) => s['id'] == data['section_id'],
           orElse: () => <String, dynamic>{});
-      final courseName =
-          (sectionRow['courses'] as Map?)?['name'] as String? ?? '';
-      final examDate =
-          DateTime.parse(data['exam_date'] as String);
-      final days = examDate.difference(DateTime.now()).inDays;
-      final examType = data['exam_type'] as String? ?? 'Exam';
+      final joinedName = (sectionRow['courses'] as Map?)?['name'] as String?;
+      final courseName = (joinedName?.isNotEmpty == true)
+          ? joinedName!
+          : (data['course_name'] as String? ?? '');
+      final examDate  = DateTime.parse(data['exam_date'] as String);
+      final examDay   = DateTime(examDate.year, examDate.month, examDate.day);
+      final todayDay  = DateTime(today.year, today.month, today.day);
+      final days      = examDay.difference(todayDay).inDays;
+      final examType  = data['exam_type'] as String? ?? 'Exam';
 
       return {
         'subtitle': '$courseName · $examType',
-        'badge':    '$days Day${days == 1 ? '' : 's'}',
+        'badge':    days == 0 ? 'Today' : '$days Day${days == 1 ? '' : 's'}',
       };
     } catch (_) {
       return null;
@@ -1246,7 +1249,7 @@ class ProfessorService {
 
     final profileMap = <String, Map<String, dynamic>>{
       for (final p in profileData as List)
-        p['id'] as String: Map<String, dynamic>.from(p as Map),
+        p['id'] as String: Map<String, dynamic>.from(p),
     };
 
     // 3. Submission records from assignment_submissions table
@@ -1457,5 +1460,105 @@ class ProfessorService {
       case 'final':         return 60;
       default:              return 10;
     }
+  }
+
+  // ── Professor exam schedule ──────────────────────────────────────────────────
+
+  Future<List<Map<String, dynamic>>> fetchProfessorExamSchedule(
+      int professorId, {bool isTA = false}) async {
+    // 1. Professor's section IDs + course names
+    final sectionsData = await _db
+        .from('sections')
+        .select('id, courses(name)')
+        .eq(isTA ? 'ta_id' : 'professor_id', professorId);
+    final sections = sectionsData as List;
+    if (sections.isEmpty) return [];
+
+    final sectionIds = sections.map((s) => s['id'] as int).toList();
+    final courseNameBySection = {
+      for (final s in sections)
+        s['id'] as int:
+            (s['courses'] as Map?)?['name'] as String? ?? ''
+    };
+
+    // 2. Section-level exam records (student_id IS NULL = professor view)
+    final examData = await _db
+        .from('exam_schedules')
+        .select('id, section_id, course_name, exam_date, start_time, end_time, room, exam_type, level')
+        .inFilter('section_id', sectionIds)
+        .isFilter('student_id', null)
+        .order('exam_date');
+    if ((examData as List).isEmpty) return [];
+
+    // 3. Groups per section
+    final rgsData = await _db
+        .from('registration_group_sections')
+        .select('section_id, group_id')
+        .inFilter('section_id', sectionIds);
+    final groupIdsBySection = <int, List<int>>{};
+    for (final r in rgsData as List) {
+      final sid = r['section_id'] as int;
+      final gid = r['group_id']  as int?;
+      if (gid != null) {
+        groupIdsBySection.putIfAbsent(sid, () => []).add(gid);
+      }
+    }
+
+    final allGroupIds = groupIdsBySection.values.expand((g) => g).toSet().toList();
+    final labelByGroupId = <int, String>{};
+    if (allGroupIds.isNotEmpty) {
+      final groupData = await _db
+          .from('registration_groups')
+          .select('id, label')
+          .inFilter('id', allGroupIds);
+      for (final g in groupData as List) {
+        labelByGroupId[g['id'] as int] = g['label'] as String? ?? '';
+      }
+    }
+
+    // 4. Build result list, grouping by (course_name, exam_date) to avoid
+    //    one card per section when the professor teaches multiple sections
+    //    of the same course on the same day.
+    final merged = <String, Map<String, dynamic>>{};
+
+    for (final row in examData) {
+      final sectionId  = row['section_id'] as int;
+      final courseName = courseNameBySection[sectionId]?.isNotEmpty == true
+          ? courseNameBySection[sectionId]!
+          : (row['course_name'] as String? ?? '');
+      final examDate   = row['exam_date'] as String;
+      final key        = '$courseName|$examDate';
+
+      final groupIds = groupIdsBySection[sectionId] ?? [];
+      final groups   = groupIds
+          .map((gid) => labelByGroupId[gid] ?? '')
+          .where((l) => l.isNotEmpty)
+          .toList();
+
+      if (merged.containsKey(key)) {
+        final existing = merged[key]!['groups'] as List<String>;
+        for (final g in groups) {
+          if (!existing.contains(g)) existing.add(g);
+        }
+      } else {
+        merged[key] = {
+          'id':          row['id'],
+          'course_name': courseName,
+          'exam_date':   examDate,
+          'start_time':  row['start_time'],
+          'end_time':    row['end_time'],
+          'room':        row['room'],
+          'exam_type':   row['exam_type'],
+          'level':       row['level'],
+          'groups':      List<String>.from(groups),
+        };
+      }
+    }
+
+    for (final entry in merged.values) {
+      (entry['groups'] as List<String>).sort();
+    }
+
+    return merged.values.toList();
   }
 }

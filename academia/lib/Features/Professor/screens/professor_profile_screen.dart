@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -55,8 +56,22 @@ class _AvatarHeader extends StatelessWidget {
       color: AppColors.primaryBlue,
       child: Column(
         children: [
-          // Avatar with camera overlay
-          Obx(() => Stack(
+          Obx(() {
+            final pending = c.pendingImageBytes.value;
+            final url     = c.avatarUrl.value;
+
+            ImageProvider? image;
+            if (pending != null) {
+              image = MemoryImage(pending);
+            } else if (url != null) {
+              image = NetworkImage(url);
+            }
+
+            return GestureDetector(
+              onTap: c.isSaving.value
+                  ? null
+                  : () => _showPhotoOptions(context, c, image),
+              child: Stack(
                 alignment: Alignment.center,
                 children: [
                   Container(
@@ -68,9 +83,9 @@ class _AvatarHeader extends StatelessWidget {
                       border: Border.all(color: Colors.white, width: 3),
                     ),
                     child: ClipOval(
-                      child: c.avatarUrl.value != null
-                          ? Image.network(
-                              c.avatarUrl.value!,
+                      child: image != null
+                          ? Image(
+                              image: image,
                               fit: BoxFit.cover,
                               errorBuilder: (_, _, _) => Center(
                                 child: Text(
@@ -115,10 +130,12 @@ class _AvatarHeader extends StatelessWidget {
                     ),
                   ),
                 ],
-              )),
+              ),
+            );
+          }),
           const SizedBox(height: 10),
           const Text(
-            'Tap to change photo',
+            'Tap to change or remove photo',
             style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
         ],
@@ -504,4 +521,36 @@ class _EditableField extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showPhotoOptions(BuildContext context, ProfessorProfileController c,
+    ImageProvider? currentImage) {
+  final hasPhoto = currentImage != null;
+  showCupertinoModalPopup<void>(
+    context: context,
+    builder: (ctx) => CupertinoActionSheet(
+      actions: [
+        CupertinoActionSheetAction(
+          onPressed: () {
+            Navigator.pop(ctx);
+            c.pickProfileImage();
+          },
+          child: Text(hasPhoto ? 'Change Photo' : 'Choose from Library'),
+        ),
+        if (hasPhoto)
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(ctx);
+              c.removePhoto();
+            },
+            child: const Text('Remove Photo'),
+          ),
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        onPressed: () => Navigator.pop(ctx),
+        child: const Text('Cancel'),
+      ),
+    ),
+  );
 }

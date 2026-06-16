@@ -1,25 +1,25 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../services/auth_service.dart';
 
 /// Shows a confirmation dialog and, if confirmed, signs the user out and
 /// returns them to the login screen.
 Future<void> confirmSignOut() async {
-  final confirmed = await Get.dialog<bool>(
-    AlertDialog(
+  final confirmed = await showCupertinoDialog<bool>(
+    context: Get.context!,
+    barrierDismissible: true,
+    builder: (ctx) => CupertinoAlertDialog(
       title: const Text('Sign Out'),
       content: const Text('Are you sure you want to sign out?'),
       actions: [
-        TextButton(
-          onPressed: () => Get.back(result: false),
+        CupertinoDialogAction(
+          onPressed: () => Navigator.pop(ctx, false),
           child: const Text('Cancel'),
         ),
-        TextButton(
-          onPressed: () => Get.back(result: true),
-          child: Text(
-            'Sign Out',
-            style: TextStyle(color: Colors.red.shade600),
-          ),
+        CupertinoDialogAction(
+          isDestructiveAction: true,
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('Sign Out'),
         ),
       ],
     ),

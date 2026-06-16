@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -64,9 +65,16 @@ class TakeAttendanceController extends GetxController {
       return;
     }
 
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-        source: ImageSource.camera, imageQuality: 90);
+    XFile? picked;
+    try {
+      picked = await ImagePicker().pickImage(
+          source: ImageSource.camera, imageQuality: 90);
+    } catch (e) {
+      Get.snackbar('Camera Error', e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 6));
+      return;
+    }
     if (picked == null) return;
 
     capturedImage.value = File(picked.path);
@@ -74,6 +82,10 @@ class TakeAttendanceController extends GetxController {
 
     try {
       await _processOcr(capturedImage.value!);
+    } catch (e) {
+      Get.snackbar('OCR Error', e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 6));
     } finally {
       isProcessing.value = false;
       showResults.value  = true;
@@ -89,8 +101,21 @@ class TakeAttendanceController extends GetxController {
     final students = selectedGroup.value!.students;
     for (final s in students) { s.isPresent = false; }
 
+    // Debug: show what OCR actually read
+    final rawText = recognizedText.text.trim();
+    Get.snackbar(
+      'OCR Debug (${students.length} students)',
+      rawText.isEmpty ? '[No text detected]' : rawText.substring(0, rawText.length.clamp(0, 300)),
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 10),
+      backgroundColor: const Color(0xFF1A2B4A),
+      colorText: Colors.white,
+    );
+
+    if (rawText.isEmpty) return;
+
     // Clean and filter empty lines
-    final lines = recognizedText.text
+    final lines = rawText
         .split('\n')
         .map((l) => l.trim())
         .where((l) => l.isNotEmpty)

@@ -1,18 +1,27 @@
+import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import '../model/account_settings_model.dart';
 import '../service/account_settings_service.dart';
 
 class AccountSettingsController extends GetxController {
   final AccountSettingsService _service = AccountSettingsService();
+  final _picker = ImagePicker();
 
   final Rx<AccountSettingsModel?> account = Rx(null);
   final RxBool isLoading = true.obs;
-  final RxBool isSaving = false.obs;
+  final RxBool isSaving  = false.obs;
   final RxString errorMessage = ''.obs;
 
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+
+  // Locally-staged avatar (before save)
+  final pendingImageBytes = Rxn<Uint8List>();
+  String _pendingImageExt = 'jpg';
 
   @override
   void onInit() {
@@ -44,6 +53,7 @@ class AccountSettingsController extends GetxController {
 
   Future<void> saveChanges() async {
     if (isSaving.value) return;
+    FocusManager.instance.primaryFocus?.unfocus();
 
     final phone = phoneController.text.trim();
     final email = emailController.text.trim();
@@ -61,6 +71,15 @@ class AccountSettingsController extends GetxController {
 
     isSaving.value = true;
     try {
+      // Upload avatar first if one was picked
+      if (pendingImageBytes.value != null) {
+        final newUrl = await _service.uploadAvatar(
+            pendingImageBytes.value!, _pendingImageExt);
+        PaintingBinding.instance.imageCache.clear();
+        account.value = account.value?.copyWith(photoPath: newUrl);
+        pendingImageBytes.value = null;
+      }
+
       final success = await _service.saveAccountSettings(
         phone: phone,
         personalEmail: email,
@@ -84,18 +103,73 @@ class AccountSettingsController extends GetxController {
     } catch (e) {
       Get.snackbar(
         'Error',
-        'Could not save changes. Please try again.',
+        e.toString(),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade800,
+        duration: const Duration(seconds: 8),
       );
     } finally {
       isSaving.value = false;
     }
   }
 
-  void onChangePhoto() {
-    // TODO: integrate image_picker
-    Get.snackbar('Coming soon', 'Photo upload will be added here.');
+  void onChangePhoto(BuildContext context) {
+    final hasPhoto =
+        pendingImageBytes.value != null || account.value?.photoPath != null;
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _pickAndCrop();
+            },
+            child: Text(hasPhoto ? 'Change Photo' : 'Choose from Library'),
+          ),
+          if (hasPhoto)
+            CupertinoActionSheetAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.pop(ctx);
+                _removePhoto();
+              },
+              child: const Text('Remove Photo'),
+            ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickAndCrop() async {
+    final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery, imageQuality: 90);
+    if (image == null) return;
+
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        IOSUiSettings(
+          title: 'Crop Photo',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+    if (cropped == null) return;
+
+    pendingImageBytes.value = await cropped.readAsBytes();
+    _pendingImageExt = cropped.path.split('.').last.toLowerCase();
+  }
+
+  void _removePhoto() {
+    pendingImageBytes.value = null;
+    account.value = account.value?.copyWith(photoPath: '');
   }
 }

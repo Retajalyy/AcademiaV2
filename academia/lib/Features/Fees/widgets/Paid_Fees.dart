@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 import '../../../Core/utilities/colors.dart';
 import 'package:academia/Core/utilities/text_style.dart';
 import '../models/fee_model.dart';
@@ -41,6 +46,65 @@ class PaidFeeCard extends StatelessWidget {
             )),
       ],
     );
+  }
+}
+
+Future<void> _downloadInvoice(BuildContext context, FeeModel fee, Rect shareRect) async {
+  try {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context ctx) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('INVOICE', style: pw.TextStyle(fontSize: 28, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            pw.Divider(),
+            pw.SizedBox(height: 16),
+            pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+              pw.Text('Description', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ]),
+            pw.SizedBox(height: 8),
+            pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+              pw.Text(fee.label),
+              pw.Text(fee.formattedAmount),
+            ]),
+            pw.SizedBox(height: 16),
+            pw.Divider(),
+            pw.SizedBox(height: 8),
+            pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+              pw.Text('Status', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Text('PAID', style: pw.TextStyle(color: PdfColors.green700, fontWeight: pw.FontWeight.bold)),
+            ]),
+            if (fee.formattedPaidOn != null) ...[
+              pw.SizedBox(height: 4),
+              pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+                pw.Text('Payment Date'),
+                pw.Text(fee.formattedPaidOn!),
+              ]),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/invoice_${fee.id}.pdf');
+    await file.writeAsBytes(await pdf.save());
+
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text: 'Invoice - ${fee.label}',
+      sharePositionOrigin: shareRect,
+    );
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 }
 
@@ -143,15 +207,29 @@ class _PaidFeeItem extends StatelessWidget {
                       fontSize: 12, color: Color(0xFF848282)),
                 ),
               ),
-              const Icon(Icons.download,
-                  size: 15, color: AppColors.primaryBlue),
-              const SizedBox(width: 4),
-              const Text(
-                "Download invoice",
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w500,
+              GestureDetector(
+                onTap: () {
+                  final box = context.findRenderObject() as RenderBox?;
+                  final rect = box == null
+                      ? Rect.fromCenter(
+                          center: MediaQuery.of(context).size.center(Offset.zero),
+                          width: 1, height: 1)
+                      : box.localToGlobal(Offset.zero) & box.size;
+                  _downloadInvoice(context, fee, rect);
+                },
+                child: const Row(
+                  children: [
+                    Icon(Icons.download, size: 15, color: AppColors.primaryBlue),
+                    SizedBox(width: 4),
+                    Text(
+                      "Download invoice",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -119,6 +119,17 @@ class ExamScheduleAdminController extends GetxController {
   bool get isStep3Valid => pickedFileName.value.isNotEmpty;
   bool get isFormValid  => isStep1Valid;
 
+  Future<void> deleteUpload(ExamScheduleUpload upload) async {
+    uploads.remove(upload);
+    try {
+      await _service.deleteUpload(upload);
+    } catch (e) {
+      uploads.add(upload);
+      Get.snackbar('Error', 'Could not delete schedule: $e',
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
   Future<void> submit() async {
     if (!isFormValid) {
       Get.snackbar('Incomplete', 'Please select a faculty',

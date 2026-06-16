@@ -63,8 +63,8 @@ class FeesAdminService {
   Future<List<ActiveFeeModel>> fetchActiveFees() async {
     final data = await _db
         .from('student_fees')
-        .select('amount, due_date, is_paid, currency, label')
-        .order('due_date', ascending: true);
+        .select('id, amount, due_date, is_paid, currency, label')
+        .order('id', ascending: false);
 
     final list = data as List;
     if (list.isEmpty) return [];
@@ -121,6 +121,7 @@ class FeesAdminService {
         progress:     progress,
         progressText: '${(progress * 100).round()}%',
         dueDate:      dueDateStr,
+        rawDueDate:   dueDate,
         isOverdue:    isOverdue,
         dueDateLabel: dueDateLabel,
         icon:         Icons.menu_book_outlined,
@@ -195,4 +196,45 @@ class FeesAdminService {
   }
 
   Future<bool> remindUnpaid() async => true;
+
+  /// Deletes this fee for all students who haven't paid it yet.
+  /// Rows already marked as paid are left untouched so payment history
+  /// isn't lost.
+  Future<void> deleteFee(ActiveFeeModel fee) async {
+    final builder = _db
+        .from('student_fees')
+        .delete()
+        .eq('label', fee.title)
+        .eq('amount', fee.amount)
+        .eq('is_paid', false);
+
+    if (fee.rawDueDate != null) {
+      await builder.eq('due_date', fee.rawDueDate!.toIso8601String().substring(0, 10));
+    } else {
+      await builder.isFilter('due_date', null);
+    }
+  }
+
+  /// Updates the amount/due date of this fee for all students who haven't
+  /// paid it yet. Already-paid rows are left untouched.
+  Future<void> editFee(
+    ActiveFeeModel fee, {
+    required double newAmount,
+    required DateTime newDueDate,
+  }) async {
+    final newDueDateStr = newDueDate.toIso8601String().substring(0, 10);
+
+    final builder = _db
+        .from('student_fees')
+        .update({'amount': newAmount, 'due_date': newDueDateStr})
+        .eq('label', fee.title)
+        .eq('amount', fee.amount)
+        .eq('is_paid', false);
+
+    if (fee.rawDueDate != null) {
+      await builder.eq('due_date', fee.rawDueDate!.toIso8601String().substring(0, 10));
+    } else {
+      await builder.isFilter('due_date', null);
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:academia/Features/profile/models/student_model.dart';
 import 'package:academia/Features/profile/services/student_service.dart';
@@ -69,18 +70,43 @@ class ProfileController extends GetxController {
   Future<void> pickProfileImage() async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 80,
-      maxWidth: 512,
-      maxHeight: 512,
+      imageQuality: 90,
     );
     if (image == null) return;
-    pendingImageBytes.value = await image.readAsBytes();
-    _pendingImageExt = image.path.split('.').last.toLowerCase();
+
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        IOSUiSettings(
+          title: 'Crop Photo',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+          rotateButtonsHidden: false,
+        ),
+      ],
+    );
+    if (cropped == null) return;
+
+    pendingImageBytes.value = await cropped.readAsBytes();
+    _pendingImageExt = cropped.path.split('.').last.toLowerCase();
+  }
+
+  // Clear only the pending selection — reverts to the saved avatar
+  void clearPendingImage() {
+    pendingImageBytes.value = null;
+  }
+
+  // Remove the photo entirely (pending + saved URL) — saved on next updateProfile
+  void removePhoto() {
+    pendingImageBytes.value = null;
+    avatarUrl.value = null;
   }
 
   // Save button — uploads image (if picked) + saves phone
   Future<void> updateProfile() async {
     if (student.value == null) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     isSaving.value = true;
     try {
       // Upload image if one was picked

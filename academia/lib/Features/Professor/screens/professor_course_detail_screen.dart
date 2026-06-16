@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/screens/file_preview_screen.dart';
@@ -368,41 +369,34 @@ class _MaterialRow extends StatelessWidget {
   const _MaterialRow(
       {required this.material, required this.isLast});
 
-  void _showRenameDialog(ProfessorCourseDetailController ctrl) {
+  void _showRenameDialog(BuildContext context, ProfessorCourseDetailController ctrl) {
     final nameCtrl = TextEditingController(text: material.name);
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Rename File',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-        content: TextField(
-          controller: nameCtrl,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Enter new name',
-            border: OutlineInputBorder(),
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Rename File'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: CupertinoTextField(
+            controller: nameCtrl,
+            autofocus: true,
+            placeholder: 'Enter new name',
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: Get.back,
-            child: const Text('Cancel',
-                style: TextStyle(color: Color(0xFF6B7280))),
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () {
               final name = nameCtrl.text.trim();
               if (name.isEmpty) return;
-              Get.back();
+              Navigator.pop(ctx);
               ctrl.renameMaterial(material.id, name);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
             child: const Text('Rename'),
           ),
         ],
@@ -410,32 +404,24 @@ class _MaterialRow extends StatelessWidget {
     );
   }
 
-  void _showDeleteDialog(ProfessorCourseDetailController ctrl) {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete File',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+  void _showDeleteDialog(BuildContext context, ProfessorCourseDetailController ctrl) {
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Delete File'),
         content: Text(
             'Are you sure you want to delete "${material.name}"? This cannot be undone.'),
         actions: [
-          TextButton(
-            onPressed: Get.back,
-            child: const Text('Cancel',
-                style: TextStyle(color: Color(0xFF6B7280))),
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () {
-              Get.back();
+              Navigator.pop(ctx);
               ctrl.deleteMaterial(material.id, material.fileUrl);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
             child: const Text('Delete'),
           ),
         ],
@@ -529,9 +515,9 @@ class _MaterialRow extends StatelessWidget {
                 onSelected: (value) {
                   final ctrl = Get.find<ProfessorCourseDetailController>();
                   if (value == 'rename') {
-                    _showRenameDialog(ctrl);
+                    _showRenameDialog(context, ctrl);
                   } else if (value == 'delete') {
-                    _showDeleteDialog(ctrl);
+                    _showDeleteDialog(context, ctrl);
                   }
                 },
                 itemBuilder: (_) => [

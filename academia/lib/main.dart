@@ -39,6 +39,7 @@ import 'Features/Professor/screens/attendance_session_detail_screen.dart';
 import 'Features/Professor/screens/students_at_risk_screen.dart';
 import 'Features/Professor/screens/academic_overview_screen.dart';
 import 'Features/Professor/screens/assignment_overview_screen.dart';
+import 'Features/Professor/screens/professor_exam_schedule_screen.dart';
 import 'Features/Registiration_admin/screens/all_registration_plans_screen.dart';
 import 'Features/Announcements/screens/announcements_screen.dart';
 import 'Features/Assignments/screens/assignments_screen.dart';
@@ -49,6 +50,9 @@ import 'Features/Announcements/screens/create_announcement_screen.dart';
 import 'Features/Registiration_admin/screens/RegistirationScreen.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 
@@ -68,6 +72,11 @@ void main() async {
       'pk_test_51TiOsqGxiO7neIOBzNcwq4FCdwV5qHp4126J2dPdibWogCaKm4OZg3ysENfFmbhctqJufER1xrb1L2BnVCFNxYQZ00JPzHUvbg';
   await Stripe.instance.applySettings();
 
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
+  );
+
   runApp(const MyApp());
 }
 
@@ -82,6 +91,7 @@ class MyApp extends StatelessWidget {
       // ✅ GLOBAL THEME
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.lightblue,
+        textTheme: GoogleFonts.interTextTheme(),
 
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primaryBlue,
@@ -92,11 +102,19 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
 
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
           backgroundColor: Colors.transparent,
           elevation: 0,
+        ),
+
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            TargetPlatform.iOS: const CupertinoPageTransitionsBuilder(),
+            TargetPlatform.android: const ZoomPageTransitionsBuilder(),
+          },
         ),
       ),
 
@@ -287,6 +305,10 @@ class MyApp extends StatelessWidget {
         GetPage(
           name: '/assignmentOverview',
           page: () => const AssignmentOverviewScreen(),
+        ),
+        GetPage(
+          name: '/professorExamSchedule',
+          page: () => const ProfessorExamScheduleScreen(),
         ),
         GetPage(
           name: '/allRegistrationPlans',

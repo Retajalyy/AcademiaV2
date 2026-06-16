@@ -78,24 +78,6 @@ class ProfessorHomeScreen extends StatelessWidget {
                   ],
                 )),
               ),
-              // Yellow avatar
-              Obx(() => Container(
-                    width: 50,
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      color: AppColors.accentAI,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        c.avatarInitials,
-                        style: const TextStyle(
-                            color: AppColors.primaryBlue,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  )),
             ],
           ),
 
@@ -524,15 +506,22 @@ class _AcademicOverviewSection extends StatelessWidget {
             if (c.nextExamInfo.value != null) ...[
               const SizedBox(height: 10),
               // Next exam card
-              _OverviewCard(
-                iconData: Icons.calendar_today_outlined,
-                iconBg: const Color(0xFFFFF3DF),
-                iconColor: AppColors.assignmentColor,
-                title: 'Next exam',
-                subtitle: c.nextExamInfo.value!['subtitle'] as String,
-                badge: c.nextExamInfo.value!['badge'] as String,
-                badgeColor: const Color(0xFFFFF3DF),
-                badgeTextColor: AppColors.assignmentColor,
+              GestureDetector(
+                onTap: () => Get.toNamed('/professorExamSchedule', arguments: {
+                  'professorId': c.professorId,
+                  'isTA':        c.isTA.value,
+                }),
+                child: _OverviewCard(
+                  iconData: Icons.calendar_today_outlined,
+                  iconBg: const Color(0xFFFFF3DF),
+                  iconColor: AppColors.assignmentColor,
+                  title: 'Next exam',
+                  subtitle: c.nextExamInfo.value!['subtitle'] as String,
+                  badge: c.nextExamInfo.value!['badge'] as String,
+                  badgeColor: const Color(0xFFFFF3DF),
+                  badgeTextColor: AppColors.assignmentColor,
+                  showArrow: true,
+                ),
               ),
             ],
           ],

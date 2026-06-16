@@ -1,5 +1,6 @@
 // lib/Features/registration/widgets/semester_card.dart
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -39,32 +40,38 @@ class SemesterCard extends StatelessWidget {
     final semCtrl  = TextEditingController(text: parts.isNotEmpty ? parts[0] : '');
     final yearCtrl = TextEditingController(text: parts.length > 1 ? parts[1] : '');
 
-    showDialog<void>(
+    showCupertinoDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (ctx) => CupertinoAlertDialog(
         title: const Text('Edit Plan Labels'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: semCtrl,
-              decoration: const InputDecoration(labelText: 'Semester Label'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: yearCtrl,
-              decoration: const InputDecoration(labelText: 'Academic Year'),
-            ),
-          ],
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CupertinoTextField(
+                controller: semCtrl,
+                placeholder: 'Semester Label',
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+              const SizedBox(height: 10),
+              CupertinoTextField(
+                controller: yearCtrl,
+                placeholder: 'Academic Year',
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+            ],
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(ctx);
               ctrl.updatePlanLabels(
                   planId, semCtrl.text.trim(), yearCtrl.text.trim());
             },

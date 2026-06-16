@@ -1,4 +1,5 @@
 import 'package:academia/Core/utilities/colors.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/profile_controller.dart';
@@ -75,7 +76,9 @@ class ProfileEditScreen extends StatelessWidget {
                       }
 
                       return GestureDetector(
-                        onTap: controller.isSaving.value ? null : controller.pickProfileImage,
+                        onTap: controller.isSaving.value
+                            ? null
+                            : () => _showPhotoOptions(context, controller, image),
                         child: Stack(
                           alignment: Alignment.bottomRight,
                           children: [
@@ -114,7 +117,7 @@ class ProfileEditScreen extends StatelessWidget {
                       );
                     }),
                     const SizedBox(height: 12),
-                    const Text("Tap to change photo", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    const Text("Tap to change or remove photo", style: TextStyle(color: Colors.white70, fontSize: 13)),
                   ],
                 ),
               ),
@@ -245,4 +248,37 @@ class ProfileEditScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showPhotoOptions(
+    BuildContext context, ProfileController controller, ImageProvider? currentImage) {
+  final hasPhoto = currentImage != null;
+
+  showCupertinoModalPopup<void>(
+    context: context,
+    builder: (ctx) => CupertinoActionSheet(
+      actions: [
+        CupertinoActionSheetAction(
+          onPressed: () {
+            Navigator.pop(ctx);
+            controller.pickProfileImage();
+          },
+          child: Text(hasPhoto ? 'Change Photo' : 'Choose from Library'),
+        ),
+        if (hasPhoto)
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(ctx);
+              controller.removePhoto();
+            },
+            child: const Text('Remove Photo'),
+          ),
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        onPressed: () => Navigator.pop(ctx),
+        child: const Text('Cancel'),
+      ),
+    ),
+  );
 }

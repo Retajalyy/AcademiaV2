@@ -94,13 +94,25 @@ class AccountHeader extends StatelessWidget {
 
           /// PROFILE IMAGE
           Obx(() {
-            final acc = controller.account.value;
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                GestureDetector(
-                  onTap: controller.onChangePhoto,
-                  child: Container(
+            final acc     = controller.account.value;
+            final pending = controller.pendingImageBytes.value;
+            final urlStr  = acc?.photoPath;
+
+            ImageProvider? image;
+            if (pending != null) {
+              image = MemoryImage(pending);
+            } else if (urlStr != null && urlStr.isNotEmpty) {
+              image = NetworkImage(urlStr);
+            }
+
+            return GestureDetector(
+              onTap: controller.isSaving.value
+                  ? null
+                  : () => controller.onChangePhoto(context),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
                     width: 90,
                     height: 90,
                     decoration: BoxDecoration(
@@ -111,23 +123,37 @@ class AccountHeader extends StatelessWidget {
                         width: 4,
                       ),
                     ),
-                    child: Center(
-                      child: Text(
-                        acc?.initials ?? '??',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 35,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    child: ClipOval(
+                      child: image != null
+                          ? Image(
+                              image: image,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Center(
+                                child: Text(
+                                  acc?.initials ?? '??',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 35,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                acc?.initials ?? '??',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 35,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: -2,
-                  child: GestureDetector(
-                    onTap: controller.onChangePhoto,
+                  Positioned(
+                    bottom: 0,
+                    right: -2,
                     child: Container(
                       width: 28,
                       height: 28,
@@ -146,8 +172,8 @@ class AccountHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           }),
 

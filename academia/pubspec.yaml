@@ -39,15 +39,18 @@ dependencies:
   flutter_svg: ^2.2.4
   intl: ^0.20.2
   image_picker: ^1.1.2
+  image_cropper: ^12.2.1
   file_picker: ^8.1.2
   excel: ^4.0.6
   share_plus: ^10.0.3
   path_provider: ^2.1.5
   url_launcher: ^6.3.2
-  mobile_scanner: ^5.2.3
+  mobile_scanner: ^7.2.0
   permission_handler: ^11.3.1
-  google_mlkit_text_recognition: ^0.13.0
+  google_mlkit_text_recognition: ^0.15.0
   flutter_stripe: ^11.5.0
+  google_fonts: ^6.2.1
+  pdf: ^3.11.1
 
 dev_dependencies:
   flutter_test:

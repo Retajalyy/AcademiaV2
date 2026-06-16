@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -55,24 +56,21 @@ class AttendanceRecordsScreen extends StatelessWidget {
                                   size: 26),
                             ),
                             confirmDismiss: (_) async {
-                              return await showDialog<bool>(
+                              return await showCupertinoDialog<bool>(
                                 context: context,
-                                builder: (_) => AlertDialog(
+                                builder: (ctx) => CupertinoAlertDialog(
                                   title: const Text('Delete session?'),
                                   content: Text(
                                     'Remove ${s.sectionType == 'LEC' ? 'Lecture' : 'Section'} '
                                     '${s.sessionNum} on ${s.dateLabel}?'),
                                   actions: [
-                                    TextButton(
-                                        onPressed: () =>
-                                            Get.back(result: false),
+                                    CupertinoDialogAction(
+                                        onPressed: () => Navigator.pop(ctx, false),
                                         child: const Text('Cancel')),
-                                    TextButton(
-                                        onPressed: () =>
-                                            Get.back(result: true),
-                                        child: const Text('Delete',
-                                            style: TextStyle(
-                                                color: AppColors.fail))),
+                                    CupertinoDialogAction(
+                                        isDestructiveAction: true,
+                                        onPressed: () => Navigator.pop(ctx, true),
+                                        child: const Text('Delete')),
                                   ],
                                 ),
                               ) ?? false;

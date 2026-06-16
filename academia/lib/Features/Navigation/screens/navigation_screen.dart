@@ -60,23 +60,13 @@ class NavigationController extends GetxController {
   }
 
   Future<void> _checkCameraPermission() async {
-    final status = await Permission.camera.status;
-    if (status.isGranted) {
-      cameraPermission.value = CameraPermissionState.granted;
-    } else {
-      final result = await Permission.camera.request();
-      cameraPermission.value = result.isGranted
-          ? CameraPermissionState.granted
-          : CameraPermissionState.denied;
-    }
+    // Let MobileScanner handle permission natively — just mark as granted
+    // so the scanner widget is shown and iOS triggers its own permission dialog
+    cameraPermission.value = CameraPermissionState.granted;
   }
 
   Future<void> requestCameraPermission() async {
-    if (await Permission.camera.isPermanentlyDenied) {
-      await openAppSettings();
-    } else {
-      await _checkCameraPermission();
-    }
+    await openAppSettings();
   }
 
   Future<void> _fetchLocations() async {

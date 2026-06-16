@@ -47,6 +47,12 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to scan QR codes for attendance.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is needed to upload images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Permission to save images to your photo library.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

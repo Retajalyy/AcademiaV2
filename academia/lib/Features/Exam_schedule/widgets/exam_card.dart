@@ -9,6 +9,8 @@ class ExamCard extends StatelessWidget {
   final String? time;
   final String? room;
   final String? subtitle;
+  final String? level;
+  final int? daysUntil;
 
   final bool isNext;
   final bool isCompleted;
@@ -22,10 +24,19 @@ class ExamCard extends StatelessWidget {
     this.time,
     this.room,
     this.subtitle,
+    this.level,
+    this.daysUntil,
     this.isNext = false,
     this.isCompleted = false,
     this.isHighlighted = false,
   });
+
+  String get _nextLabel {
+    if (daysUntil == null) return 'Next';
+    if (daysUntil! == 0) return 'Today';
+    if (daysUntil! == 1) return 'Tomorrow';
+    return 'In ${daysUntil!} days';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,10 +146,8 @@ class ExamCard extends StatelessWidget {
                           children: [
                             Text(
                               title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                               style: TextStyles.title.copyWith(
-                                color: AppColors.primaryBlue, // ✅ FIXED visibility
+                                color: AppColors.primaryBlue,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -168,8 +177,8 @@ class ExamCard extends StatelessWidget {
                             color: AppColors.lightblue,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            "Tomorrow",
+                          child: Text(
+                            _nextLabel,
                             style: TextStyle(
                               color: AppColors.primaryText,
                               fontSize: 12,
@@ -203,7 +212,6 @@ class ExamCard extends StatelessWidget {
                        
                   /// 📍 ROOM
                   if (room != null)
-                  
                     Row(
                       children: [
                         const Icon(Icons.location_on,
@@ -217,6 +225,23 @@ class ExamCard extends StatelessWidget {
                         ),
                       ],
                     ),
+
+                  /// 🎓 LEVEL
+                  if (level != null) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.school, size: 14, color: Colors.grey),
+                        const SizedBox(width: 5),
+                        Text(
+                          level!,
+                          style: TextStyles.bodySecondary.copyWith(
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

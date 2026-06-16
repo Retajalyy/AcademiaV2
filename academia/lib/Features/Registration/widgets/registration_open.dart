@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../Core/utilities/colors.dart';
@@ -326,41 +327,26 @@ class _CourseCard extends StatelessWidget {
 
   void _showAddDialog(BuildContext context, CourseLecture lec) {
     final ctrl = Get.find<RegistrationController>();
-    showDialog(
+    showCupertinoDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 22),
-            SizedBox(width: 8),
-            Text('Add Anyway?', style: TextStyle(fontSize: 17)),
-          ],
-        ),
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Add Anyway?'),
         content: Text(
           '${lec.courseName} has an unmet prerequisite.\n\n'
           '${courseWithWarning.warningMessage ?? ''}\n\n'
           'Do you want to add it anyway? Your advisor may need to approve this.',
-          style: const TextStyle(fontSize: 13, height: 1.5),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel',
-                style: TextStyle(color: Color(0xFF6B7280))),
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () {
               ctrl.addLockedCourse(lec.courseCode);
-              Navigator.pop(context);
+              Navigator.pop(ctx);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryBlue,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
             child: const Text('Add Anyway'),
           ),
         ],

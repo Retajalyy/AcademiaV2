@@ -147,6 +147,38 @@ class FeesAdminController extends GetxController {
     }
   }
 
+  Future<void> deleteFee(ActiveFeeModel fee) async {
+    try {
+      await _service.deleteFee(fee);
+      await loadData();
+      Get.snackbar(
+        'Fee Deleted',
+        'Removed for students who haven\'t paid yet',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  Future<void> updateFee(
+    ActiveFeeModel fee,
+    double newAmount,
+    DateTime newDueDate,
+  ) async {
+    try {
+      await _service.editFee(fee, newAmount: newAmount, newDueDate: newDueDate);
+      await loadData();
+      Get.snackbar(
+        'Fee Updated',
+        'Updated for students who haven\'t paid yet',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
   Future<void> remindUnpaid() async {
     isReminding.value = true;
     try {

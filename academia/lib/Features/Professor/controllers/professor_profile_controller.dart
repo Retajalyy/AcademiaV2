@@ -1,20 +1,28 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfessorProfileController extends GetxController {
-  final _db = Supabase.instance.client;
+  final _db     = Supabase.instance.client;
+  final _picker = ImagePicker();
 
   // Read-only university info
   var fullName        = ''.obs;
   var instructorId    = ''.obs;
   var department      = ''.obs;
   var universityEmail = ''.obs;
-  var academicRole    = ''.obs;   // 'Professor' or 'Teaching Assistant'
-  var avatarUrl       = Rxn<String>();
+  var academicRole    = ''.obs;
+  final avatarUrl     = Rxn<String>();
+
+  // Locally-staged image (before save)
+  final pendingImageBytes = Rxn<Uint8List>();
+  String _pendingImageExt = 'jpg';
 
   // Editable personal info
-  final phoneCtrl        = TextEditingController();
+  final phoneCtrl         = TextEditingController();
   final personalEmailCtrl = TextEditingController();
 
   var isLoading = true.obs;
@@ -38,7 +46,6 @@ class ProfessorProfileController extends GetxController {
     try {
       final userId = _db.auth.currentUser!.id;
 
-      // ── 1. Profile row (always present) ───────────────────────────────────
       final profile = await _db
           .from('profiles')
           .select('full_name, fname, lname, uni_id, email, avatar_url')
@@ -50,18 +57,14 @@ class ProfessorProfileController extends GetxController {
       fullName.value = (profile['full_name'] as String?)?.isNotEmpty == true
           ? profile['full_name'] as String
           : '$fname $lname'.trim();
-      instructorId.value    = profile['uni_id']    as String? ?? '';
-      universityEmail.value = profile['email']     as String?
+      instructorId.value    = profile['uni_id'] as String? ?? '';
+      universityEmail.value = profile['email']  as String?
           ?? _db.auth.currentUser!.email ?? '';
       final rawUrl = profile['avatar_url'] as String?;
       if (rawUrl != null && rawUrl.isNotEmpty) {
-        avatarUrl.value =
-            '$rawUrl?t=${DateTime.now().millisecondsSinceEpoch}';
+        avatarUrl.value = '$rawUrl?t=${DateTime.now().millisecondsSinceEpoch}';
       }
 
-      // ── 2. Professor row ───────────────────────────────────────────────────
-      // Try broad select first; fall back to just `department` if extra
-      // columns (phone, personal_email) don't exist in this DB.
       try {
         final prof = await _db
             .from('professors')
@@ -71,12 +74,10 @@ class ProfessorProfileController extends GetxController {
 
         department.value       = prof['department']     as String? ?? '';
         academicRole.value     = (prof['is_ta'] as bool? ?? false)
-            ? 'Teaching Assistant'
-            : 'Professor';
+            ? 'Teaching Assistant' : 'Professor';
         phoneCtrl.text         = prof['phone']          as String? ?? '';
         personalEmailCtrl.text = prof['personal_email'] as String? ?? '';
       } catch (_) {
-        // Columns phone / personal_email may not exist — fetch only department + is_ta
         try {
           final prof = await _db
               .from('professors')
@@ -85,8 +86,7 @@ class ProfessorProfileController extends GetxController {
               .single();
           department.value   = prof['department'] as String? ?? '';
           academicRole.value = (prof['is_ta'] as bool? ?? false)
-              ? 'Teaching Assistant'
-              : 'Professor';
+              ? 'Teaching Assistant' : 'Professor';
         } catch (_) {}
       }
     } catch (e) {
@@ -96,14 +96,62 @@ class ProfessorProfileController extends GetxController {
     }
   }
 
+  Future<void> pickProfileImage() async {
+    final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery, imageQuality: 90);
+    if (image == null) return;
+
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        IOSUiSettings(
+          title: 'Crop Photo',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+    if (cropped == null) return;
+
+    pendingImageBytes.value = await cropped.readAsBytes();
+    _pendingImageExt = cropped.path.split('.').last.toLowerCase();
+  }
+
+  void removePhoto() {
+    pendingImageBytes.value = null;
+    avatarUrl.value = null;
+  }
+
   Future<void> save() async {
+    FocusManager.instance.primaryFocus?.unfocus();
     isSaving.value = true;
     try {
       final userId = _db.auth.currentUser!.id;
-      await _db.from('professors').update({
+
+      if (pendingImageBytes.value != null) {
+        final path = 'professors/$userId.$_pendingImageExt';
+        await _db.storage.from('avatars').uploadBinary(
+          path,
+          pendingImageBytes.value!,
+          fileOptions:
+              FileOptions(contentType: 'image/$_pendingImageExt', upsert: true),
+        );
+        final baseUrl = _db.storage.from('avatars').getPublicUrl(path);
+        await _db
+            .from('profiles')
+            .update({'avatar_url': baseUrl}).eq('id', userId);
+        PaintingBinding.instance.imageCache.clear();
+        avatarUrl.value =
+            '$baseUrl?t=${DateTime.now().millisecondsSinceEpoch}';
+        pendingImageBytes.value = null;
+      }
+
+      await _db.from('professors').upsert({
+        'profile_id':     userId,
         'phone':          phoneCtrl.text.trim(),
         'personal_email': personalEmailCtrl.text.trim(),
-      }).eq('profile_id', userId);
+      }, onConflict: 'profile_id');
 
       Get.snackbar(
         'Saved',
@@ -112,12 +160,12 @@ class ProfessorProfileController extends GetxController {
         backgroundColor: Colors.green.shade100,
         colorText: Colors.green.shade900,
       );
-    } catch (_) {
-      // Columns may not exist; let the user know saving isn't supported yet
+    } catch (e) {
       Get.snackbar(
-        'Not saved',
-        'Contact admin to update personal info',
+        'Error',
+        e.toString(),
         snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 8),
       );
     } finally {
       isSaving.value = false;
